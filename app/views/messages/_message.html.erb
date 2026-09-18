@@ -1,0 +1,15 @@
+<article id="<%= dom_id(message) %>" class="flex <%= message.user? ? "justify-end" : "justify-start" %>">
+  <div class="max-w-[85%] rounded-2xl px-5 py-4 shadow-sm <%= message.user? ? "bg-emerald-800 text-white" : "bg-white text-slate-800 ring-1 ring-slate-200" %>">
+    <div class="whitespace-pre-wrap break-words leading-7"><%= message.content %></div>
+    <div class="mt-2 flex flex-wrap items-center gap-2 text-xs <%= message.user? ? "text-emerald-100" : "text-slate-400" %>">
+      <span><%= t("app.messages.roles.#{message.role}") %></span>
+      <span>·</span>
+      <time datetime="<%= message.created_at.iso8601 %>"><%= l(message.created_at, format: :message) %></time>
+      <% if message.failed? %>
+        <span class="font-bold text-rose-300"><%= t("app.messages.statuses.failed") %></span>
+      <% elsif message.streaming? %>
+        <span><%= t("app.messages.statuses.streaming") %></span>
+      <% end %>
+    </div>
+  </div>
+</article>

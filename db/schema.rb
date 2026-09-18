@@ -10,9 +10,46 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_18_000005) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_18_000006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "conversation_threads", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "last_message_at"
+    t.bigint "personality_id", null: false
+    t.string "status", default: "active", null: false
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["personality_id", "status", "last_message_at"], name: "idx_on_personality_id_status_last_message_at_8f99ecdef1"
+    t.index ["personality_id"], name: "index_conversation_threads_on_personality_id"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'archived'::character varying]::text[])", name: "conversation_threads_status"
+    t.check_constraint "title IS NULL OR char_length(btrim(title::text)) >= 1 AND char_length(btrim(title::text)) <= 120", name: "conversation_threads_title_length"
+  end
+
+  create_table "generation_runs", force: :cascade do |t|
+    t.bigint "assistant_message_id"
+    t.integer "attempts_count", default: 0, null: false
+    t.datetime "completed_at"
+    t.bigint "conversation_thread_id", null: false
+    t.datetime "created_at", null: false
+    t.string "error_code"
+    t.text "error_message"
+    t.string "idempotency_key", null: false
+    t.bigint "personality_version_id", null: false
+    t.datetime "started_at"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_message_id", null: false
+    t.index ["assistant_message_id"], name: "index_generation_runs_on_assistant_message_id", unique: true, where: "(assistant_message_id IS NOT NULL)"
+    t.index ["conversation_thread_id", "status"], name: "index_generation_runs_on_conversation_thread_id_and_status"
+    t.index ["conversation_thread_id"], name: "index_generation_runs_on_conversation_thread_id"
+    t.index ["idempotency_key"], name: "index_generation_runs_on_idempotency_key", unique: true
+    t.index ["personality_version_id"], name: "index_generation_runs_on_personality_version_id"
+    t.index ["user_message_id"], name: "index_generation_runs_on_user_message_id", unique: true
+    t.check_constraint "attempts_count >= 0", name: "generation_runs_attempts_count"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'running'::character varying, 'completed'::character varying, 'failed'::character varying, 'stopped'::character varying]::text[])", name: "generation_runs_status"
+  end
 
   create_table "login_challenges", force: :cascade do |t|
     t.integer "attempts_count", default: 0, null: false
@@ -28,6 +65,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_000005) do
     t.index ["requested_ip", "created_at"], name: "index_login_challenges_on_requested_ip_and_created_at"
     t.index ["token"], name: "index_login_challenges_on_token", unique: true
     t.index ["user_id"], name: "index_login_challenges_on_user_id"
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.string "client_token"
+    t.text "content", default: "", null: false
+    t.bigint "conversation_thread_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "personality_version_id", null: false
+    t.integer "position", null: false
+    t.string "role", null: false
+    t.string "status", default: "completed", null: false
+    t.datetime "updated_at", null: false
+    t.index ["client_token"], name: "index_messages_on_client_token", unique: true, where: "(client_token IS NOT NULL)"
+    t.index ["conversation_thread_id", "position"], name: "index_messages_on_conversation_thread_id_and_position", unique: true
+    t.index ["conversation_thread_id"], name: "index_messages_on_conversation_thread_id"
+    t.index ["personality_version_id"], name: "index_messages_on_personality_version_id"
+    t.check_constraint "\"position\" > 0", name: "messages_positive_position"
+    t.check_constraint "char_length(content) <= 100000 AND (status::text <> 'completed'::text OR char_length(btrim(content)) > 0)", name: "messages_content"
+    t.check_constraint "role::text = ANY (ARRAY['user'::character varying, 'assistant'::character varying]::text[])", name: "messages_role"
+    t.check_constraint "status::text = ANY (ARRAY['streaming'::character varying, 'completed'::character varying, 'failed'::character varying]::text[])", name: "messages_status"
   end
 
   create_table "personalities", force: :cascade do |t|
@@ -84,7 +141,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_000005) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "conversation_threads", "personalities"
+  add_foreign_key "generation_runs", "conversation_threads"
+  add_foreign_key "generation_runs", "messages", column: "assistant_message_id", on_delete: :restrict
+  add_foreign_key "generation_runs", "messages", column: "user_message_id", on_delete: :restrict
+  add_foreign_key "generation_runs", "personality_versions"
   add_foreign_key "login_challenges", "users"
+  add_foreign_key "messages", "conversation_threads"
+  add_foreign_key "messages", "personality_versions"
   add_foreign_key "personalities", "personality_versions", column: "current_version_id", on_delete: :nullify
   add_foreign_key "personalities", "users"
   add_foreign_key "personality_versions", "personalities"

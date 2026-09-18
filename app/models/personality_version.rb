@@ -4,6 +4,8 @@ class PersonalityVersion < ApplicationRecord
   belongs_to :personality, inverse_of: :versions
   belongs_to :author, class_name: "User"
   belongs_to :source_version, class_name: "PersonalityVersion", optional: true
+  has_many :messages, dependent: :restrict_with_exception
+  has_many :generation_runs, dependent: :restrict_with_exception
   has_many :derived_versions,
            class_name: "PersonalityVersion",
            foreign_key: :source_version_id,

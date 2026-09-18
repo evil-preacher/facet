@@ -50,6 +50,20 @@ optional change note. The version-history UI supports line-by-line comparisons
 and restores an earlier bible by creating another version rather than rewriting
 history. Archiving preserves the personality and every version.
 
+## Conversations
+
+Each personality can have multiple conversation threads. A thread starts with
+its first user message, which also provides a temporary title. Messages are
+stored in a stable order against the exact personality version used at send
+time, and idempotency tokens prevent repeated submissions from creating
+duplicates. The composer responds with Turbo Streams while retaining a plain
+HTML fallback.
+
+`GenerationRun` records and UI states for pending, running, failed, stopped,
+and retry are in place; actual AI responses are intentionally deferred to the
+model gateway stage. Archived personalities and threads remain readable but
+cannot accept new messages or retries.
+
 ## Tests
 
 The suite uses RSpec, Factory Bot, FFaker, Shoulda Matchers, Database Cleaner,

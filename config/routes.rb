@@ -17,6 +17,13 @@ Rails.application.routes.draw do
       get :compare, on: :collection
       post :rollback, on: :member
     end
+    resources :conversation_threads, path: "threads", only: %i[index new create show] do
+      patch :archive, on: :member
+      resources :messages, only: :create
+      resources :generation_runs, only: [] do
+        post :retry, on: :member
+      end
+    end
   end
 
 

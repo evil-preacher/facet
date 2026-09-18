@@ -1,0 +1,10 @@
+<% if @result.success? %>
+  <%= turbo_stream.append "messages", partial: "messages/message", locals: { message: @message } if @result.created? %>
+  <%= turbo_stream.replace "message_composer",
+                           partial: "messages/form",
+                           locals: { personality: @personality, conversation_thread: @conversation_thread, result: nil, content: nil, client_token: @client_token } %>
+<% else %>
+  <%= turbo_stream.replace "message_composer",
+                           partial: "messages/form",
+                           locals: { personality: @personality, conversation_thread: @conversation_thread, result: @result, content: params.dig(:message, :content), client_token: @client_token } %>
+<% end %>

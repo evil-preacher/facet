@@ -1,0 +1,27 @@
+<div id="message_composer" class="mt-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:p-5">
+  <% if result&.errors&.any? %>
+    <div class="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-800 ring-1 ring-rose-200" role="alert">
+      <p class="font-bold"><%= t("app.messages.errors") %></p>
+      <ul class="mt-1 list-disc pl-5">
+        <% result.errors.full_messages.each do |error| %>
+          <li><%= error %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with url: personality_conversation_thread_messages_path(personality, conversation_thread), scope: :message, class: "grid gap-3" do |form| %>
+    <%= form.hidden_field :client_token, value: client_token %>
+    <%= form.label :content, t("app.messages.composer.label"), class: "sr-only" %>
+    <%= form.text_area :content,
+                       value: content,
+                       required: true,
+                       maxlength: Messages::Create::MAX_USER_CONTENT_LENGTH,
+                       rows: 4,
+                       placeholder: t("app.messages.composer.placeholder", name: personality.name),
+                       class: "block w-full min-w-0 resize-y rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-700 focus:ring-4 focus:ring-emerald-100" %>
+    <div class="flex justify-end">
+      <%= form.submit t("app.messages.composer.submit"), class: "cursor-pointer rounded-xl border-0 bg-emerald-800 px-5 py-3 font-bold text-white hover:bg-emerald-950", data: { turbo_submits_with: t("app.messages.composer.submitting") } %>
+    </div>
+  <% end %>
+</div>

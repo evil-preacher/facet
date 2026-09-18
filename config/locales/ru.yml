@@ -5,6 +5,7 @@ ru:
   time:
     formats:
       version: "%d.%m.%Y, %H:%M"
+      message: "%d.%m, %H:%M"
   app:
     name: "Facet"
     nav:
@@ -26,6 +27,8 @@ ru:
       personality_updated: "Личность обновлена."
       personality_archived: "Личность отправлена в архив."
       personality_rolled_back: "Создана версия %{number} из выбранной версии."
+      conversation_thread_archived: "Тред отправлен в архив."
+      generation_retry_queued: "Повтор ответа поставлен в очередь."
     home:
       title: "Facet — личности, которые помнят"
       eyebrow: "Личный AI-собеседник"
@@ -130,6 +133,7 @@ ru:
         version: "Версия %{number}"
         edit: "Редактировать"
         history: "История версий"
+        conversations: "Разговоры"
         back: "Все личности"
         archive: "Архивировать"
       edit:
@@ -167,6 +171,53 @@ ru:
         draft: "Черновик"
         active: "Активна"
         archived: "В архиве"
+    conversation_threads:
+      errors: "Проверьте сообщение:"
+      back_to_personality: "Вернуться к личности"
+      statuses:
+        active: "Активный"
+        archived: "В архиве"
+      index:
+        page_title: "Разговоры с %{name} — Facet"
+        eyebrow: "Conversation threads"
+        heading: "Разговоры с %{name}"
+        description: "Каждый тред хранит отдельный разговор, но использует общую личность и её актуальный character bible."
+        new: "Новый разговор"
+        empty: "Разговоров пока нет. Начните с темы, которая вам интересна."
+        messages: "Сообщений: %{count}"
+      new:
+        page_title: "Новый разговор с %{name} — Facet"
+        eyebrow: "Новый тред"
+        heading: "О чём поговорим с %{name}?"
+        description: "Первое сообщение станет началом разговора и временным заголовком треда."
+        message: "Первое сообщение"
+        submit: "Начать разговор"
+        submitting: "Создаём…"
+        back: "К списку разговоров"
+      show:
+        page_title: "%{title} — Facet"
+        all_threads: "Все разговоры"
+        other_threads: "Другие треды"
+        archive: "Архивировать"
+        archived_notice: "Этот тред находится в архиве. Его сообщения доступны только для чтения."
+      generation:
+        generating: "Личность формулирует ответ…"
+        failed: "Не удалось получить ответ."
+        retry: "Повторить"
+        stopped: "Генерация остановлена."
+    messages:
+      errors: "Проверьте сообщение:"
+      roles:
+        user: "Вы"
+        assistant: "Личность"
+      statuses:
+        failed: "Ошибка"
+        streaming: "Печатает…"
+      composer:
+        label: "Сообщение"
+        placeholder: "Напишите %{name}…"
+        submit: "Отправить"
+        submitting: "Отправляем…"
     genders:
       male: "Мужской"
       female: "Женский"
@@ -207,6 +258,12 @@ ru:
         description: "Описание"
         base_character: "Базовый характер"
         communication_style: "Манера разговора"
+      "conversation_threads/create":
+        content: "Сообщение"
+        client_token: "Идентификатор отправки"
+      "messages/create":
+        content: "Сообщение"
+        client_token: "Идентификатор отправки"
       "personalities/update":
         name: "Имя личности"
         description: "Описание"

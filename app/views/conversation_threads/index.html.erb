@@ -1,0 +1,49 @@
+<% content_for :title, t("app.conversation_threads.index.page_title", name: @personality.name) %>
+
+<section class="py-10 sm:py-16">
+  <div class="h-40 overflow-hidden rounded-3xl bg-slate-900 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200 sm:h-64">
+    <%= image_tag "conversation-threads.png", alt: "", class: "h-full w-full object-cover object-center", aria: { hidden: true } %>
+  </div>
+
+  <div class="mt-8 flex flex-wrap items-end justify-between gap-5">
+    <div>
+      <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-700"><%= t("app.conversation_threads.index.eyebrow") %></p>
+      <h1 class="mt-2 text-4xl font-black tracking-tight"><%= t("app.conversation_threads.index.heading", name: @personality.name) %></h1>
+      <p class="mt-3 text-slate-600"><%= t("app.conversation_threads.index.description") %></p>
+    </div>
+    <% if @personality.active? %>
+      <%= link_to t("app.conversation_threads.index.new"), new_personality_conversation_thread_path(@personality), class: "rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white no-underline hover:bg-emerald-950" %>
+    <% end %>
+  </div>
+
+  <% if @conversation_threads.any? %>
+    <div class="mt-10 grid gap-4">
+      <% @conversation_threads.each do |conversation_thread| %>
+        <article class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <div class="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-bold">
+                <%= link_to conversation_thread.title, personality_conversation_thread_path(@personality, conversation_thread), class: "text-slate-950 no-underline hover:text-emerald-800" %>
+              </h2>
+              <p class="mt-2 text-sm text-slate-500">
+                <%= t("app.conversation_threads.index.messages", count: conversation_thread.messages.count) %>
+                <% if conversation_thread.last_message_at %>
+                  · <%= l(conversation_thread.last_message_at, format: :message) %>
+                <% end %>
+              </p>
+            </div>
+            <span class="rounded-full px-3 py-1 text-xs font-bold <%= conversation_thread.active? ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600" %>">
+              <%= t("app.conversation_threads.statuses.#{conversation_thread.status}") %>
+            </span>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="mt-10 rounded-2xl bg-white p-8 text-slate-600 ring-1 ring-slate-200">
+      <p><%= t("app.conversation_threads.index.empty") %></p>
+    </div>
+  <% end %>
+
+  <%= link_to t("app.conversation_threads.back_to_personality"), personality_path(@personality), class: "mt-8 inline-block font-bold text-emerald-800" %>
+</section>

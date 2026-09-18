@@ -3,6 +3,7 @@ class Personality < ApplicationRecord
 
   belongs_to :user
   belongs_to :current_version, class_name: "PersonalityVersion", optional: true
+  has_many :conversation_threads, dependent: :destroy
   has_many :versions,
            -> { order(number: :asc) },
            class_name: "PersonalityVersion",

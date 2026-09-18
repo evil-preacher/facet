@@ -5,6 +5,7 @@ en:
   time:
     formats:
       version: "%b %-d, %Y at %H:%M"
+      message: "%b %-d, %H:%M"
   app:
     name: "Facet"
     nav:
@@ -26,6 +27,8 @@ en:
       personality_updated: "Personality updated."
       personality_archived: "Personality archived."
       personality_rolled_back: "Version %{number} was created from the selected version."
+      conversation_thread_archived: "Conversation archived."
+      generation_retry_queued: "Reply retry was queued."
     home:
       title: "Facet — personalities that remember"
       eyebrow: "Your personal AI companion"
@@ -130,6 +133,7 @@ en:
         version: "Version %{number}"
         edit: "Edit"
         history: "Version history"
+        conversations: "Conversations"
         back: "All personalities"
         archive: "Archive"
       edit:
@@ -167,6 +171,53 @@ en:
         draft: "Draft"
         active: "Active"
         archived: "Archived"
+    conversation_threads:
+      errors: "Please review the message:"
+      back_to_personality: "Back to personality"
+      statuses:
+        active: "Active"
+        archived: "Archived"
+      index:
+        page_title: "Conversations with %{name} — Facet"
+        eyebrow: "Conversation threads"
+        heading: "Conversations with %{name}"
+        description: "Each thread keeps a separate conversation while sharing the personality and its current character bible."
+        new: "New conversation"
+        empty: "No conversations yet. Start with a topic that interests you."
+        messages: "Messages: %{count}"
+      new:
+        page_title: "New conversation with %{name} — Facet"
+        eyebrow: "New thread"
+        heading: "What will you discuss with %{name}?"
+        description: "The first message starts the conversation and becomes its temporary title."
+        message: "First message"
+        submit: "Start conversation"
+        submitting: "Creating…"
+        back: "Back to conversations"
+      show:
+        page_title: "%{title} — Facet"
+        all_threads: "All conversations"
+        other_threads: "Other threads"
+        archive: "Archive"
+        archived_notice: "This thread is archived. Its messages are read-only."
+      generation:
+        generating: "The personality is composing a reply…"
+        failed: "The reply could not be generated."
+        retry: "Retry"
+        stopped: "Generation stopped."
+    messages:
+      errors: "Please review the message:"
+      roles:
+        user: "You"
+        assistant: "Personality"
+      statuses:
+        failed: "Failed"
+        streaming: "Typing…"
+      composer:
+        label: "Message"
+        placeholder: "Message %{name}…"
+        submit: "Send"
+        submitting: "Sending…"
     genders:
       male: "Male"
       female: "Female"
@@ -204,6 +255,12 @@ en:
         description: "Description"
         base_character: "Base character"
         communication_style: "Conversational style"
+      "conversation_threads/create":
+        content: "Message"
+        client_token: "Submission identifier"
+      "messages/create":
+        content: "Message"
+        client_token: "Submission identifier"
       "personalities/update":
         name: "Personality name"
         description: "Description"

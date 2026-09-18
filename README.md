@@ -5,6 +5,14 @@ Docker Compose. Local Ruby and PostgreSQL installations are not required.
 
 ## Start
 
+The checked-in development defaults work without additional configuration.
+To override database credentials, mail settings, or the container user, copy
+the environment template first:
+
+```sh
+cp .env.example .env
+```
+
 ```sh
 docker compose up --build
 ```
@@ -34,6 +42,10 @@ same card through a Hotwire Turbo Frame and also works as a standalone page.
 The suite uses RSpec, Factory Bot, FFaker, Shoulda Matchers, Database Cleaner,
 and Capybara. Feature specs cover registration, email confirmation, profile
 completion, OTP login, logout, and locale switching through the UI.
+
+Development follows TDD and keeps domain workflows behind service-oriented
+boundaries inside the Rails monolith. Architectural decisions are recorded in
+[`docs/adr`](docs/adr).
 
 ## Useful commands
 

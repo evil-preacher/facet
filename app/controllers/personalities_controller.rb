@@ -33,7 +33,11 @@ class PersonalitiesController < ApplicationController
   end
 
   def update
-    result = Personalities::Update.call(personality: @personality, attributes: update_params)
+    result = Personalities::Update.call(
+      personality: @personality,
+      author: current_user,
+      attributes: update_params
+    )
 
     if result.success?
       redirect_to personality_path(@personality), notice: t("app.flash.personality_updated")
@@ -51,12 +55,6 @@ class PersonalitiesController < ApplicationController
 
   private
 
-  def require_completed_profile
-    return if current_user.profile.present?
-
-    redirect_to edit_profile_path, alert: t("app.flash.profile_required")
-  end
-
   def set_personality
     @personality = current_user.personalities.find(params[:id])
   end
@@ -66,6 +64,6 @@ class PersonalitiesController < ApplicationController
   end
 
   def update_params
-    params.require(:personality).permit(:name, :description, :character_bible)
+    params.require(:personality).permit(:name, :description, :character_bible, :change_note)
   end
 end

@@ -51,7 +51,8 @@ module Personalities
         )
         version = personality.versions.create!(
           number: 1,
-          content: CharacterBible.compile(character_attributes)
+          content: CharacterBible.compile(character_attributes),
+          author: user
         )
         personality.update!(current_version: version, status: :active)
       end

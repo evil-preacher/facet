@@ -2,6 +2,9 @@ en:
   date:
     formats:
       default: "%B %-d, %Y"
+  time:
+    formats:
+      version: "%b %-d, %Y at %H:%M"
   app:
     name: "Facet"
     nav:
@@ -22,6 +25,7 @@ en:
       personality_created: "Personality created."
       personality_updated: "Personality updated."
       personality_archived: "Personality archived."
+      personality_rolled_back: "Version %{number} was created from the selected version."
     home:
       title: "Facet — personalities that remember"
       eyebrow: "Your personal AI companion"
@@ -96,6 +100,7 @@ en:
         allowed_behaviors: "Allowed behaviors"
         forbidden_behaviors: "Behavioral boundaries"
         character_bible: "Character bible"
+        change_note: "Version note"
       hints:
         base_character: "Describe the personality’s character, contradictions, and distinctive traits."
         communication_style: "How they speak, joke, disagree, and how much detail they use."
@@ -124,6 +129,7 @@ en:
         character_bible: "Character bible"
         version: "Version %{number}"
         edit: "Edit"
+        history: "Version history"
         back: "All personalities"
         archive: "Archive"
       edit:
@@ -132,7 +138,31 @@ en:
         heading: "Edit %{name}"
         description: "Changing the character bible creates a new version while preserving the previous one."
         character_bible_hint: "The personality’s complete system portrait in Markdown."
+        change_note_hint: "Briefly describe what changed and why."
         submit: "Save changes"
+      versions:
+        back: "Back to personality"
+        rollback_note: "Rollback to version %{number}"
+        index:
+          page_title: "%{name} version history — Facet"
+          eyebrow: "Versioned character bible"
+          heading: "%{name} version history"
+          description: "Every save creates an immutable version. Compare changes and restore an earlier character without losing history."
+          from: "From version"
+          to: "To version"
+          compare: "Compare"
+          current: "Current"
+          authored_by: "Author: %{author}"
+          rollback: "Restore this version"
+          rollback_confirm: "Create a new version based on version %{number}?"
+          no_note: "No note"
+          restored_from: "Created from version %{number}"
+          preview: "Show content"
+        compare:
+          page_title: "Compare %{name} versions — Facet"
+          eyebrow: "Character bible changes"
+          heading: "Comparing versions %{from} and %{to}"
+          back: "Back to version history"
       statuses:
         draft: "Draft"
         active: "Active"
@@ -178,3 +208,4 @@ en:
         name: "Personality name"
         description: "Description"
         character_bible: "Character bible"
+        change_note: "Version note"

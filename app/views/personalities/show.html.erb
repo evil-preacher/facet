@@ -26,6 +26,7 @@
 
   <div class="mt-7 flex flex-wrap gap-4">
     <%= link_to t("app.personalities.show.edit"), edit_personality_path(@personality), class: "rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white no-underline hover:bg-emerald-950" %>
+    <%= link_to t("app.personalities.show.history"), personality_versions_path(@personality), class: "rounded-xl bg-white px-5 py-3 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
     <%= link_to t("app.personalities.show.back"), personalities_path, class: "rounded-xl bg-white px-5 py-3 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
     <% unless @personality.archived? %>
       <%= button_to t("app.personalities.show.archive"),

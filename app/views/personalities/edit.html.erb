@@ -40,6 +40,14 @@
                          rows: 24,
                          class: "block w-full min-w-0 max-w-full box-border resize-y rounded-xl border border-slate-300 px-4 py-3 font-mono text-sm leading-6 outline-none focus:border-emerald-700 focus:ring-4 focus:ring-emerald-100" %>
     </div>
+    <div class="grid min-w-0 gap-2">
+      <%= form.label :change_note, t("app.personalities.fields.change_note"), class: "font-bold" %>
+      <p class="text-sm text-slate-500"><%= t("app.personalities.edit.change_note_hint") %></p>
+      <%= form.text_field :change_note,
+                          value: params.dig(:personality, :change_note),
+                          maxlength: 500,
+                          class: "block w-full min-w-0 max-w-full box-border rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-700 focus:ring-4 focus:ring-emerald-100" %>
+    </div>
     <%= form.submit t("app.personalities.edit.submit"), class: "cursor-pointer rounded-xl border-0 bg-emerald-800 px-5 py-3 font-bold text-white hover:bg-emerald-950" %>
   <% end %>
   </div>

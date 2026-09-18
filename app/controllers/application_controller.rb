@@ -41,6 +41,12 @@ class ApplicationController < ActionController::Base
     redirect_to root_path, alert: t("app.flash.authentication_required") unless authenticated?
   end
 
+  def require_completed_profile
+    return if current_user.profile.present?
+
+    redirect_to edit_profile_path, alert: t("app.flash.profile_required")
+  end
+
   def start_new_session_for(user)
     locale = session[:locale]
     reset_session

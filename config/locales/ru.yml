@@ -2,6 +2,9 @@ ru:
   date:
     formats:
       default: "%d.%m.%Y"
+  time:
+    formats:
+      version: "%d.%m.%Y, %H:%M"
   app:
     name: "Facet"
     nav:
@@ -22,6 +25,7 @@ ru:
       personality_created: "Личность создана."
       personality_updated: "Личность обновлена."
       personality_archived: "Личность отправлена в архив."
+      personality_rolled_back: "Создана версия %{number} из выбранной версии."
     home:
       title: "Facet — личности, которые помнят"
       eyebrow: "Личный AI-собеседник"
@@ -96,6 +100,7 @@ ru:
         allowed_behaviors: "Что ей разрешено"
         forbidden_behaviors: "Границы поведения"
         character_bible: "Character bible"
+        change_note: "Комментарий к версии"
       hints:
         base_character: "Опишите характер, противоречия и особенности личности."
         communication_style: "Как она говорит, шутит, спорит и насколько подробно отвечает."
@@ -124,6 +129,7 @@ ru:
         character_bible: "Character bible"
         version: "Версия %{number}"
         edit: "Редактировать"
+        history: "История версий"
         back: "Все личности"
         archive: "Архивировать"
       edit:
@@ -132,7 +138,31 @@ ru:
         heading: "Редактировать %{name}"
         description: "Изменение character bible создаст новую версию, а предыдущая останется в истории."
         character_bible_hint: "Полный системный портрет личности в Markdown."
+        change_note_hint: "Коротко опишите, что и зачем изменилось."
         submit: "Сохранить изменения"
+      versions:
+        back: "Вернуться к личности"
+        rollback_note: "Откат к версии %{number}"
+        index:
+          page_title: "История %{name} — Facet"
+          eyebrow: "Versioned character bible"
+          heading: "История %{name}"
+          description: "Каждое сохранение создаёт неизменяемую версию. Сравнивайте изменения и возвращайтесь к прежнему характеру без потери истории."
+          from: "Исходная версия"
+          to: "Новая версия"
+          compare: "Сравнить"
+          current: "Текущая"
+          authored_by: "Автор: %{author}"
+          rollback: "Вернуть эту версию"
+          rollback_confirm: "Создать новую версию на основе версии %{number}?"
+          no_note: "Без комментария"
+          restored_from: "Создана из версии %{number}"
+          preview: "Показать содержимое"
+        compare:
+          page_title: "Сравнение версий %{name} — Facet"
+          eyebrow: "Изменения character bible"
+          heading: "Сравнение версий %{from} и %{to}"
+          back: "К истории версий"
       statuses:
         draft: "Черновик"
         active: "Активна"
@@ -181,6 +211,7 @@ ru:
         name: "Имя личности"
         description: "Описание"
         character_bible: "Character bible"
+        change_note: "Комментарий к версии"
     errors:
       messages:
         blank: "не может быть пустым"

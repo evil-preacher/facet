@@ -22,6 +22,7 @@ gem "turbo-rails"
 gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
+gem "diff-lcs"
 # Rack Session 2.1 passes options positionally; JSON 3 removed that compatibility.
 gem "json", "< 3"
 

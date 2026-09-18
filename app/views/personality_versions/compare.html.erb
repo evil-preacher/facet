@@ -1,0 +1,42 @@
+<% content_for :title, t("app.personalities.versions.compare.page_title", name: @personality.name) %>
+
+<section class="py-10 sm:py-16">
+  <div class="h-40 overflow-hidden rounded-3xl bg-slate-900 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200 sm:h-64">
+    <%= image_tag "personality-comparison.png", alt: "", class: "h-full w-full object-cover object-center", aria: { hidden: true } %>
+  </div>
+
+  <div class="mt-8 flex flex-wrap items-end justify-between gap-5">
+    <div>
+      <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-700"><%= t("app.personalities.versions.compare.eyebrow") %></p>
+      <h1 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
+        <%= t("app.personalities.versions.compare.heading", from: @from_version.number, to: @to_version.number) %>
+      </h1>
+      <p class="mt-3 text-slate-600"><%= @personality.name %></p>
+    </div>
+    <%= link_to t("app.personalities.versions.compare.back"), personality_versions_path(@personality), class: "rounded-xl bg-white px-5 py-3 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
+  </div>
+
+  <div class="mt-8 overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+    <div class="grid min-w-[48rem] grid-cols-[3rem_1fr_3rem_1fr] border-b border-slate-200 bg-slate-100 text-xs font-extrabold uppercase tracking-wide text-slate-500">
+      <div class="p-3 text-right">−</div>
+      <div class="border-l border-slate-200 p-3"><%= t("app.personalities.show.version", number: @from_version.number) %></div>
+      <div class="border-l border-slate-200 p-3 text-right">+</div>
+      <div class="border-l border-slate-200 p-3"><%= t("app.personalities.show.version", number: @to_version.number) %></div>
+    </div>
+
+    <% @diff.changes.each do |change| %>
+      <% row_class = case change.type
+                     when :added then "bg-emerald-50"
+                     when :removed then "bg-rose-50"
+                     when :changed then "bg-amber-50"
+                     else "bg-white"
+                     end %>
+      <div class="grid min-w-[48rem] grid-cols-[3rem_1fr_3rem_1fr] border-b border-slate-100 font-mono text-sm leading-6 last:border-0 <%= row_class %>">
+        <div class="select-none p-2 text-right text-slate-400"><%= change.old_number %></div>
+        <div class="whitespace-pre-wrap border-l border-slate-200 p-2"><%= change.old_line %></div>
+        <div class="select-none border-l border-slate-200 p-2 text-right text-slate-400"><%= change.new_number %></div>
+        <div class="whitespace-pre-wrap border-l border-slate-200 p-2"><%= change.new_line %></div>
+      </div>
+    <% end %>
+  </div>
+</section>

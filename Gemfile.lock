@@ -318,6 +318,7 @@ DEPENDENCIES
   capybara
   database_cleaner-active_record
   debug
+  diff-lcs
   factory_bot_rails
   ffaker
   importmap-rails

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_18_000004) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_18_000005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -43,10 +43,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_000004) do
     t.index ["user_id"], name: "index_personalities_on_user_id"
     t.check_constraint "char_length(btrim(name::text)) >= 1 AND char_length(btrim(name::text)) <= 80", name: "personalities_name_length"
     t.check_constraint "char_length(description) <= 500", name: "personalities_description_length"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'active'::character varying, 'archived'::character varying]::text[])", name: "personalities_status"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'active'::character varying::text, 'archived'::character varying::text])", name: "personalities_status"
   end
 
   create_table "personality_versions", force: :cascade do |t|
+    t.bigint "author_id", null: false
     t.text "change_note"
     t.text "content", null: false
     t.datetime "created_at", null: false
@@ -54,9 +55,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_000004) do
     t.bigint "personality_id", null: false
     t.bigint "source_version_id"
     t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_personality_versions_on_author_id"
     t.index ["personality_id", "number"], name: "index_personality_versions_on_personality_id_and_number", unique: true
     t.index ["personality_id"], name: "index_personality_versions_on_personality_id"
     t.index ["source_version_id"], name: "index_personality_versions_on_source_version_id"
+    t.check_constraint "change_note IS NULL OR char_length(change_note) <= 500", name: "personality_versions_change_note_length"
     t.check_constraint "char_length(btrim(content)) >= 1 AND char_length(btrim(content)) <= 20000", name: "personality_versions_content_length"
     t.check_constraint "number > 0", name: "personality_versions_positive_number"
   end
@@ -86,5 +89,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_000004) do
   add_foreign_key "personalities", "users"
   add_foreign_key "personality_versions", "personalities"
   add_foreign_key "personality_versions", "personality_versions", column: "source_version_id", on_delete: :nullify
+  add_foreign_key "personality_versions", "users", column: "author_id"
   add_foreign_key "profiles", "users"
 end

@@ -6,22 +6,26 @@ module Personalities
     attribute :name, :string
     attribute :description, :string, default: ""
     attribute :character_bible, :string
+    attribute :change_note, :string
 
-    attr_reader :personality
+    attr_reader :personality, :author
 
-    validates :name, :character_bible, presence: true
+    validates :name, :character_bible, :author, presence: true
     validates :name, length: { maximum: 80 }
     validates :description, length: { maximum: 500 }
     validates :character_bible, length: { maximum: PersonalityVersion::MAX_CONTENT_LENGTH }
+    validates :change_note, length: { maximum: 500 }, allow_nil: true
+    validate :author_owns_personality
 
-    def self.call(personality:, attributes:)
-      new(personality: personality, attributes: attributes).call
+    def self.call(personality:, author:, attributes:)
+      new(personality: personality, author: author, attributes: attributes).call
     end
 
-    def initialize(personality:, attributes:)
+    def initialize(personality:, author:, attributes:)
       @personality = personality
+      @author = author
       @succeeded = false
-      super(attributes.to_h.symbolize_keys.slice(:name, :description, :character_bible))
+      super(attributes.to_h.symbolize_keys.slice(:name, :description, :character_bible, :change_note))
     end
 
     def call
@@ -29,7 +33,7 @@ module Personalities
 
       personality.with_lock do
         personality.update!(name: name.strip, description: description.to_s.strip)
-        create_version_if_changed!
+        create_version!
       end
       @succeeded = true
 
@@ -45,15 +49,20 @@ module Personalities
 
     private
 
-    def create_version_if_changed!
-      content = character_bible.strip
-      return if personality.current_version&.content == content
-
+    def create_version!
       version = personality.versions.create!(
         number: personality.versions.maximum(:number).to_i + 1,
-        content: content
+        content: character_bible.strip,
+        author: author,
+        change_note: change_note.presence&.strip
       )
       personality.update!(current_version: version)
+    end
+
+    def author_owns_personality
+      return if author.nil? || author.id == personality.user_id
+
+      errors.add(:author, :invalid)
     end
   end
 end

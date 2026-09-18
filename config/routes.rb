@@ -13,6 +13,10 @@ Rails.application.routes.draw do
   resource :profile, only: %i[show edit update]
   resources :personalities, only: %i[index new create show edit update] do
     patch :archive, on: :member
+    resources :versions, only: :index, controller: "personality_versions" do
+      get :compare, on: :collection
+      post :rollback, on: :member
+    end
   end
 
 

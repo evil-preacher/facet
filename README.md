@@ -45,8 +45,10 @@ relationship context, permissions, and behavioral boundaries. Facet compiles
 these fields into an editable Markdown character bible.
 
 Each personality belongs to its user. Its initial bible is stored as version 1;
-editing the full text appends a new immutable record, while archiving preserves
-the personality and its history.
+every save appends a new immutable record with its author, timestamp, and an
+optional change note. The version-history UI supports line-by-line comparisons
+and restores an earlier bible by creating another version rather than rewriting
+history. Archiving preserves the personality and every version.
 
 ## Tests
 

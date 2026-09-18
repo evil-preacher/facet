@@ -18,10 +18,22 @@ en:
       signed_out: "You are signed out."
       profile_saved: "Profile saved."
     home:
-      title: "Sign in — Facet"
-      eyebrow: "Welcome"
-      heading: "Sign in to Facet"
-      lead: "Get a one-time code at your confirmed email. No password required."
+      title: "Facet — personalities that remember"
+      eyebrow: "Your personal AI companion"
+      heading: "Create a personality worth talking to"
+      lead: "Facet helps you create an AI companion with a distinct character, conversational style, and long-term memory. Your conversations become a shared history, and the personality gets to know you better over time."
+      image_alt: "An abstract personality whose facets connect individual memories"
+      features:
+        label: "Facet features"
+        personality:
+          title: "A character of your own"
+          description: "Shape the personality’s voice, tastes, boundaries, and distinctive traits."
+        memory:
+          title: "Memory you control"
+          description: "Review, correct, and delete anything the personality chooses to remember."
+        continuity:
+          title: "A shared history"
+          description: "Start new threads while keeping the relationship and important memories between them."
       registration:
         title: "Registration"
         description: "We’ll send you a link to confirm your address."

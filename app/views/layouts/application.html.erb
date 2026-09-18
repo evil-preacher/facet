@@ -4,6 +4,8 @@
     <title><%= content_for(:title) || t("app.name") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="application-name" content="Facet">
+    <%= favicon_link_tag "/facet-icon.png", type: "image/png" %>
+    <%= favicon_link_tag "/facet-icon.png", rel: "apple-touch-icon", type: "image/png" %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= yield :head %>

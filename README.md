@@ -1,7 +1,7 @@
 # Facet
 
-Rails application running entirely in Docker Compose. Local Ruby and
-PostgreSQL installations are not required.
+Rails application with passwordless email authentication, running entirely in
+Docker Compose. Local Ruby and PostgreSQL installations are not required.
 
 ## Start
 
@@ -9,7 +9,31 @@ PostgreSQL installations are not required.
 docker compose up --build
 ```
 
-The application is available at <http://localhost:3000>.
+- Application: <http://localhost:3000>
+- Development mailbox (Mailpit): <http://localhost:8025>
+
+The interface and authentication emails are available in Russian and English.
+The language switcher stores the selection in the encrypted session cookie.
+
+Tailwind CSS is rebuilt automatically by the `css` service. Development emails
+are delivered over SMTP to Mailpit; no external email account is needed.
+
+## Authentication flow
+
+The home page contains the login form. The registration form is loaded into the
+same card through a Hotwire Turbo Frame and also works as a standalone page.
+
+
+- Registration sends a single-use email confirmation link valid for 24 hours.
+- Login sends a six-digit one-time code valid for 10 minutes.
+- A code permits five attempts and becomes invalid after successful use.
+- After confirmation, the user fills in a separate profile.
+
+## Tests
+
+The suite uses RSpec, Factory Bot, FFaker, Shoulda Matchers, Database Cleaner,
+and Capybara. Feature specs cover registration, email confirmation, profile
+completion, OTP login, logout, and locale switching through the UI.
 
 ## Useful commands
 
@@ -18,6 +42,7 @@ docker compose run --rm web bin/rails console
 docker compose run --rm web bin/rails db:migrate
 docker compose run --rm -e RAILS_ENV=test web bin/rails db:prepare
 docker compose run --rm -e RAILS_ENV=test web bundle exec rspec
+docker compose run --rm --no-deps web bin/rubocop
 ```
 
 Stop the application with `docker compose down`. To also remove the local

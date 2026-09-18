@@ -9,6 +9,7 @@ gem "actionview", "~> 8.1.3", ">= 8.1.3.1"
 gem "actionmailer", "~> 8.1.3", ">= 8.1.3.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
+gem "tailwindcss-rails"
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
 # Use the Puma web server [https://github.com/puma/puma]
@@ -21,6 +22,8 @@ gem "turbo-rails"
 gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
+# Rack Session 2.1 passes options positionally; JSON 3 removed that compatibility.
+gem "json", "< 3"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
@@ -48,6 +51,9 @@ group :development, :test do
 end
 
 group :test do
+  gem "capybara"
+  gem "factory_bot_rails"
+  gem "ffaker"
   gem "database_cleaner-active_record"
   gem "shoulda-matchers"
 end

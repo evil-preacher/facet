@@ -1,28 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="<%= I18n.locale %>">
   <head>
-    <title><%= content_for(:title) || "Facet" %></title>
+    <title><%= content_for(:title) || t("app.name") %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="application-name" content="Facet">
-    <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= yield :head %>
-
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+    <header class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-6">
+      <%= link_to t("app.name"), root_path, class: "text-xl font-extrabold tracking-tight text-slate-950 no-underline" %>
+      <nav class="flex items-center gap-4 text-sm font-semibold">
+        <% if authenticated? %>
+          <%= link_to t("app.nav.profile"), profile_path, class: "text-emerald-800 hover:text-emerald-950" %>
+          <%= button_to t("app.nav.logout"), session_path, method: :delete,
+                        class: "cursor-pointer border-0 bg-transparent p-0 font-semibold text-emerald-800 underline hover:text-emerald-950",
+                        form_class: "inline" %>
+        <% end %>
+        <div class="flex rounded-lg bg-white p-1 ring-1 ring-slate-200" aria-label="<%= t("app.nav.language") %>">
+          <% %w[ru en].each do |locale| %>
+            <% active = I18n.locale.to_s == locale %>
+            <%= button_to locale.upcase, locale_path(locale: locale), method: :post,
+                          class: "cursor-pointer rounded-md border-0 px-2 py-1 text-xs font-bold #{active ? 'bg-emerald-800 text-white' : 'bg-transparent text-slate-500 hover:text-slate-900'}",
+                          form_class: "inline" %>
+          <% end %>
+        </div>
+      </nav>
+    </header>
+
+    <main class="mx-auto w-full max-w-5xl px-4 pb-16 sm:px-6">
+      <% flash.each do |type, message| %>
+        <% flash_classes = type.to_s == "alert" ? "bg-rose-50 text-rose-800 ring-rose-200" : "bg-emerald-50 text-emerald-800 ring-emerald-200" %>
+        <div class="mb-5 rounded-xl px-4 py-3 text-sm font-medium ring-1 <%= flash_classes %>" role="status"><%= message %></div>
+      <% end %>
+      <%= yield %>
+    </main>
   </body>
 </html>

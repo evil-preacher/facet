@@ -1,0 +1,100 @@
+ru:
+  date:
+    formats:
+      default: "%d.%m.%Y"
+  app:
+    name: "Facet"
+    nav:
+      profile: "Профиль"
+      logout: "Выйти"
+      language: "Язык"
+    flash:
+      authentication_required: "Сначала войдите в аккаунт"
+      registration_sent: "Если адрес доступен для регистрации, мы отправили ссылку для подтверждения."
+      email_confirmed: "Email подтверждён. Заполните профиль."
+      login_code_sent: "Если аккаунт существует, код отправлен на почту."
+      invalid_code: "Код недействителен или срок его действия истёк."
+      signed_in: "Вы вошли в аккаунт."
+      signed_out: "Вы вышли из аккаунта."
+      profile_saved: "Профиль сохранён."
+    home:
+      title: "Вход — Facet"
+      eyebrow: "Добро пожаловать"
+      heading: "Вход в Facet"
+      lead: "Получите одноразовый код на подтверждённый email. Пароль не нужен."
+      registration:
+        title: "Регистрация"
+        description: "Отправим ссылку для подтверждения адреса."
+        submit: "Получить ссылку"
+        page_title: "Регистрация — Facet"
+        eyebrow: "Новый аккаунт"
+        heading: "Создайте аккаунт"
+        login_prompt: "Уже зарегистрированы?"
+        login_link: "Вернуться ко входу"
+      login:
+        title: "Вход"
+        description: "Отправим шестизначный код на подтверждённый email."
+        submit: "Получить код"
+        registration_prompt: "Нет аккаунта?"
+        registration_link: "Зарегистрироваться"
+      email: "Email"
+    login:
+      title: "Код входа — Facet"
+      eyebrow: "Вход"
+      heading: "Введите код из письма"
+      description: "Код состоит из шести цифр и действует 10 минут."
+      code: "Одноразовый код"
+      submit: "Войти"
+      back: "Вернуться на главную"
+    confirmation:
+      title: "Ссылка недействительна — Facet"
+      heading: "Ссылка недействительна"
+      description: "Срок действия ссылки истёк или она была повреждена. Запросите новую ссылку на главной странице."
+      back: "На главную"
+    profile:
+      edit_title: "Редактирование профиля — Facet"
+      show_title: "Профиль — Facet"
+      edit_eyebrow: "Профиль"
+      show_eyebrow: "Ваш профиль"
+      heading: "Расскажите о себе"
+      errors: "Проверьте заполнение формы:"
+      first_name: "Имя"
+      last_name: "Фамилия"
+      gender: "Пол"
+      gender_prompt: "Выберите вариант"
+      birth_date: "Дата рождения (необязательно)"
+      save: "Сохранить профиль"
+      email: "Email"
+      edit: "Редактировать"
+    genders:
+      male: "Мужской"
+      female: "Женский"
+      non_binary: "Небинарный"
+      prefer_not_to_say: "Предпочитаю не указывать"
+    mailer:
+      confirmation:
+        subject: "Подтвердите email в Facet"
+        heading: "Подтвердите email"
+        description: "Чтобы завершить регистрацию в Facet, перейдите по ссылке:"
+        action: "Подтвердить email"
+        expiry: "Ссылка действует 24 часа. Если вы не регистрировались, просто проигнорируйте письмо."
+      login:
+        subject: "Код входа в Facet"
+        heading: "Код входа в Facet"
+        description: "Ваш одноразовый код:"
+        expiry: "Код действует 10 минут. Никому его не сообщайте."
+  activerecord:
+    attributes:
+      user:
+        email: "Email"
+      profile:
+        first_name: "Имя"
+        last_name: "Фамилия"
+        gender: "Пол"
+        birth_date: "Дата рождения"
+    errors:
+      messages:
+        blank: "не может быть пустым"
+        taken: "уже используется"
+        invalid: "имеет неверный формат"
+        future: "не может быть в будущем"

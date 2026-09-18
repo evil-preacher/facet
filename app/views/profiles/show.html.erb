@@ -1,0 +1,13 @@
+<% content_for :title, t("app.profile.show_title") %>
+<section class="mx-auto mt-12 max-w-2xl rounded-3xl bg-white p-7 shadow-xl shadow-slate-200/60 ring-1 ring-slate-200 sm:p-10">
+  <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-700"><%= t("app.profile.show_eyebrow") %></p>
+  <h1 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl"><%= @profile.first_name %> <%= @profile.last_name %></h1>
+  <dl class="mt-8 divide-y divide-slate-200">
+    <div class="grid grid-cols-[140px_1fr] gap-4 py-4"><dt class="text-slate-500"><%= t("app.profile.email") %></dt><dd class="font-semibold"><%= current_user.email %></dd></div>
+    <div class="grid grid-cols-[140px_1fr] gap-4 py-4"><dt class="text-slate-500"><%= t("app.profile.gender") %></dt><dd class="font-semibold"><%= t("app.genders.#{@profile.gender}") %></dd></div>
+    <% if @profile.birth_date.present? %>
+      <div class="grid grid-cols-[140px_1fr] gap-4 py-4"><dt class="text-slate-500"><%= t("app.profile.birth_date") %></dt><dd class="font-semibold"><%= l(@profile.birth_date) %></dd></div>
+    <% end %>
+  </dl>
+  <%= link_to t("app.profile.edit"), edit_profile_path, class: "mt-7 inline-flex rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white no-underline hover:bg-emerald-950" %>
+</section>

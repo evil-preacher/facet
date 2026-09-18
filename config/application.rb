@@ -28,6 +28,9 @@ module Facet
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    config.i18n.available_locales = %i[ru en]
+    config.i18n.default_locale = :ru
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

@@ -1,0 +1,6 @@
+<% content_for :title, t("app.confirmation.title") %>
+<section class="mx-auto mt-14 max-w-xl rounded-3xl bg-white p-8 shadow-xl shadow-slate-200/60 ring-1 ring-slate-200">
+  <h1 class="text-3xl font-black tracking-tight"><%= t("app.confirmation.heading") %></h1>
+  <p class="mt-4 leading-7 text-slate-600"><%= t("app.confirmation.description") %></p>
+  <%= link_to t("app.confirmation.back"), root_path, class: "mt-6 inline-flex rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white no-underline hover:bg-emerald-950" %>
+</section>

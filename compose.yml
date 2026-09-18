@@ -13,6 +13,23 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+
+  css:
+    build: .
+    user: "${UID:-1000}:${GID:-1000}"
+    command: ["bin/rails", "tailwindcss:watch[always]"]
+    environment:
+      HOME: /tmp
+      POSTGRES_HOST: db
+      POSTGRES_USER: facet
+      POSTGRES_PASSWORD: facet
+    volumes:
+      - .:/app
+
   web:
     build: .
     user: "${UID:-1000}:${GID:-1000}"
@@ -21,9 +38,17 @@ services:
       POSTGRES_HOST: db
       POSTGRES_USER: facet
       POSTGRES_PASSWORD: facet
+      MAILER_HOST: localhost
+      MAILER_PORT: 3000
+      SMTP_ADDRESS: mailpit
+      SMTP_PORT: 1025
     depends_on:
       db:
         condition: service_healthy
+      mailpit:
+        condition: service_started
+      css:
+        condition: service_started
     ports:
       - "3000:3000"
     volumes:

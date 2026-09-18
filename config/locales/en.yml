@@ -1,31 +1,97 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
 en:
-  hello: "Hello world"
+  date:
+    formats:
+      default: "%B %-d, %Y"
+  app:
+    name: "Facet"
+    nav:
+      profile: "Profile"
+      logout: "Log out"
+      language: "Language"
+    flash:
+      authentication_required: "Please sign in first"
+      registration_sent: "If the address is available for registration, we sent a confirmation link."
+      email_confirmed: "Email confirmed. Complete your profile."
+      login_code_sent: "If the account exists, a code was sent by email."
+      invalid_code: "The code is invalid or has expired."
+      signed_in: "You are signed in."
+      signed_out: "You are signed out."
+      profile_saved: "Profile saved."
+    home:
+      title: "Sign in — Facet"
+      eyebrow: "Welcome"
+      heading: "Sign in to Facet"
+      lead: "Get a one-time code at your confirmed email. No password required."
+      registration:
+        title: "Registration"
+        description: "We’ll send you a link to confirm your address."
+        submit: "Send confirmation link"
+        page_title: "Registration — Facet"
+        eyebrow: "New account"
+        heading: "Create your account"
+        login_prompt: "Already registered?"
+        login_link: "Back to sign in"
+      login:
+        title: "Sign in"
+        description: "We’ll send a six-digit code to your confirmed email."
+        submit: "Send login code"
+        registration_prompt: "No account yet?"
+        registration_link: "Register"
+      email: "Email"
+    login:
+      title: "Login code — Facet"
+      eyebrow: "Sign in"
+      heading: "Enter the code from your email"
+      description: "The six-digit code is valid for 10 minutes."
+      code: "One-time code"
+      submit: "Sign in"
+      back: "Back to home"
+    confirmation:
+      title: "Invalid link — Facet"
+      heading: "This link is invalid"
+      description: "The link has expired or is malformed. Request a new link on the home page."
+      back: "Go to home"
+    profile:
+      edit_title: "Edit profile — Facet"
+      show_title: "Profile — Facet"
+      edit_eyebrow: "Profile"
+      show_eyebrow: "Your profile"
+      heading: "Tell us about yourself"
+      errors: "Please review the form:"
+      first_name: "First name"
+      last_name: "Last name"
+      gender: "Gender"
+      gender_prompt: "Select an option"
+      birth_date: "Date of birth (optional)"
+      save: "Save profile"
+      email: "Email"
+      edit: "Edit"
+    genders:
+      male: "Male"
+      female: "Female"
+      non_binary: "Non-binary"
+      prefer_not_to_say: "Prefer not to say"
+    mailer:
+      confirmation:
+        subject: "Confirm your email for Facet"
+        heading: "Confirm your email"
+        description: "Follow this link to complete your Facet registration:"
+        action: "Confirm email"
+        expiry: "The link is valid for 24 hours. If you did not register, ignore this email."
+      login:
+        subject: "Your Facet login code"
+        heading: "Your Facet login code"
+        description: "Your one-time code is:"
+        expiry: "The code is valid for 10 minutes. Do not share it with anyone."
+  activerecord:
+    attributes:
+      user:
+        email: "Email"
+      profile:
+        first_name: "First name"
+        last_name: "Last name"
+        gender: "Gender"
+        birth_date: "Date of birth"
+    errors:
+      messages:
+        future: "cannot be in the future"

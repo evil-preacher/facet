@@ -1,0 +1,53 @@
+<% content_for :title, t("app.personalities.new.page_title") %>
+
+<section class="mx-auto mt-8 w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-xl shadow-slate-200/60 ring-1 ring-slate-200">
+  <div class="h-40 bg-slate-900 sm:h-56">
+    <%= image_tag "personality-creation.png", alt: "", class: "h-full w-full object-cover object-center", aria: { hidden: true } %>
+  </div>
+
+  <div class="min-w-0 p-6 sm:p-10">
+  <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-700"><%= t("app.personalities.new.eyebrow") %></p>
+  <h1 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
+    <%= t(@first_personality ? "app.personalities.new.first_heading" : "app.personalities.new.heading") %>
+  </h1>
+  <p class="mt-3 max-w-2xl leading-7 text-slate-600"><%= t("app.personalities.new.description") %></p>
+
+  <% if @form.errors.any? %>
+    <div class="mt-7 rounded-xl bg-rose-50 p-4 text-rose-800 ring-1 ring-rose-200" role="alert">
+      <p class="font-bold"><%= t("app.personalities.errors") %></p>
+      <ul class="mt-2 list-disc pl-5 text-sm">
+        <% @form.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with url: personalities_path, scope: :personality, class: "mt-8 grid min-w-0 gap-6" do |form| %>
+    <div class="grid min-w-0 gap-2">
+      <%= form.label :name, t("app.personalities.fields.name"), class: "font-bold" %>
+      <%= form.text_field :name, value: @form.name, required: true, maxlength: 80, autocomplete: "off", class: "block w-full min-w-0 max-w-full box-border rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-700 focus:ring-4 focus:ring-emerald-100" %>
+    </div>
+
+    <div class="grid min-w-0 gap-2">
+      <%= form.label :description, t("app.personalities.fields.description"), class: "font-bold" %>
+      <%= form.text_area :description, value: @form.description, maxlength: 500, rows: 2, class: "block w-full min-w-0 max-w-full box-border resize-y rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-700 focus:ring-4 focus:ring-emerald-100" %>
+    </div>
+
+    <% %i[base_character communication_style likes dislikes relationship_context allowed_behaviors forbidden_behaviors].each do |field| %>
+      <div class="grid min-w-0 gap-2">
+        <%= form.label field, t("app.personalities.fields.#{field}"), class: "font-bold" %>
+        <p class="text-sm text-slate-500"><%= t("app.personalities.hints.#{field}") %></p>
+        <%= form.text_area field,
+                           value: @form.public_send(field),
+                           required: %i[base_character communication_style].include?(field),
+                           maxlength: 4_000,
+                           rows: 4,
+                           class: "block w-full min-w-0 max-w-full box-border resize-y rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-700 focus:ring-4 focus:ring-emerald-100" %>
+      </div>
+    <% end %>
+
+    <%= form.submit t("app.personalities.new.submit"), class: "w-full cursor-pointer rounded-xl border-0 bg-emerald-800 px-5 py-3 font-bold text-white hover:bg-emerald-950 sm:w-auto" %>
+  <% end %>
+  </div>
+</section>

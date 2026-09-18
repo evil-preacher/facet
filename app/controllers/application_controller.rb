@@ -30,6 +30,13 @@ class ApplicationController < ActionController::Base
     current_user.present?
   end
 
+  def after_authentication_path
+    return edit_profile_path unless current_user.profile
+    return new_personality_path unless current_user.personalities.exists?
+
+    personalities_path
+  end
+
   def require_authentication
     redirect_to root_path, alert: t("app.flash.authentication_required") unless authenticated?
   end

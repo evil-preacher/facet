@@ -1,5 +1,5 @@
 class HomeController < ApplicationController
   def index
-    redirect_to profile_path if authenticated?
+    redirect_to after_authentication_path if authenticated?
   end
 end

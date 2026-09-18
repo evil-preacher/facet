@@ -5,6 +5,7 @@ ru:
   app:
     name: "Facet"
     nav:
+      personalities: "Личности"
       profile: "Профиль"
       logout: "Выйти"
       language: "Язык"
@@ -17,6 +18,10 @@ ru:
       signed_in: "Вы вошли в аккаунт."
       signed_out: "Вы вышли из аккаунта."
       profile_saved: "Профиль сохранён."
+      profile_required: "Сначала заполните профиль."
+      personality_created: "Личность создана."
+      personality_updated: "Личность обновлена."
+      personality_archived: "Личность отправлена в архив."
     home:
       title: "Facet — личности, которые помнят"
       eyebrow: "Личный AI-собеседник"
@@ -78,6 +83,60 @@ ru:
       save: "Сохранить профиль"
       email: "Email"
       edit: "Редактировать"
+    personalities:
+      errors: "Проверьте заполнение формы:"
+      fields:
+        name: "Имя личности"
+        description: "Короткое описание"
+        base_character: "Базовый характер"
+        communication_style: "Манера разговора"
+        likes: "Что ей нравится"
+        dislikes: "Что ей не нравится"
+        relationship_context: "Отношения с вами"
+        allowed_behaviors: "Что ей разрешено"
+        forbidden_behaviors: "Границы поведения"
+        character_bible: "Character bible"
+      hints:
+        base_character: "Опишите характер, противоречия и особенности личности."
+        communication_style: "Как она говорит, шутит, спорит и насколько подробно отвечает."
+        likes: "Темы, эстетика и вещи, к которым у неё есть устойчивый интерес."
+        dislikes: "То, что она характерно не любит или считает скучным."
+        relationship_context: "Как личность относится к вам и насколько близко вы знакомы."
+        allowed_behaviors: "Например: выражать сомнение, спорить, менять мнение и шутить."
+        forbidden_behaviors: "Например: не выдумывать воспоминания и не соглашаться только ради вежливости."
+      index:
+        page_title: "Личности — Facet"
+        eyebrow: "Ваши собеседники"
+        heading: "Личности"
+        description: "У каждой личности свой характер, общая память и отдельные треды."
+        new: "Создать личность"
+        empty: "У вас пока нет ни одной личности."
+      new:
+        page_title: "Новая личность — Facet"
+        eyebrow: "Character bible"
+        first_heading: "Создайте первую личность"
+        heading: "Создайте личность"
+        description: "Задайте устойчивый характер и правила поведения. Позже вы сможете отредактировать полный character bible."
+        submit: "Создать личность"
+      show:
+        page_title: "%{name} — Facet"
+        eyebrow: "Личность"
+        character_bible: "Character bible"
+        version: "Версия %{number}"
+        edit: "Редактировать"
+        back: "Все личности"
+        archive: "Архивировать"
+      edit:
+        page_title: "Редактирование %{name} — Facet"
+        eyebrow: "Настройка личности"
+        heading: "Редактировать %{name}"
+        description: "Изменение character bible создаст новую версию, а предыдущая останется в истории."
+        character_bible_hint: "Полный системный портрет личности в Markdown."
+        submit: "Сохранить изменения"
+      statuses:
+        draft: "Черновик"
+        active: "Активна"
+        archived: "В архиве"
     genders:
       male: "Мужской"
       female: "Женский"
@@ -110,3 +169,19 @@ ru:
         taken: "уже используется"
         invalid: "имеет неверный формат"
         future: "не может быть в будущем"
+
+  activemodel:
+    attributes:
+      "personalities/create":
+        name: "Имя личности"
+        description: "Описание"
+        base_character: "Базовый характер"
+        communication_style: "Манера разговора"
+      "personalities/update":
+        name: "Имя личности"
+        description: "Описание"
+        character_bible: "Character bible"
+    errors:
+      messages:
+        blank: "не может быть пустым"
+        too_long: "слишком длинный текст (максимум: %{count})"

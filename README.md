@@ -37,6 +37,17 @@ same card through a Hotwire Turbo Frame and also works as a standalone page.
 - A code permits five attempts and becomes invalid after successful use.
 - After confirmation, the user fills in a separate profile.
 
+## Personalities
+
+After completing a profile, a user creates their first private AI personality.
+The guided form captures character, conversational style, preferences,
+relationship context, permissions, and behavioral boundaries. Facet compiles
+these fields into an editable Markdown character bible.
+
+Each personality belongs to its user. Its initial bible is stored as version 1;
+editing the full text appends a new immutable record, while archiving preserves
+the personality and its history.
+
 ## Tests
 
 The suite uses RSpec, Factory Bot, FFaker, Shoulda Matchers, Database Cleaner,

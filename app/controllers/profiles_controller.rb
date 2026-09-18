@@ -14,7 +14,8 @@ class ProfilesController < ApplicationController
     @profile = current_user.profile || current_user.build_profile
 
     if @profile.update(profile_params)
-      redirect_to profile_path, notice: t("app.flash.profile_saved")
+      destination = current_user.personalities.exists? ? profile_path : new_personality_path
+      redirect_to destination, notice: t("app.flash.profile_saved")
     else
       render :edit, status: :unprocessable_content
     end

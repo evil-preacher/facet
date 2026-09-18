@@ -5,6 +5,7 @@ en:
   app:
     name: "Facet"
     nav:
+      personalities: "Personalities"
       profile: "Profile"
       logout: "Log out"
       language: "Language"
@@ -17,6 +18,10 @@ en:
       signed_in: "You are signed in."
       signed_out: "You are signed out."
       profile_saved: "Profile saved."
+      profile_required: "Complete your profile first."
+      personality_created: "Personality created."
+      personality_updated: "Personality updated."
+      personality_archived: "Personality archived."
     home:
       title: "Facet — personalities that remember"
       eyebrow: "Your personal AI companion"
@@ -78,6 +83,60 @@ en:
       save: "Save profile"
       email: "Email"
       edit: "Edit"
+    personalities:
+      errors: "Please review the form:"
+      fields:
+        name: "Personality name"
+        description: "Short description"
+        base_character: "Base character"
+        communication_style: "Conversational style"
+        likes: "What they like"
+        dislikes: "What they dislike"
+        relationship_context: "Relationship with you"
+        allowed_behaviors: "Allowed behaviors"
+        forbidden_behaviors: "Behavioral boundaries"
+        character_bible: "Character bible"
+      hints:
+        base_character: "Describe the personality’s character, contradictions, and distinctive traits."
+        communication_style: "How they speak, joke, disagree, and how much detail they use."
+        likes: "Topics, aesthetics, and things they have a stable interest in."
+        dislikes: "Things they characteristically dislike or find boring."
+        relationship_context: "How the personality relates to you and how familiar you are."
+        allowed_behaviors: "For example: express uncertainty, disagree, change their mind, and tease."
+        forbidden_behaviors: "For example: never invent memories or agree merely to be pleasant."
+      index:
+        page_title: "Personalities — Facet"
+        eyebrow: "Your companions"
+        heading: "Personalities"
+        description: "Each personality has a distinct character, shared memory, and separate threads."
+        new: "Create personality"
+        empty: "You do not have any personalities yet."
+      new:
+        page_title: "New personality — Facet"
+        eyebrow: "Character bible"
+        first_heading: "Create your first personality"
+        heading: "Create a personality"
+        description: "Define a stable character and behavioral rules. You can edit the complete character bible later."
+        submit: "Create personality"
+      show:
+        page_title: "%{name} — Facet"
+        eyebrow: "Personality"
+        character_bible: "Character bible"
+        version: "Version %{number}"
+        edit: "Edit"
+        back: "All personalities"
+        archive: "Archive"
+      edit:
+        page_title: "Edit %{name} — Facet"
+        eyebrow: "Personality settings"
+        heading: "Edit %{name}"
+        description: "Changing the character bible creates a new version while preserving the previous one."
+        character_bible_hint: "The personality’s complete system portrait in Markdown."
+        submit: "Save changes"
+      statuses:
+        draft: "Draft"
+        active: "Active"
+        archived: "Archived"
     genders:
       male: "Male"
       female: "Female"
@@ -107,3 +166,15 @@ en:
     errors:
       messages:
         future: "cannot be in the future"
+
+  activemodel:
+    attributes:
+      "personalities/create":
+        name: "Personality name"
+        description: "Description"
+        base_character: "Base character"
+        communication_style: "Conversational style"
+      "personalities/update":
+        name: "Personality name"
+        description: "Description"
+        character_bible: "Character bible"

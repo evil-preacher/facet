@@ -19,7 +19,7 @@ class LoginChallengesController < ApplicationController
 
     if challenge&.verify(params.dig(:login, :code))
       start_new_session_for(challenge.user)
-      redirect_to profile_path, notice: t("app.flash.signed_in")
+      redirect_to after_authentication_path, notice: t("app.flash.signed_in")
     else
       @token = params.dig(:login, :token).to_s
       flash.now[:alert] = t("app.flash.invalid_code")

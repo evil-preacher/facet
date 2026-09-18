@@ -4,6 +4,7 @@ class User < ApplicationRecord
 
   has_one :profile, dependent: :destroy
   has_many :login_challenges, dependent: :destroy
+  has_many :personalities, dependent: :destroy
 
   before_validation :normalize_email
 

@@ -1,5 +1,8 @@
 ---
-:concurrency: 5
+:concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY", 5) %>
+:timeout: <%= ENV.fetch("SIDEKIQ_SHUTDOWN_TIMEOUT", 25) %>
 :queues:
-  - conversation
-  - default
+  - [conversation, 8]
+  - [memory, 4]
+  - [maintenance, 2]
+  - [initiative, 1]

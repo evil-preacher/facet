@@ -40,9 +40,14 @@ module GenerationRuns
           idempotency_key: "retry:#{source_generation_run.id}",
           status: :pending
         )
+        @outbox_event = Outbox::Publish.call(
+          event_key: "generate-reply:#{generation_run.id}",
+          job_class: Ai::GenerateReplyJob,
+          arguments: [ generation_run.id ]
+        )
         @created = true
       end
-      Ai::GenerateReplyJob.perform_later(generation_run.id) if @created
+      Outbox::Dispatcher.call(limit: 1, event_ids: [ @outbox_event.id ]) if @created
 
       self
     rescue ActiveRecord::RecordNotUnique

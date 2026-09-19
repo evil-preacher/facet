@@ -12,6 +12,8 @@ module Ai
       MalformedResponseError => [ "malformed_response", "Model provider returned an invalid response" ],
       PriceNotFoundError => [ "price_not_found", "Model price is not configured" ],
       StoppedError => [ "stopped", "Generation stopped" ],
+      ValidationError => [ "validation_error", "Model request is invalid" ],
+      BudgetExceededError => [ "budget_exceeded", "Spending limit exceeded" ],
       ProviderError => [ "provider_error", "Model provider request failed" ]
     }.freeze
 

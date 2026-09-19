@@ -121,6 +121,27 @@ stopped attempt and creates a new assistant message, generation run, and job.
 Redis is used for Sidekiq queue state only; PostgreSQL remains authoritative for
 messages, runs, and usage.
 
+## Background reliability
+
+Sidekiq polls four weighted queues: `conversation`, `memory`, `maintenance`, and
+`initiative`. Temporary provider failures use bounded polynomial backoff;
+validation and budget failures are terminal, and an exhausted generation is
+persisted as failed rather than left running.
+
+Critical generation enqueue goes through the PostgreSQL `outbox_events` table.
+The dedicated `outbox` process retries Redis delivery, including after a Redis
+restart. Duplicate delivery is safe because generation runs are claimed under a
+database lock and terminal runs never issue another provider call.
+
+Redis uses AOF persistence with `appendfsync everysec` and `noeviction` in the
+development Compose stack. Sidekiq concurrency and shutdown timeout are
+configurable separately from the web process.
+
+`GET /operations/health` reports database/Redis health, Sidekiq process and
+queue depth/latency, retry/dead counts, and pending outbox work. It returns 404
+unless `OPERATIONS_USERNAME` and `OPERATIONS_PASSWORD` are configured, and then
+requires HTTP Basic authentication; it must not be exposed publicly.
+
 ## Tests
 
 The suite uses RSpec, Factory Bot, FFaker, Shoulda Matchers, Database Cleaner,

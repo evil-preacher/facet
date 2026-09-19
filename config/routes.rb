@@ -32,4 +32,5 @@ Rails.application.routes.draw do
   post "locale/:locale", to: "locales#update", as: :locale
 
   get "up" => "rails/health#show", as: :rails_health_check
+  get "operations/health" => "operations/health#show", as: :operations_health
 end

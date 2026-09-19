@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_19_000009) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_19_000010) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -143,6 +143,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000009) do
     t.index ["provider", "model", "effective_until"], name: "index_model_prices_on_provider_and_model_and_effective_until"
     t.check_constraint "effective_until IS NULL OR effective_until > effective_from", name: "model_prices_valid_interval"
     t.check_constraint "input_microusd_per_million >= 0 AND cached_input_microusd_per_million >= 0 AND output_microusd_per_million >= 0", name: "model_prices_nonnegative_rates"
+  end
+
+  create_table "outbox_events", force: :cascade do |t|
+    t.jsonb "arguments", default: [], null: false
+    t.integer "attempts_count", default: 0, null: false
+    t.datetime "available_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "dispatched_at"
+    t.string "event_key", null: false
+    t.string "job_class", null: false
+    t.text "last_error"
+    t.datetime "locked_at"
+    t.string "queue_name", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_key"], name: "index_outbox_events_on_event_key", unique: true
+    t.index ["status", "available_at"], name: "index_outbox_events_for_dispatch"
+    t.check_constraint "attempts_count >= 0", name: "outbox_events_attempts_count"
+    t.check_constraint "jsonb_typeof(arguments) = 'array'::text", name: "outbox_events_arguments_array"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'processing'::character varying, 'dispatched'::character varying]::text[])", name: "outbox_events_status"
   end
 
   create_table "personalities", force: :cascade do |t|

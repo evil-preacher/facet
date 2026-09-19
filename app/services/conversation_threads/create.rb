@@ -93,10 +93,11 @@ module ConversationThreads
       )
       @generation_run = prepared.generation_run
       @assistant_message = prepared.assistant_message
+      @outbox_event = prepared.outbox_event
     end
 
     def enqueue_generation
-      Ai::GenerateReplyJob.perform_later(generation_run.id) if created?
+      Outbox::Dispatcher.call(limit: 1, event_ids: [ @outbox_event.id ]) if created?
     end
 
     def user_owns_personality

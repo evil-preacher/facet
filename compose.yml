@@ -20,7 +20,8 @@ services:
 
   redis:
     image: redis:8-alpine
-    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory-policy", "noeviction", "--tcp-keepalive", "60"]
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 2s
@@ -62,6 +63,10 @@ services:
       SMTP_PORT: ${SMTP_PORT:-1025}
       RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-5}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      REDIS_NETWORK_TIMEOUT: ${REDIS_NETWORK_TIMEOUT:-5}
+      REDIS_POOL_TIMEOUT: ${REDIS_POOL_TIMEOUT:-5}
+      OPERATIONS_USERNAME: ${OPERATIONS_USERNAME:-}
+      OPERATIONS_PASSWORD: ${OPERATIONS_PASSWORD:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_CONVERSATION_MODEL: ${OPENAI_CONVERSATION_MODEL:-gpt-4o}
       OPENAI_UTILITY_MODEL: ${OPENAI_UTILITY_MODEL:-gpt-4o-mini}
@@ -93,6 +98,10 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-facet}
       RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-5}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      REDIS_NETWORK_TIMEOUT: ${REDIS_NETWORK_TIMEOUT:-5}
+      REDIS_POOL_TIMEOUT: ${REDIS_POOL_TIMEOUT:-5}
+      SIDEKIQ_CONCURRENCY: ${SIDEKIQ_CONCURRENCY:-5}
+      SIDEKIQ_SHUTDOWN_TIMEOUT: ${SIDEKIQ_SHUTDOWN_TIMEOUT:-25}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_CONVERSATION_MODEL: ${OPENAI_CONVERSATION_MODEL:-gpt-4o}
       OPENAI_UTILITY_MODEL: ${OPENAI_UTILITY_MODEL:-gpt-4o-mini}
@@ -101,6 +110,32 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    stop_grace_period: 35s
+    volumes:
+      - .:/app
+
+  outbox:
+    build: .
+    user: "${UID:-1000}:${GID:-1000}"
+    command: ["bin/rails", "runner", "Outbox::Runner.call"]
+    restart: unless-stopped
+    environment:
+      HOME: /tmp
+      POSTGRES_DB: ${POSTGRES_DB:-facet_development}
+      POSTGRES_TEST_DB: ${POSTGRES_TEST_DB:-facet_test}
+      POSTGRES_HOST: ${POSTGRES_HOST:-db}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_USER: ${POSTGRES_USER:-facet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-facet}
+      RAILS_MAX_THREADS: 2
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      REDIS_NETWORK_TIMEOUT: ${REDIS_NETWORK_TIMEOUT:-5}
+      REDIS_POOL_TIMEOUT: ${REDIS_POOL_TIMEOUT:-5}
+      OUTBOX_POLL_INTERVAL: ${OUTBOX_POLL_INTERVAL:-1}
+    depends_on:
+      db:
+        condition: service_healthy
+    stop_grace_period: 30s
     volumes:
       - .:/app
 

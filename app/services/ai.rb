@@ -27,4 +27,16 @@ module Ai
   class MalformedResponseError < Error; end
   class PriceNotFoundError < Error; end
   class StoppedError < Error; end
+  class ValidationError < Error; end
+  class BudgetExceededError < Error; end
+
+  class RetryableGenerationError < StandardError
+    attr_reader :generation_run_id, :error_code
+
+    def initialize(generation_run_id:, error_code:)
+      @generation_run_id = generation_run_id
+      @error_code = error_code
+      super("Retryable generation failure: #{error_code}")
+    end
+  end
 end

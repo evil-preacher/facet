@@ -21,6 +21,7 @@ RSpec.describe GenerationRuns::Retry do
     expect do
       expect { result }.to have_enqueued_job(Ai::GenerateReplyJob).once
     end.to change(GenerationRun, :count).by(1)
+      .and change(OutboxEvent, :count).by(1)
       .and change(Message, :count).by(1)
 
     expect(result).to be_success

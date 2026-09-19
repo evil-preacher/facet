@@ -1,6 +1,6 @@
 module GenerationRuns
   class Prepare
-    Result = Data.define(:generation_run, :assistant_message)
+    Result = Data.define(:generation_run, :assistant_message, :outbox_event)
 
     def self.call(conversation_thread:, user_message:)
       personality_version = user_message.personality_version
@@ -20,8 +20,17 @@ module GenerationRuns
         idempotency_key: "generation:#{user_message.client_token}",
         status: :pending
       )
+      outbox_event = Outbox::Publish.call(
+        event_key: "generate-reply:#{generation_run.id}",
+        job_class: Ai::GenerateReplyJob,
+        arguments: [ generation_run.id ]
+      )
 
-      Result.new(generation_run: generation_run, assistant_message: assistant_message)
+      Result.new(
+        generation_run: generation_run,
+        assistant_message: assistant_message,
+        outbox_event: outbox_event
+      )
     end
   end
 end

@@ -107,4 +107,19 @@ RSpec.describe Ai::OpenAiAdapter do
       adapter.response(model: "gpt-4o", input: "Hi")
     end.to raise_error(Ai::MalformedResponseError)
   end
+
+  it "serializes provider-neutral input items and forwards the cache key" do
+    resource = FakeResponsesResource.new(response: provider_response)
+    adapter = described_class.new(client: Struct.new(:responses).new(resource))
+    item = Ai::PromptBuilder::InputItem.new(role: "developer", content: "Stable prefix")
+
+    adapter.response(model: "gpt-4o", input: [ item ], prompt_cache_key: "facet-pv-1")
+
+    expect(resource.parameters).to eq(
+      model: "gpt-4o",
+      input: [ { role: "developer", content: "Stable prefix" } ],
+      store: false,
+      prompt_cache_key: "facet-pv-1"
+    )
+  end
 end

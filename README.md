@@ -82,9 +82,26 @@ sanitized error codes and preserve partial usage when the provider supplies it.
 Generation runs claim work under a database lock so duplicate workers cannot
 issue a second request for an already running or completed run.
 
-Prompt assembly and connecting this gateway to persisted assistant messages
-belong to the next implementation stages, so the chat UI does not call the
-provider yet.
+## Prompt assembly
+
+`Ai::PromptBuilder` assembles provider-neutral response input in a stable
+order: application rules, the immutable character bible version, relationship
+state, relevant memories, thread summary, recent messages, the current user
+message, and the response-language instruction. The stable rules and bible
+prefix is reused with a personality-version cache key for provider prompt
+caching.
+
+Each section has an explicit context budget. On overflow, the oldest recent
+messages are removed first, then memories and other optional context; application
+rules and the character bible are never shortened. Budget estimates use one
+Unicode character as one deterministic unit, while provider-reported token usage
+remains authoritative for billing.
+
+Every build stores a diagnostic manifest on the `GenerationRun` with context
+record IDs, section estimates, truncation flags, detected language, and the cache
+key. It deliberately does not persist a duplicate of the private assembled
+prompt. Connecting this input to persisted streaming assistant messages belongs
+to the next implementation stage, so the chat UI does not call the provider yet.
 
 ## Tests
 

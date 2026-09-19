@@ -39,4 +39,12 @@ RSpec.describe Ai::Gateway do
       gateway.response(model: "gpt-4o", input: "Hi")
     end.to raise_error(Ai::MalformedResponseError)
   end
+
+  it "forwards a stable prompt cache key" do
+    adapter.enqueue_response(text: "Hello", request_id: "req_123", usage: usage)
+
+    gateway.response(model: "gpt-4o", input: "Hi", prompt_cache_key: "facet-pv-1")
+
+    expect(adapter.requests.first).to include(prompt_cache_key: "facet-pv-1")
+  end
 end

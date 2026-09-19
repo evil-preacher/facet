@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_19_000007) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_19_000008) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -19,11 +19,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000007) do
     t.datetime "last_message_at"
     t.bigint "personality_id", null: false
     t.string "status", default: "active", null: false
+    t.text "summary"
+    t.bigint "summary_through_message_id"
     t.string "title"
     t.datetime "updated_at", null: false
     t.index ["personality_id", "status", "last_message_at"], name: "idx_on_personality_id_status_last_message_at_8f99ecdef1"
     t.index ["personality_id"], name: "index_conversation_threads_on_personality_id"
+    t.index ["summary_through_message_id"], name: "index_conversation_threads_on_summary_through_message_id"
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'archived'::character varying]::text[])", name: "conversation_threads_status"
+    t.check_constraint "summary IS NULL OR char_length(summary) <= 100000", name: "conversation_threads_summary_length"
     t.check_constraint "title IS NULL OR char_length(btrim(title::text)) >= 1 AND char_length(btrim(title::text)) <= 120", name: "conversation_threads_title_length"
   end
 
@@ -37,6 +41,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000007) do
     t.text "error_message"
     t.string "idempotency_key", null: false
     t.bigint "personality_version_id", null: false
+    t.jsonb "prompt_manifest", default: {}, null: false
     t.datetime "started_at"
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
@@ -72,6 +77,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000007) do
     t.text "content", default: "", null: false
     t.bigint "conversation_thread_id", null: false
     t.datetime "created_at", null: false
+    t.string "language", default: "und", null: false
     t.bigint "personality_version_id", null: false
     t.integer "position", null: false
     t.string "role", null: false
@@ -83,6 +89,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000007) do
     t.index ["personality_version_id"], name: "index_messages_on_personality_version_id"
     t.check_constraint "\"position\" > 0", name: "messages_positive_position"
     t.check_constraint "char_length(content) <= 100000 AND (status::text <> 'completed'::text OR char_length(btrim(content)) > 0)", name: "messages_content"
+    t.check_constraint "language::text = ANY (ARRAY['ru'::character varying, 'en'::character varying, 'und'::character varying]::text[])", name: "messages_language"
     t.check_constraint "role::text = ANY (ARRAY['user'::character varying, 'assistant'::character varying]::text[])", name: "messages_role"
     t.check_constraint "status::text = ANY (ARRAY['streaming'::character varying, 'completed'::character varying, 'failed'::character varying]::text[])", name: "messages_status"
   end
@@ -192,6 +199,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000007) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "conversation_threads", "messages", column: "summary_through_message_id", on_delete: :nullify
   add_foreign_key "conversation_threads", "personalities"
   add_foreign_key "generation_runs", "conversation_threads"
   add_foreign_key "generation_runs", "messages", column: "assistant_message_id", on_delete: :restrict

@@ -24,6 +24,7 @@ class Message < ApplicationRecord
             numericality: { only_integer: true, greater_than: 0 },
             uniqueness: { scope: :conversation_thread_id }
   validates :content, length: { maximum: MAX_CONTENT_LENGTH }
+  validates :language, inclusion: { in: %w[ru en und] }
   validates :client_token,
             format: { with: CLIENT_TOKEN_FORMAT },
             uniqueness: true,

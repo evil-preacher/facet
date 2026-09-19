@@ -23,21 +23,29 @@ module Ai
       @queued << [ :error, error ]
     end
 
-    def response(model:, input:)
-      @requests << { model: model, input: input }
+    def response(model:, input:, prompt_cache_key: nil)
+      record_request(model, input, prompt_cache_key)
       type, value = @queued.shift
       raise value if type == :error
 
       value
     end
 
-    def stream_response(model:, input:)
-      @requests << { model: model, input: input }
+    def stream_response(model:, input:, prompt_cache_key: nil)
+      record_request(model, input, prompt_cache_key)
       type, deltas, response = @queued.shift
       raise deltas if type == :error
 
       deltas.each { |delta| yield delta if block_given? }
       response
+    end
+
+    private
+
+    def record_request(model, input, prompt_cache_key)
+      request = { model: model, input: input }
+      request[:prompt_cache_key] = prompt_cache_key if prompt_cache_key
+      @requests << request
     end
   end
 end

@@ -12,6 +12,7 @@ RSpec.describe Message, type: :model do
       .backed_by_column_of_type(:string)
   end
   it { is_expected.to validate_length_of(:content).is_at_most(100_000) }
+  it { is_expected.to validate_inclusion_of(:language).in_array(%w[ru en und]) }
   it { is_expected.to validate_uniqueness_of(:client_token).allow_nil }
   it { is_expected.to validate_numericality_of(:position).only_integer.is_greater_than(0) }
   it { is_expected.to validate_uniqueness_of(:position).scoped_to(:conversation_thread_id) }

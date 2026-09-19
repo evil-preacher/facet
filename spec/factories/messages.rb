@@ -5,6 +5,7 @@ FactoryBot.define do
     position { conversation_thread.messages.maximum(:position).to_i + 1 }
     role { :user }
     status { :completed }
+    language { Ai::LanguageDetector.call(content) }
     content { FFaker::Lorem.sentence }
     client_token { SecureRandom.uuid }
   end

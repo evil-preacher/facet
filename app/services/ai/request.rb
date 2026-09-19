@@ -18,7 +18,7 @@ module Ai
       new(**arguments).call
     end
 
-    def initialize(user:, personality:, purpose:, model:, input:, generation_run: nil,
+    def initialize(user:, personality:, purpose:, model:, input:, prompt_cache_key: nil, generation_run: nil,
                    gateway: Gateway.default, provider: "openai", now: Time.current,
                    clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
       @user = user
@@ -27,6 +27,7 @@ module Ai
       @purpose = purpose
       @model = model
       @input = input
+      @prompt_cache_key = prompt_cache_key
       @gateway = gateway
       @provider = provider
       @now = now
@@ -52,7 +53,11 @@ module Ai
       raise PriceNotFoundError unless @price
 
       started = @clock.call
-      response = @gateway.response(model: @model, input: @input)
+      response = @gateway.response(
+        model: @model,
+        input: @input,
+        prompt_cache_key: @prompt_cache_key
+      )
       complete!(response, elapsed_ms(started))
       Result.new(model_call: @model_call, response: response, error_code: nil)
     rescue Error => error

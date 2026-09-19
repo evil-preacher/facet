@@ -12,15 +12,23 @@ module Ai
       @adapter = adapter
     end
 
-    def response(model:, input:)
-      validate_response!(@adapter.response(model: model, input: input))
+    def response(model:, input:, prompt_cache_key: nil)
+      validate_response!(@adapter.response(**request_arguments(model, input, prompt_cache_key)))
     end
 
-    def stream_response(model:, input:, &on_delta)
-      validate_response!(@adapter.stream_response(model: model, input: input, &on_delta))
+    def stream_response(model:, input:, prompt_cache_key: nil, &on_delta)
+      validate_response!(
+        @adapter.stream_response(**request_arguments(model, input, prompt_cache_key), &on_delta)
+      )
     end
 
     private
+
+    def request_arguments(model, input, prompt_cache_key)
+      { model: model, input: input }.tap do |arguments|
+        arguments[:prompt_cache_key] = prompt_cache_key if prompt_cache_key.present?
+      end
+    end
 
     def validate_response!(response)
       valid = response.is_a?(Response) &&

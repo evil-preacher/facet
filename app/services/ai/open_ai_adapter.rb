@@ -4,8 +4,8 @@ module Ai
       @client = client
     end
 
-    def response(model:, input:)
-      normalize(client.responses.create(model: model, input: input, store: false))
+    def response(model:, input:, prompt_cache_key: nil)
+      normalize(client.responses.create(**request_parameters(model, input, prompt_cache_key)))
     rescue OpenAI::Errors::APITimeoutError => error
       raise TimeoutError.new(error.message, request_id: request_id_from(error)), cause: error
     rescue OpenAI::Errors::RateLimitError => error
@@ -14,8 +14,8 @@ module Ai
       raise ProviderError.new(error.message, request_id: request_id_from(error)), cause: error
     end
 
-    def stream_response(model:, input:)
-      stream = client.responses.stream(model: model, input: input, store: false)
+    def stream_response(model:, input:, prompt_cache_key: nil)
+      stream = client.responses.stream(**request_parameters(model, input, prompt_cache_key))
       completed_response = nil
       streamed_text = +""
 
@@ -45,6 +45,28 @@ module Ai
     end
 
     private
+
+    def request_parameters(model, input, prompt_cache_key)
+      {
+        model: model,
+        input: serialize_input(input),
+        store: false
+      }.tap do |parameters|
+        parameters[:prompt_cache_key] = prompt_cache_key if prompt_cache_key.present?
+      end
+    end
+
+    def serialize_input(input)
+      return input unless input.is_a?(Array)
+
+      input.map do |item|
+        if item.respond_to?(:role) && item.respond_to?(:content)
+          { role: item.role, content: item.content }
+        else
+          item
+        end
+      end
+    end
 
     def client
       @client ||= OpenAI::Client.new(api_key: ENV.fetch("OPENAI_API_KEY"))

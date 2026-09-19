@@ -39,6 +39,7 @@ module Messages
           position: conversation_thread.messages.maximum(:position).to_i + 1,
           role: :user,
           status: :completed,
+          language: Ai::LanguageDetector.call(content),
           content: content.strip,
           client_token: client_token
         )

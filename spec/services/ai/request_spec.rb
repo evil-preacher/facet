@@ -104,6 +104,30 @@ RSpec.describe Ai::Request do
     expect(ModelCall.count).to eq(0)
   end
 
+  it "passes the prompt cache key through the gateway" do
+    adapter.enqueue_response(
+      text: "Hello",
+      request_id: "req_cache",
+      usage: Ai::Usage.new(input_tokens: 10, cached_input_tokens: 0, output_tokens: 2)
+    )
+
+    cached_result = described_class.call(
+      user: user,
+      personality: personality,
+      generation_run: generation_run,
+      purpose: :conversation,
+      model: "gpt-4o",
+      input: "private prompt",
+      prompt_cache_key: "facet-pv-1",
+      gateway: gateway,
+      now: now,
+      clock: -> { 1.0 }
+    )
+
+    expect(cached_result).to be_success
+    expect(adapter.requests.first).to include(prompt_cache_key: "facet-pv-1")
+  end
+
   it "rejects a generation run from another personality before calling the provider" do
     other_run = create(:generation_run)
 

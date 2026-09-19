@@ -38,6 +38,7 @@ module ConversationThreads
           position: 1,
           role: :user,
           status: :completed,
+          language: Ai::LanguageDetector.call(content),
           content: content.strip,
           client_token: client_token
         )

@@ -21,6 +21,23 @@ class GenerationRunsController < ApplicationController
     end
   end
 
+  def stream
+    response.headers["Content-Type"] = "text/event-stream"
+    response.headers["Cache-Control"] = "no-cache, no-store"
+    response.headers["X-Accel-Buffering"] = "no"
+    response.headers.delete("Content-Length")
+    self.response_body = GenerationRuns::EventStream.new(
+      generation_run: @generation_run,
+      cursor: request.headers["Last-Event-ID"].presence || params[:cursor]
+    )
+  end
+
+  def stop
+    result = GenerationRuns::Stop.call(generation_run: @generation_run)
+    redirect_to personality_conversation_thread_path(@personality, @conversation_thread),
+                alert: (result.errors.full_messages.to_sentence unless result.success?)
+  end
+
   private
 
   def set_personality

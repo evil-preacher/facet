@@ -26,4 +26,5 @@ module Ai
   class ProviderError < Error; end
   class MalformedResponseError < Error; end
   class PriceNotFoundError < Error; end
+  class StoppedError < Error; end
 end

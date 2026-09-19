@@ -100,8 +100,26 @@ remains authoritative for billing.
 Every build stores a diagnostic manifest on the `GenerationRun` with context
 record IDs, section estimates, truncation flags, detected language, and the cache
 key. It deliberately does not persist a duplicate of the private assembled
-prompt. Connecting this input to persisted streaming assistant messages belongs
-to the next implementation stage, so the chat UI does not call the provider yet.
+prompt.
+
+## Background streaming
+
+User messages atomically create an assistant placeholder and a `GenerationRun`.
+After the database transaction commits, `Ai::GenerateReplyJob` is enqueued on
+Sidekiq's `conversation` queue. A separate worker streams the provider response
+and periodically persists accumulated text, so generation continues if the
+browser disconnects.
+
+The authenticated SSE endpoint reads persisted progress and emits `delta`,
+`usage`, `done`, and `error` events. Its character cursor supports
+`Last-Event-ID` reconnects, while heartbeat comments keep idle connections
+alive. The Stimulus controller updates the assistant message and reconnects
+independently of the Sidekiq job.
+
+Stop is cooperative between provider chunks. Retry preserves the failed or
+stopped attempt and creates a new assistant message, generation run, and job.
+Redis is used for Sidekiq queue state only; PostgreSQL remains authoritative for
+messages, runs, and usage.
 
 ## Tests
 

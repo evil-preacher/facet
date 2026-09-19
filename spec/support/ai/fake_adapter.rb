@@ -15,8 +15,13 @@ module Ai
       @queued << [ :response, response ]
     end
 
-    def enqueue_stream(deltas:, text:, request_id:, usage:)
-      @queued << [ :stream, deltas, Response.new(text: text, request_id: request_id, usage: usage) ]
+    def enqueue_stream(deltas:, text:, request_id:, usage:, after_delta: nil)
+      @queued << [
+        :stream,
+        deltas,
+        Response.new(text: text, request_id: request_id, usage: usage),
+        after_delta
+      ]
     end
 
     def enqueue_error(error)
@@ -33,10 +38,13 @@ module Ai
 
     def stream_response(model:, input:, prompt_cache_key: nil)
       record_request(model, input, prompt_cache_key)
-      type, deltas, response = @queued.shift
+      type, deltas, response, after_delta = @queued.shift
       raise deltas if type == :error
 
-      deltas.each { |delta| yield delta if block_given? }
+      deltas.each_with_index do |delta, index|
+        yield delta if block_given?
+        after_delta&.call(delta, index)
+      end
       response
     end
 

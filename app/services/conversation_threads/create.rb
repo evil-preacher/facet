@@ -6,7 +6,7 @@ module ConversationThreads
     attribute :content, :string
     attribute :client_token, :string
 
-    attr_reader :personality, :user, :conversation_thread, :message
+    attr_reader :personality, :user, :conversation_thread, :message, :assistant_message, :generation_run
 
     validates :content, :client_token, presence: true
     validates :content, length: { maximum: 10_000 }
@@ -43,8 +43,10 @@ module ConversationThreads
           client_token: client_token
         )
         conversation_thread.update!(last_message_at: message.created_at)
+        prepare_generation
       end
       @created = true
+      enqueue_generation
 
       self
     rescue ActiveRecord::RecordInvalid => error
@@ -76,10 +78,25 @@ module ConversationThreads
       if existing
         @message = existing
         @conversation_thread = existing.conversation_thread
+        @generation_run = existing.generation_runs_as_user.find_by(retry_of_id: nil)
+        @assistant_message = generation_run&.assistant_message
       else
         errors.add(:client_token, :taken)
       end
       self
+    end
+
+    def prepare_generation
+      prepared = GenerationRuns::Prepare.call(
+        conversation_thread: conversation_thread,
+        user_message: message
+      )
+      @generation_run = prepared.generation_run
+      @assistant_message = prepared.assistant_message
+    end
+
+    def enqueue_generation
+      Ai::GenerateReplyJob.perform_later(generation_run.id) if created?
     end
 
     def user_owns_personality

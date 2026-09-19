@@ -36,6 +36,7 @@
       </div>
 
       <%= render "conversation_threads/generation_status", generation_run: @latest_generation_run %>
+      <%= render "conversation_threads/generation_stream", generation_run: @latest_generation_run %>
 
       <% if @conversation_thread.active? %>
         <%= render "messages/form",

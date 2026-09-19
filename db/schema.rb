@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_19_000008) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_19_000009) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000008) do
     t.string "idempotency_key", null: false
     t.bigint "personality_version_id", null: false
     t.jsonb "prompt_manifest", default: {}, null: false
+    t.bigint "retry_of_id"
     t.datetime "started_at"
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
@@ -51,7 +52,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000008) do
     t.index ["conversation_thread_id"], name: "index_generation_runs_on_conversation_thread_id"
     t.index ["idempotency_key"], name: "index_generation_runs_on_idempotency_key", unique: true
     t.index ["personality_version_id"], name: "index_generation_runs_on_personality_version_id"
-    t.index ["user_message_id"], name: "index_generation_runs_on_user_message_id", unique: true
+    t.index ["retry_of_id"], name: "index_generation_runs_on_retry_of_id", unique: true
+    t.index ["user_message_id"], name: "index_generation_runs_on_user_message_id"
     t.check_constraint "attempts_count >= 0", name: "generation_runs_attempts_count"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'running'::character varying, 'completed'::character varying, 'failed'::character varying, 'stopped'::character varying]::text[])", name: "generation_runs_status"
   end
@@ -91,7 +93,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000008) do
     t.check_constraint "char_length(content) <= 100000 AND (status::text <> 'completed'::text OR char_length(btrim(content)) > 0)", name: "messages_content"
     t.check_constraint "language::text = ANY (ARRAY['ru'::character varying, 'en'::character varying, 'und'::character varying]::text[])", name: "messages_language"
     t.check_constraint "role::text = ANY (ARRAY['user'::character varying, 'assistant'::character varying]::text[])", name: "messages_role"
-    t.check_constraint "status::text = ANY (ARRAY['streaming'::character varying, 'completed'::character varying, 'failed'::character varying]::text[])", name: "messages_status"
+    t.check_constraint "status::text = ANY (ARRAY['streaming'::character varying, 'completed'::character varying, 'failed'::character varying, 'stopped'::character varying]::text[])", name: "messages_status"
   end
 
   create_table "model_calls", force: :cascade do |t|
@@ -202,6 +204,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000008) do
   add_foreign_key "conversation_threads", "messages", column: "summary_through_message_id", on_delete: :nullify
   add_foreign_key "conversation_threads", "personalities"
   add_foreign_key "generation_runs", "conversation_threads"
+  add_foreign_key "generation_runs", "generation_runs", column: "retry_of_id", on_delete: :restrict
   add_foreign_key "generation_runs", "messages", column: "assistant_message_id", on_delete: :restrict
   add_foreign_key "generation_runs", "messages", column: "user_message_id", on_delete: :restrict
   add_foreign_key "generation_runs", "personality_versions"

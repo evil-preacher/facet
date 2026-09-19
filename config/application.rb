@@ -30,6 +30,7 @@ module Facet
 
     config.i18n.available_locales = %i[ru en]
     config.i18n.default_locale = :ru
+    config.active_job.queue_adapter = :sidekiq
 
     # Configuration for the application, engines, and railties goes here.
     #

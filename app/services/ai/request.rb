@@ -11,14 +11,16 @@ module Ai
       RateLimitError => [ "rate_limit", "Model provider rate limit exceeded" ],
       MalformedResponseError => [ "malformed_response", "Model provider returned an invalid response" ],
       PriceNotFoundError => [ "price_not_found", "Model price is not configured" ],
+      StoppedError => [ "stopped", "Generation stopped" ],
       ProviderError => [ "provider_error", "Model provider request failed" ]
     }.freeze
 
-    def self.call(**arguments)
-      new(**arguments).call
+    def self.call(**arguments, &block)
+      new(**arguments).call(&block)
     end
 
     def initialize(user:, personality:, purpose:, model:, input:, prompt_cache_key: nil, generation_run: nil,
+                   stream: false, finalize_generation_run: true,
                    gateway: Gateway.default, provider: "openai", now: Time.current,
                    clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
       @user = user
@@ -28,13 +30,15 @@ module Ai
       @model = model
       @input = input
       @prompt_cache_key = prompt_cache_key
+      @stream = stream
+      @finalize_generation_run = finalize_generation_run
       @gateway = gateway
       @provider = provider
       @now = now
       @clock = clock
     end
 
-    def call
+    def call(&on_delta)
       return Result.new(model_call: nil, response: nil, error_code: "invalid_context") unless valid_context?
 
       guard_code = claim_generation_run
@@ -53,11 +57,7 @@ module Ai
       raise PriceNotFoundError unless @price
 
       started = @clock.call
-      response = @gateway.response(
-        model: @model,
-        input: @input,
-        prompt_cache_key: @prompt_cache_key
-      )
+      response = provider_response(&on_delta)
       complete!(response, elapsed_ms(started))
       Result.new(model_call: @model_call, response: response, error_code: nil)
     rescue Error => error
@@ -80,6 +80,8 @@ module Ai
       @generation_run.with_lock do
         return "already_completed" if @generation_run.completed?
         return "already_running" if @generation_run.running?
+        return "already_failed" if @generation_run.failed?
+        return "stopped" if @generation_run.stopped?
 
         @generation_run.update!(
           status: :running,
@@ -114,7 +116,7 @@ module Ai
           latency_ms: latency_ms,
           completed_at: @now
         )
-        @generation_run&.update!(status: :completed, completed_at: @now)
+        @generation_run&.update!(status: :completed, completed_at: @now) if finalize_generation_run?
       end
     end
 
@@ -137,7 +139,7 @@ module Ai
           error_code: code,
           error_message: safe_message,
           completed_at: @now
-        )
+        ) if finalize_generation_run?
       end
     end
 
@@ -162,6 +164,21 @@ module Ai
 
     def error_details(error)
       ERROR_DETAILS.fetch(error.class, ERROR_DETAILS.fetch(ProviderError))
+    end
+
+    def provider_response(&on_delta)
+      arguments = {
+        model: @model,
+        input: @input,
+        prompt_cache_key: @prompt_cache_key
+      }
+      return @gateway.response(**arguments) unless @stream
+
+      @gateway.stream_response(**arguments, &on_delta)
+    end
+
+    def finalize_generation_run?
+      @finalize_generation_run && @generation_run
     end
   end
 end

@@ -8,5 +8,10 @@ FactoryBot.define do
     language { Ai::LanguageDetector.call(content) }
     content { FFaker::Lorem.sentence }
     client_token { SecureRandom.uuid }
+
+    trait :assistant do
+      role { :assistant }
+      client_token { nil }
+    end
   end
 end

@@ -202,6 +202,7 @@ ru:
         archived_notice: "Этот тред находится в архиве. Его сообщения доступны только для чтения."
       generation:
         generating: "Личность формулирует ответ…"
+        stop: "Остановить"
         failed: "Не удалось получить ответ."
         retry: "Повторить"
         stopped: "Генерация остановлена."
@@ -213,6 +214,7 @@ ru:
       statuses:
         failed: "Ошибка"
         streaming: "Печатает…"
+        stopped: "Остановлено"
       composer:
         label: "Сообщение"
         placeholder: "Напишите %{name}…"

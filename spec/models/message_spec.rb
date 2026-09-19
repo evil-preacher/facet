@@ -8,7 +8,12 @@ RSpec.describe Message, type: :model do
   it { is_expected.to define_enum_for(:role).with_values(user: "user", assistant: "assistant").backed_by_column_of_type(:string) }
   it do
     expect(message).to define_enum_for(:status)
-      .with_values(streaming: "streaming", completed: "completed", failed: "failed")
+      .with_values(
+        streaming: "streaming",
+        completed: "completed",
+        failed: "failed",
+        stopped: "stopped"
+      )
       .backed_by_column_of_type(:string)
   end
   it { is_expected.to validate_length_of(:content).is_at_most(100_000) }

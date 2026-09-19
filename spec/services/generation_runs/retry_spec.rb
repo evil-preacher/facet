@@ -1,9 +1,9 @@
 require "rails_helper"
 
 RSpec.describe GenerationRuns::Retry do
-  subject(:result) { described_class.call(generation_run: generation_run) }
+  subject(:result) { described_class.call(generation_run: source_run) }
 
-  let(:generation_run) do
+  let(:source_run) do
     create(
       :generation_run,
       status: :failed,
@@ -14,30 +14,50 @@ RSpec.describe GenerationRuns::Retry do
     )
   end
 
-  it "returns a failed run to a clean pending state" do
+  it "creates and enqueues a new run without overwriting the failed attempt" do
+    source_run
+    ActiveJob::Base.queue_adapter.enqueued_jobs.clear
+
+    expect do
+      expect { result }.to have_enqueued_job(Ai::GenerateReplyJob).once
+    end.to change(GenerationRun, :count).by(1)
+      .and change(Message, :count).by(1)
+
     expect(result).to be_success
-    expect(generation_run.reload).to have_attributes(
+    expect(source_run.reload).to be_failed
+    expect(result.generation_run).to have_attributes(
       status: "pending",
-      error_code: nil,
-      error_message: nil,
-      started_at: nil,
-      completed_at: nil
+      retry_of: source_run,
+      user_message: source_run.user_message
     )
+    expect(result.generation_run.assistant_message).to be_streaming
   end
 
   it "does not retry a run that is already active" do
-    generation_run.update!(status: :running)
+    source_run.update!(status: :running)
 
     expect(result).not_to be_success
     expect(result.errors[:generation_run]).to be_present
-    expect(generation_run.reload).to be_running
+    expect(source_run.reload).to be_running
   end
 
   it "does not retry inside an archived thread" do
-    generation_run.conversation_thread.update!(status: :archived)
+    source_run.conversation_thread.update!(status: :archived)
 
     expect(result).not_to be_success
     expect(result.errors[:generation_run]).to be_present
-    expect(generation_run.reload).to be_failed
+    expect(source_run.reload).to be_failed
+  end
+
+  it "is idempotent when the same failed run is retried twice" do
+    first = result
+
+    expect do
+      @second = described_class.call(generation_run: source_run)
+    end.to change(GenerationRun, :count).by(0)
+      .and change(Message, :count).by(0)
+
+    expect(@second).to be_success
+    expect(@second.generation_run).to eq(first.generation_run)
   end
 end

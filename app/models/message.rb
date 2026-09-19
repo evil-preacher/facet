@@ -1,12 +1,12 @@
 class Message < ApplicationRecord
   ROLES = %w[user assistant].freeze
-  STATUSES = %w[streaming completed failed].freeze
+  STATUSES = %w[streaming completed failed stopped].freeze
   MAX_CONTENT_LENGTH = 100_000
   CLIENT_TOKEN_FORMAT = /\A[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\z/i
 
   belongs_to :conversation_thread, inverse_of: :messages
   belongs_to :personality_version
-  has_one :generation_run_as_user,
+  has_many :generation_runs_as_user,
           class_name: "GenerationRun",
           foreign_key: :user_message_id,
           dependent: :restrict_with_exception,

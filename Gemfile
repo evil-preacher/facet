@@ -24,6 +24,7 @@ gem "stimulus-rails"
 gem "jbuilder"
 gem "diff-lcs"
 gem "openai", "~> 0.91.0"
+gem "sidekiq", "~> 8.1.7"
 # Rack Session 2.1 passes options positionally; JSON 3 removed that compatibility.
 gem "json", "< 3"
 

@@ -1,6 +1,6 @@
 # 0002. PostgreSQL first; no Redis in the MVP
 
-- Status: Accepted
+- Status: Superseded by ADR 0003
 - Date: 2026-09-18
 
 ## Context

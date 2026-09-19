@@ -202,6 +202,7 @@ en:
         archived_notice: "This thread is archived. Its messages are read-only."
       generation:
         generating: "The personality is composing a reply…"
+        stop: "Stop"
         failed: "The reply could not be generated."
         retry: "Retry"
         stopped: "Generation stopped."
@@ -213,6 +214,7 @@ en:
       statuses:
         failed: "Failed"
         streaming: "Typing…"
+        stopped: "Stopped"
       composer:
         label: "Message"
         placeholder: "Message %{name}…"

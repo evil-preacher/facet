@@ -21,6 +21,8 @@ Rails.application.routes.draw do
       patch :archive, on: :member
       resources :messages, only: :create
       resources :generation_runs, only: [] do
+        get :stream, on: :member
+        post :stop, on: :member
         post :retry, on: :member
       end
     end

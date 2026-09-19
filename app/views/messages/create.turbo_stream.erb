@@ -1,5 +1,12 @@
 <% if @result.success? %>
   <%= turbo_stream.append "messages", partial: "messages/message", locals: { message: @message } if @result.created? %>
+  <%= turbo_stream.append "messages", partial: "messages/message", locals: { message: @result.assistant_message } if @result.created? %>
+  <%= turbo_stream.replace "generation_status",
+                           partial: "conversation_threads/generation_status",
+                           locals: { generation_run: @result.generation_run } %>
+  <%= turbo_stream.replace "generation_stream",
+                           partial: "conversation_threads/generation_stream",
+                           locals: { generation_run: @result.generation_run } %>
   <%= turbo_stream.replace "message_composer",
                            partial: "messages/form",
                            locals: { personality: @personality, conversation_thread: @conversation_thread, result: nil, content: nil, client_token: @client_token } %>

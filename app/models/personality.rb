@@ -4,6 +4,7 @@ class Personality < ApplicationRecord
   belongs_to :user
   belongs_to :current_version, class_name: "PersonalityVersion", optional: true
   has_many :conversation_threads, dependent: :destroy
+  has_many :model_calls, dependent: :nullify
   has_many :versions,
            -> { order(number: :asc) },
            class_name: "PersonalityVersion",
@@ -14,6 +15,7 @@ class Personality < ApplicationRecord
 
   validates :name, presence: true, length: { maximum: 80 }
   validates :description, length: { maximum: 500 }
+  validates :conversation_model, :utility_model, presence: true, length: { maximum: 120 }
   validate :current_version_belongs_to_personality
   validate :current_version_present_when_active
 

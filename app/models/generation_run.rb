@@ -5,6 +5,7 @@ class GenerationRun < ApplicationRecord
   belongs_to :personality_version
   belongs_to :user_message, class_name: "Message", inverse_of: :generation_run_as_user
   belongs_to :assistant_message, class_name: "Message", optional: true, inverse_of: :generation_run_as_assistant
+  has_many :model_calls, dependent: :nullify
 
   enum :status, STATUSES.index_with(&:itself), validate: true
 

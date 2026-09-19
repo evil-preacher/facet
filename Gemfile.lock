@@ -152,6 +152,9 @@ GEM
       racc (~> 1.4)
     nokogiri (1.19.4-x86_64-linux-musl)
       racc (~> 1.4)
+    openai (0.91.0)
+      connection_pool (>= 2.2.3)
+      logger
     parallel (2.2.0)
     parser (3.3.12.0)
       ast (~> 2.4.1)
@@ -324,6 +327,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   json (< 3)
+  openai (~> 0.91.0)
   pg (~> 1.1)
   propshaft
   puma (>= 5.0)

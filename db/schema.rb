@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_18_000006) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_19_000007) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -87,7 +87,57 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_000006) do
     t.check_constraint "status::text = ANY (ARRAY['streaming'::character varying, 'completed'::character varying, 'failed'::character varying]::text[])", name: "messages_status"
   end
 
+  create_table "model_calls", force: :cascade do |t|
+    t.integer "cached_input_tokens"
+    t.datetime "completed_at"
+    t.bigint "cost_microusd"
+    t.datetime "created_at", null: false
+    t.string "error_class"
+    t.string "error_code"
+    t.text "error_message"
+    t.bigint "generation_run_id"
+    t.integer "input_tokens"
+    t.integer "latency_ms"
+    t.string "model", null: false
+    t.integer "output_tokens"
+    t.bigint "personality_id"
+    t.string "pricing_version"
+    t.string "provider", null: false
+    t.string "provider_request_id"
+    t.string "purpose", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["generation_run_id"], name: "index_model_calls_on_generation_run_id"
+    t.index ["personality_id", "created_at"], name: "index_model_calls_on_personality_id_and_created_at"
+    t.index ["personality_id"], name: "index_model_calls_on_personality_id"
+    t.index ["provider_request_id"], name: "index_model_calls_on_provider_request_id", unique: true, where: "(provider_request_id IS NOT NULL)"
+    t.index ["user_id", "created_at"], name: "index_model_calls_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_model_calls_on_user_id"
+    t.check_constraint "(input_tokens IS NULL OR input_tokens >= 0) AND (cached_input_tokens IS NULL OR cached_input_tokens >= 0) AND (output_tokens IS NULL OR output_tokens >= 0) AND (cost_microusd IS NULL OR cost_microusd >= 0) AND (latency_ms IS NULL OR latency_ms >= 0) AND (cached_input_tokens IS NULL OR input_tokens IS NOT NULL) AND (cached_input_tokens IS NULL OR cached_input_tokens <= input_tokens)", name: "model_calls_nonnegative_usage"
+    t.check_constraint "purpose::text = ANY (ARRAY['conversation'::character varying, 'memory_extraction'::character varying, 'memory_consolidation'::character varying, 'thread_summary'::character varying, 'initiative'::character varying]::text[])", name: "model_calls_purpose"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'completed'::character varying, 'failed'::character varying]::text[])", name: "model_calls_status"
+  end
+
+  create_table "model_prices", force: :cascade do |t|
+    t.bigint "cached_input_microusd_per_million", null: false
+    t.datetime "created_at", null: false
+    t.datetime "effective_from", null: false
+    t.datetime "effective_until"
+    t.bigint "input_microusd_per_million", null: false
+    t.string "model", null: false
+    t.bigint "output_microusd_per_million", null: false
+    t.string "provider", null: false
+    t.datetime "updated_at", null: false
+    t.string "version", null: false
+    t.index ["provider", "model", "effective_from"], name: "index_model_prices_on_provider_and_model_and_effective_from", unique: true
+    t.index ["provider", "model", "effective_until"], name: "index_model_prices_on_provider_and_model_and_effective_until"
+    t.check_constraint "effective_until IS NULL OR effective_until > effective_from", name: "model_prices_valid_interval"
+    t.check_constraint "input_microusd_per_million >= 0 AND cached_input_microusd_per_million >= 0 AND output_microusd_per_million >= 0", name: "model_prices_nonnegative_rates"
+  end
+
   create_table "personalities", force: :cascade do |t|
+    t.string "conversation_model", default: "gpt-4o", null: false
     t.datetime "created_at", null: false
     t.bigint "current_version_id"
     t.text "description", default: "", null: false
@@ -95,12 +145,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_000006) do
     t.string "status", default: "draft", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.string "utility_model", default: "gpt-4o-mini", null: false
     t.index ["current_version_id"], name: "index_personalities_on_current_version_id", unique: true
     t.index ["user_id", "status"], name: "index_personalities_on_user_id_and_status"
     t.index ["user_id"], name: "index_personalities_on_user_id"
     t.check_constraint "char_length(btrim(name::text)) >= 1 AND char_length(btrim(name::text)) <= 80", name: "personalities_name_length"
     t.check_constraint "char_length(description) <= 500", name: "personalities_description_length"
-    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying::text, 'active'::character varying::text, 'archived'::character varying::text])", name: "personalities_status"
+    t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'active'::character varying, 'archived'::character varying]::text[])", name: "personalities_status"
   end
 
   create_table "personality_versions", force: :cascade do |t|
@@ -149,6 +200,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_18_000006) do
   add_foreign_key "login_challenges", "users"
   add_foreign_key "messages", "conversation_threads"
   add_foreign_key "messages", "personality_versions"
+  add_foreign_key "model_calls", "generation_runs"
+  add_foreign_key "model_calls", "personalities"
+  add_foreign_key "model_calls", "users"
   add_foreign_key "personalities", "personality_versions", column: "current_version_id", on_delete: :nullify
   add_foreign_key "personalities", "users"
   add_foreign_key "personality_versions", "personalities"

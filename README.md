@@ -13,6 +13,11 @@ the environment template first:
 cp .env.example .env
 ```
 
+Set `OPENAI_API_KEY` in `.env` before making real model calls. Conversation and
+utility model roles default to `gpt-4o` and `gpt-4o-mini`; override them with
+`OPENAI_CONVERSATION_MODEL` and `OPENAI_UTILITY_MODEL`. Credentials, prompts,
+character bibles, and message content are filtered from Rails parameter logs.
+
 ```sh
 docker compose up --build
 ```
@@ -60,9 +65,26 @@ duplicates. The composer responds with Turbo Streams while retaining a plain
 HTML fallback.
 
 `GenerationRun` records and UI states for pending, running, failed, stopped,
-and retry are in place; actual AI responses are intentionally deferred to the
-model gateway stage. Archived personalities and threads remain readable but
+and retry are in place. Archived personalities and threads remain readable but
 cannot accept new messages or retries.
+
+## AI gateway and usage
+
+All provider calls cross a provider-neutral `Ai::Gateway`. The OpenAI adapter
+uses the official Ruby SDK and Responses API for buffered and streaming calls;
+ordinary tests use a deterministic fake adapter and never access the network.
+
+Every request creates a `ModelCall` audit record with provider request ID,
+latency, input/cached/output token usage, and integer `cost_microusd`. Pricing is
+effective-dated in `ModelPrice`; `db:seed` installs the verified GPT-4o and
+GPT-4o mini text-token rates current on 2026-09-19. Failed calls store stable,
+sanitized error codes and preserve partial usage when the provider supplies it.
+Generation runs claim work under a database lock so duplicate workers cannot
+issue a second request for an already running or completed run.
+
+Prompt assembly and connecting this gateway to persisted assistant messages
+belong to the next implementation stages, so the chat UI does not call the
+provider yet.
 
 ## Tests
 

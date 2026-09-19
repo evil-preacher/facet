@@ -5,6 +5,7 @@ class User < ApplicationRecord
   has_one :profile, dependent: :destroy
   has_many :login_challenges, dependent: :destroy
   has_many :personalities, dependent: :destroy
+  has_many :model_calls, dependent: :restrict_with_exception
 
   before_validation :normalize_email
 

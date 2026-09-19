@@ -47,7 +47,9 @@ module Personalities
         @personality = user.personalities.create!(
           name: name.strip,
           description: description.to_s.strip,
-          status: :draft
+          status: :draft,
+          conversation_model: Rails.configuration.x.ai.conversation_model,
+          utility_model: Rails.configuration.x.ai.utility_model
         )
         version = personality.versions.create!(
           number: 1,

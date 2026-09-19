@@ -50,6 +50,9 @@ services:
       SMTP_ADDRESS: ${SMTP_ADDRESS:-mailpit}
       SMTP_PORT: ${SMTP_PORT:-1025}
       RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-5}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_CONVERSATION_MODEL: ${OPENAI_CONVERSATION_MODEL:-gpt-4o}
+      OPENAI_UTILITY_MODEL: ${OPENAI_UTILITY_MODEL:-gpt-4o-mini}
     depends_on:
       db:
         condition: service_healthy

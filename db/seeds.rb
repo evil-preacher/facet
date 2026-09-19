@@ -22,17 +22,31 @@ prices = [
     input_microusd_per_million: 150_000,
     cached_input_microusd_per_million: 75_000,
     output_microusd_per_million: 600_000
+  },
+  {
+    provider: "mistral",
+    model: "mistral-large-2512",
+    input_microusd_per_million: 500_000,
+    cached_input_microusd_per_million: 50_000,
+    output_microusd_per_million: 1_500_000
+  },
+  {
+    provider: "mistral",
+    model: "mistral-small-latest",
+    input_microusd_per_million: 150_000,
+    cached_input_microusd_per_million: 15_000,
+    output_microusd_per_million: 600_000
   }
 ]
 
 prices.each do |attributes|
   ModelPrice.find_or_create_by!(
-    provider: "openai",
+    provider: attributes.fetch(:provider, "openai"),
     model: attributes.fetch(:model),
     effective_from: Time.utc(2026, 9, 19)
   ) do |price|
     price.assign_attributes(
-      attributes.except(:model).merge(version: "openai-2026-09-19")
+      attributes.except(:provider, :model).merge(version: "#{attributes.fetch(:provider, "openai")}-2026-09-19")
     )
   end
 end

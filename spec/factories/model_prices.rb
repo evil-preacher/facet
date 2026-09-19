@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :model_price do
-    provider { "openai" }
-    model { "gpt-4o" }
+    provider { "mistral" }
+    model { "mistral-large-2512" }
     sequence(:version) { |number| "test-v#{number}" }
     input_microusd_per_million { 2_500_000 }
     cached_input_microusd_per_million { 1_250_000 }

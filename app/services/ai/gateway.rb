@@ -2,7 +2,7 @@ module Ai
   class Gateway
     class << self
       def default
-        @default ||= new(adapter: OpenAiAdapter.new)
+        @default ||= new(adapter: MistralAdapter.new)
       end
 
       attr_writer :default

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_19_000013) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_19_000014) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -167,7 +167,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000013) do
   end
 
   create_table "personalities", force: :cascade do |t|
-    t.string "conversation_model", default: "gpt-4o-2024-11-20", null: false
+    t.string "conversation_model", default: "mistral-large-2512", null: false
     t.datetime "created_at", null: false
     t.bigint "current_version_id"
     t.text "description", default: "", null: false
@@ -175,7 +175,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000013) do
     t.string "status", default: "draft", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.string "utility_model", default: "gpt-4o-mini", null: false
+    t.string "utility_model", default: "mistral-small-latest", null: false
     t.index ["current_version_id"], name: "index_personalities_on_current_version_id", unique: true
     t.index ["user_id", "status"], name: "index_personalities_on_user_id_and_status"
     t.index ["user_id"], name: "index_personalities_on_user_id"

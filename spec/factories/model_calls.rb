@@ -4,8 +4,8 @@ FactoryBot.define do
     personality { nil }
     generation_run { nil }
     purpose { :conversation }
-    provider { "openai" }
-    model { "gpt-4o" }
+    provider { "mistral" }
+    model { "mistral-large-2512" }
     status { :pending }
   end
 end

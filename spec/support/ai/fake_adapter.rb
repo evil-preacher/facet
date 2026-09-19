@@ -7,7 +7,7 @@ module Ai
       @queued = []
     end
 
-    def enqueue_response(text:, request_id:, usage:, model: "gpt-4o-2024-11-20")
+    def enqueue_response(text:, request_id:, usage:, model: "mistral-large-2512")
       enqueue_raw_response(Response.new(text: text, request_id: request_id, model: model, usage: usage))
     end
 
@@ -15,7 +15,7 @@ module Ai
       @queued << [ :response, response ]
     end
 
-    def enqueue_stream(deltas:, text:, request_id:, usage:, model: "gpt-4o-2024-11-20", after_delta: nil)
+    def enqueue_stream(deltas:, text:, request_id:, usage:, model: "mistral-large-2512", after_delta: nil)
       @queued << [
         :stream,
         deltas,

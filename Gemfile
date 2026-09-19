@@ -23,6 +23,8 @@ gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 gem "diff-lcs"
+# Mistral exposes an OpenAI-compatible Chat Completions endpoint. The OpenAI
+# transport gives the Ruby app typed responses, streaming, and retry handling.
 gem "openai", "~> 0.91.0"
 gem "sidekiq", "~> 8.1.7"
 # Rack Session 2.1 passes options positionally; JSON 3 removed that compatibility.

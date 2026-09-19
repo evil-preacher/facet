@@ -23,7 +23,7 @@ module Ai
 
     def initialize(user:, personality:, purpose:, model:, input:, prompt_cache_key: nil, generation_run: nil,
                    stream: false, finalize_generation_run: true,
-                   gateway: Gateway.default, provider: "openai", now: Time.current,
+                   gateway: Gateway.default, provider: Rails.configuration.x.ai.provider, now: Time.current,
                    clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
       @user = user
       @personality = personality

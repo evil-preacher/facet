@@ -1,11 +1,14 @@
 module Ai
-  class OpenAiAdapter
+  class MistralAdapter
+    API_BASE_URL = "https://api.mistral.ai/v1"
+
     def initialize(client: nil)
       @client = client
     end
 
     def response(model:, input:, prompt_cache_key: nil)
-      normalize(client.responses.create(**request_parameters(model, input, prompt_cache_key)))
+      raw = client.chat.completions.create(request_parameters(model, input, prompt_cache_key))
+      normalize(raw)
     rescue OpenAI::Errors::APITimeoutError => error
       raise TimeoutError.new(error.message, request_id: request_id_from(error)), cause: error
     rescue OpenAI::Errors::RateLimitError => error
@@ -15,24 +18,18 @@ module Ai
     end
 
     def stream_response(model:, input:, prompt_cache_key: nil)
-      stream = client.responses.stream(**request_parameters(model, input, prompt_cache_key))
-      completed_response = nil
+      stream = client.chat.completions.stream(request_parameters(model, input, prompt_cache_key))
       streamed_text = +""
 
       stream.each do |event|
-        case event.type.to_s
-        when "response.output_text.delta"
-          streamed_text << event.delta
-          yield event.delta if block_given?
-        when "response.completed"
-          completed_response = event.response
-        when "response.failed", "response.incomplete"
-          raise ProviderError, "Provider did not complete the response"
-        end
+        next unless event.type.to_s == "content.delta"
+
+        streamed_text << event.delta
+        yield event.delta if block_given?
       end
 
       normalize(
-        completed_response,
+        stream.get_final_completion,
         fallback_text: streamed_text,
         fallback_request_id: stream_request_id(stream)
       )
@@ -49,8 +46,7 @@ module Ai
     def request_parameters(model, input, prompt_cache_key)
       {
         model: model,
-        input: serialize_input(input),
-        store: false
+        messages: serialize_input(input)
       }.tap do |parameters|
         parameters[:prompt_cache_key] = prompt_cache_key if prompt_cache_key.present?
         log_request(parameters)
@@ -58,19 +54,24 @@ module Ai
     end
 
     def serialize_input(input)
-      return input unless input.is_a?(Array)
+      items = input.is_a?(Array) ? input : [ { role: "user", content: input } ]
 
-      input.map do |item|
-        if item.respond_to?(:role) && item.respond_to?(:content)
-          { role: item.role, content: item.content }
+      items.map do |item|
+        role, content = if item.respond_to?(:role) && item.respond_to?(:content)
+          [ item.role, item.content ]
         else
-          item
+          [ item.fetch(:role), item.fetch(:content) ]
         end
+
+        { role: role.to_s == "developer" ? "system" : role, content: content }
       end
     end
 
     def client
-      @client ||= OpenAI::Client.new(api_key: ENV.fetch("OPENAI_API_KEY"))
+      @client ||= OpenAI::Client.new(
+        api_key: ENV.fetch("MISTRAL_API_KEY"),
+        base_url: ENV.fetch("MISTRAL_BASE_URL", API_BASE_URL)
+      )
     end
 
     def normalize(raw, fallback_text: nil, fallback_request_id: nil)
@@ -78,19 +79,28 @@ module Ai
 
       usage = raw.usage
       response = Response.new(
-        text: raw.output_text.presence || fallback_text,
+        text: completion_text(raw).presence || fallback_text,
         request_id: fallback_request_id.presence || response_request_id(raw),
         model: raw.model,
         usage: Usage.new(
-          input_tokens: usage.input_tokens,
-          cached_input_tokens: usage.input_tokens_details&.cached_tokens || 0,
-          output_tokens: usage.output_tokens
+          input_tokens: usage.prompt_tokens,
+          cached_input_tokens: usage.prompt_tokens_details&.cached_tokens || 0,
+          output_tokens: usage.completion_tokens
         )
       )
       log_response(response)
       response
     rescue NoMethodError, TypeError, ArgumentError => error
       raise MalformedResponseError.new("Provider returned an invalid response"), cause: error
+    end
+
+    def completion_text(response)
+      content = response.choices.first.message.content
+      return content if content.is_a?(String)
+
+      Array(content).filter_map do |chunk|
+        chunk.text if chunk.respond_to?(:text) && chunk.type.to_s == "text"
+      end.join
     end
 
     def request_id_from(error)
@@ -108,20 +118,17 @@ module Ai
 
     def log_request(parameters)
       Rails.logger.info(
-        "OpenAI request model=#{parameters.fetch(:model)} " \
-        "input_items=#{Array(parameters[:input]).length} " \
-        "instructions=none previous_response_id=none conversation=none temperature=default"
+        "Mistral request model=#{parameters.fetch(:model)} " \
+        "messages=#{parameters.fetch(:messages).length} temperature=default"
       )
       return unless debug_payloads?
 
-      # Sidekiq logs at INFO by default, so an explicitly enabled diagnostic
-      # must use INFO as well or it remains invisible in worker logs.
-      Rails.logger.info("OpenAI request payload: #{parameters.inspect}")
+      Rails.logger.info("Mistral request payload: #{parameters.inspect}")
     end
 
     def log_response(response)
       Rails.logger.info(
-        "OpenAI response request_id=#{response.request_id} model=#{response.model}"
+        "Mistral response request_id=#{response.request_id} model=#{response.model}"
       )
     end
 

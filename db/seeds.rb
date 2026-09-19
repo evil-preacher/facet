@@ -12,6 +12,12 @@ prices = [
     output_microusd_per_million: 10_000_000
   },
   {
+    model: "gpt-4o-2024-11-20",
+    input_microusd_per_million: 2_500_000,
+    cached_input_microusd_per_million: 1_250_000,
+    output_microusd_per_million: 10_000_000
+  },
+  {
     model: "gpt-4o-mini",
     input_microusd_per_million: 150_000,
     cached_input_microusd_per_million: 75_000,

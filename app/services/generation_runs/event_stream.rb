@@ -80,6 +80,7 @@ module GenerationRuns
       yield event(
         "usage",
         {
+          model: model_call.response_model || model_call.model,
           input_tokens: model_call.input_tokens,
           cached_input_tokens: model_call.cached_input_tokens,
           output_tokens: model_call.output_tokens,

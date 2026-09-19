@@ -14,7 +14,7 @@ cp .env.example .env
 ```
 
 Set `OPENAI_API_KEY` in `.env` before making real model calls. Conversation and
-utility model roles default to `gpt-4o` and `gpt-4o-mini`; override them with
+utility model roles default to `gpt-4o-2024-11-20` and `gpt-4o-mini`; override them with
 `OPENAI_CONVERSATION_MODEL` and `OPENAI_UTILITY_MODEL`. Credentials, prompts,
 character bibles, and message content are filtered from Rails parameter logs.
 
@@ -82,13 +82,27 @@ sanitized error codes and preserve partial usage when the provider supplies it.
 Generation runs claim work under a database lock so duplicate workers cannot
 issue a second request for an already running or completed run.
 
+### AI request diagnostics
+
+Every completed `ModelCall` stores both the requested model alias and the actual
+`response.model` returned by OpenAI. Set `AI_DEBUG_UI=true` to show the actual
+model snapshot and input/output token counts below assistant messages. Existing
+records created before this field was added fall back to the requested alias.
+
+Set `AI_DEBUG_PAYLOADS=true` only during local development to log the exact hash
+passed to `client.responses.create` or `client.responses.stream`. The payload does
+not contain the API key, but it does contain the private character bible and
+conversation text. This opt-in payload entry is emitted at `INFO` so it is visible
+in Sidekiq's default logs. Restart the `web` and `worker` services after changing
+either flag, then inspect generation calls with `docker compose logs -f worker`.
+
 ## Prompt assembly
 
 `Ai::PromptBuilder` assembles provider-neutral response input in a stable
 order: application rules, the immutable character bible version, relationship
-state, relevant memories, thread summary, recent messages, the current user
-message, and the response-language instruction. The stable rules and bible
-prefix is reused with a personality-version cache key for provider prompt
+state, relevant memories, thread summary, recent messages, and the current user message. The response-language rule lives
+in Application rules so the current user message remains the final input item. The
+stable rules and bible prefix is reused with a personality-version cache key for provider prompt
 caching.
 
 Each section has an explicit context budget. On overflow, the oldest recent

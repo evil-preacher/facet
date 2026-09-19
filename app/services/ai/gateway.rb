@@ -33,7 +33,7 @@ module Ai
     def validate_response!(response)
       valid = response.is_a?(Response) &&
         response.text.is_a?(String) && response.text.present? &&
-        response.request_id.present? && response.usage.is_a?(Usage) &&
+        response.request_id.present? && response.model.present? && response.usage.is_a?(Usage) &&
         response.usage.input_tokens >= 0 &&
         response.usage.cached_input_tokens.between?(0, response.usage.input_tokens) &&
         response.usage.output_tokens >= 0

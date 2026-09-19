@@ -9,7 +9,7 @@ module Ai
     end
   end
 
-  Response = Data.define(:text, :request_id, :usage)
+  Response = Data.define(:text, :request_id, :model, :usage)
 
   class Error < StandardError
     attr_reader :request_id, :usage

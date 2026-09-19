@@ -16,7 +16,14 @@
     <span class="rounded-full bg-white px-3 py-1 text-sm font-bold text-slate-600 ring-1 ring-slate-200"><%= t("app.personalities.statuses.#{@personality.status}") %></span>
   </div>
 
-  <article class="mt-10 rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-200 sm:p-10">
+  <nav data-context-navigation class="sticky top-3 z-30 mt-6 flex flex-wrap gap-2 rounded-2xl bg-slate-50/95 p-2 shadow-lg shadow-slate-200/70 ring-1 ring-slate-200 backdrop-blur" aria-label="<%= t("app.personalities.show.navigation") %>">
+    <%= link_to t("app.personalities.show.edit"), edit_personality_path(@personality), class: "rounded-xl bg-emerald-800 px-4 py-2 font-bold text-white no-underline hover:bg-emerald-950" %>
+    <%= link_to t("app.personalities.show.history"), personality_versions_path(@personality), class: "rounded-xl bg-white px-4 py-2 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
+    <%= link_to t("app.personalities.show.conversations"), personality_conversation_threads_path(@personality), class: "rounded-xl bg-white px-4 py-2 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
+    <%= link_to t("app.personalities.show.back"), personalities_path, class: "rounded-xl bg-white px-4 py-2 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
+  </nav>
+
+  <article id="character-bible" class="mt-6 scroll-mt-24 rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-200 sm:p-10">
     <div class="flex items-center justify-between gap-4">
       <h2 class="text-xl font-bold"><%= t("app.personalities.show.character_bible") %></h2>
       <span class="text-sm text-slate-500"><%= t("app.personalities.show.version", number: @personality.current_version.number) %></span>
@@ -24,17 +31,12 @@
     <div class="mt-6 whitespace-pre-wrap font-sans leading-7 text-slate-700"><%= @personality.current_version.content %></div>
   </article>
 
-  <div class="mt-7 flex flex-wrap gap-4">
-    <%= link_to t("app.personalities.show.edit"), edit_personality_path(@personality), class: "rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white no-underline hover:bg-emerald-950" %>
-    <%= link_to t("app.personalities.show.history"), personality_versions_path(@personality), class: "rounded-xl bg-white px-5 py-3 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
-    <%= link_to t("app.personalities.show.conversations"), personality_conversation_threads_path(@personality), class: "rounded-xl bg-white px-5 py-3 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
-    <%= link_to t("app.personalities.show.back"), personalities_path, class: "rounded-xl bg-white px-5 py-3 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
-    <% unless @personality.archived? %>
+  <% unless @personality.archived? %>
+    <div class="mt-6">
       <%= button_to t("app.personalities.show.archive"),
                     archive_personality_path(@personality),
                     method: :patch,
-                    class: "cursor-pointer rounded-xl border-0 bg-transparent px-5 py-3 font-bold text-rose-700 hover:bg-rose-50",
-                    form_class: "inline" %>
-    <% end %>
-  </div>
+                    class: "cursor-pointer rounded-xl border-0 bg-rose-50 px-4 py-2 font-bold text-rose-700 hover:bg-rose-100" %>
+    </div>
+  <% end %>
 </section>

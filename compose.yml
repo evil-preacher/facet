@@ -70,6 +70,8 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_CONVERSATION_MODEL: ${OPENAI_CONVERSATION_MODEL:-gpt-4o}
       OPENAI_UTILITY_MODEL: ${OPENAI_UTILITY_MODEL:-gpt-4o-mini}
+      AI_DEBUG_UI: ${AI_DEBUG_UI:-true}
+      AI_DEBUG_PAYLOADS: ${AI_DEBUG_PAYLOADS:-false}
     depends_on:
       db:
         condition: service_healthy
@@ -105,6 +107,8 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_CONVERSATION_MODEL: ${OPENAI_CONVERSATION_MODEL:-gpt-4o}
       OPENAI_UTILITY_MODEL: ${OPENAI_UTILITY_MODEL:-gpt-4o-mini}
+      AI_DEBUG_UI: ${AI_DEBUG_UI:-true}
+      AI_DEBUG_PAYLOADS: ${AI_DEBUG_PAYLOADS:-false}
     depends_on:
       db:
         condition: service_healthy

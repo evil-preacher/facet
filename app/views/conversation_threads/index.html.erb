@@ -5,16 +5,20 @@
     <%= image_tag "conversation-threads.png", alt: "", class: "h-full w-full object-cover object-center", aria: { hidden: true } %>
   </div>
 
-  <div class="mt-8 flex flex-wrap items-end justify-between gap-5">
+  <div class="mt-8">
     <div>
       <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-700"><%= t("app.conversation_threads.index.eyebrow") %></p>
       <h1 class="mt-2 text-4xl font-black tracking-tight"><%= t("app.conversation_threads.index.heading", name: @personality.name) %></h1>
       <p class="mt-3 text-slate-600"><%= t("app.conversation_threads.index.description") %></p>
     </div>
-    <% if @personality.active? %>
-      <%= link_to t("app.conversation_threads.index.new"), new_personality_conversation_thread_path(@personality), class: "rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white no-underline hover:bg-emerald-950" %>
-    <% end %>
   </div>
+
+  <nav data-context-navigation class="sticky top-3 z-30 mt-6 flex flex-wrap gap-2 rounded-2xl bg-slate-50/95 p-2 shadow-lg shadow-slate-200/70 ring-1 ring-slate-200 backdrop-blur" aria-label="<%= t("app.conversation_threads.index.navigation") %>">
+    <%= link_to t("app.conversation_threads.back_to_personality"), personality_path(@personality), class: "rounded-xl bg-white px-4 py-2 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
+    <% if @personality.active? %>
+      <%= link_to t("app.conversation_threads.index.new"), new_personality_conversation_thread_path(@personality), class: "rounded-xl bg-emerald-800 px-4 py-2 font-bold text-white no-underline hover:bg-emerald-950" %>
+    <% end %>
+  </nav>
 
   <% if @conversation_threads.any? %>
     <div class="mt-10 grid gap-4">
@@ -45,5 +49,4 @@
     </div>
   <% end %>
 
-  <%= link_to t("app.conversation_threads.back_to_personality"), personality_path(@personality), class: "mt-8 inline-block font-bold text-emerald-800" %>
 </section>

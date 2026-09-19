@@ -1,7 +1,7 @@
 <div id="generation_status" class="mt-4" aria-live="polite">
   <% if generation_run&.pending? || generation_run&.running? %>
     <div class="rounded-2xl bg-amber-50 px-5 py-4 text-sm font-semibold text-amber-900 ring-1 ring-amber-200">
-      <%= t("app.conversation_threads.generation.generating") %>
+      <%= t("app.conversation_threads.generation.generating", name: @personality.name) %>
       <%= button_to t("app.conversation_threads.generation.stop"),
                     stop_personality_conversation_thread_generation_run_path(@personality, @conversation_thread, generation_run),
                     method: :post,

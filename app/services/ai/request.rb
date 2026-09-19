@@ -109,6 +109,7 @@ module Ai
       ModelCall.transaction do
         @model_call.update!(
           provider_request_id: response.request_id,
+          response_model: response.model,
           status: :completed,
           input_tokens: usage.input_tokens,
           cached_input_tokens: usage.cached_input_tokens,

@@ -16,6 +16,7 @@ class ModelCall < ApplicationRecord
   enum :status, STATUSES.index_with(&:itself), validate: true
 
   validates :provider, :model, presence: true
+  validates :response_model, length: { maximum: 120 }, allow_nil: true
   validates :input_tokens,
             :cached_input_tokens,
             :output_tokens,

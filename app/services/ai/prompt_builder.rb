@@ -9,14 +9,13 @@ module Ai
 
     DEFAULT_BUDGETS = {
       application_rules: 2_000,
-      character_bible: 22_000,
+      character_bible: 52_000,
       relationship_state: 2_000,
       memories: 4_000,
       thread_summary: 4_000,
       recent_messages: 8_000,
       current_message: 12_000,
-      language_instruction: 500,
-      total: 50_000
+      total: 100_000
     }.freeze
 
     SECTION_ORDER = %w[
@@ -27,7 +26,6 @@ module Ai
       thread_summary
       recent_messages
       current_message
-      language_instruction
     ].freeze
 
     def self.call(**arguments)
@@ -86,7 +84,7 @@ module Ai
       @rules_item = developer_item("Application rules", APPLICATION_RULES)
       @bible_item = developer_item(
         "Character bible",
-        wrap_untrusted("character_bible", @personality_version.content)
+        wrap_section("character_bible", @personality_version.content)
       )
       prepare_relationship
       prepare_memories
@@ -94,7 +92,6 @@ module Ai
       prepare_history
       @current_item = InputItem.new(role: "user", content: @current_message.content)
       @detected_language = LanguageDetector.call(@current_message.content)
-      @language_item = developer_item("Response language", language_instruction)
     end
 
     def prepare_relationship
@@ -186,7 +183,7 @@ module Ai
     end
 
     def memory_item(memories)
-      developer_item("Relevant memories", wrap_untrusted("memories", memory_content(memories)))
+      developer_item("Relevant memories", wrap_section("memories", memory_content(memories)))
     end
 
     def rebuild_history_items
@@ -203,8 +200,7 @@ module Ai
         @memory_item,
         @summary_item,
         *@history_items,
-        @current_item,
-        @language_item
+        @current_item
       ].compact
     end
 
@@ -216,33 +212,22 @@ module Ai
       InputItem.new(role: "developer", content: "## #{title}\n#{content}")
     end
 
-    def wrap_untrusted(name, content)
+    def wrap_section(name, content)
       "<#{name}>\n#{content}\n</#{name}>"
     end
 
     def budgeted_context_item(title, name, content, budget)
-      empty_item = developer_item(title, wrap_untrusted(name, ""))
+      empty_item = developer_item(title, wrap_section(name, ""))
       available = budget - count(empty_item.content)
       return [ nil, true ] if available <= 0
 
       truncated_content = @token_counter.truncate(content, available)
-      item = developer_item(title, wrap_untrusted(name, truncated_content))
+      item = developer_item(title, wrap_section(name, truncated_content))
       [ item, truncated_content != content ]
     end
 
-    def language_instruction
-      case @detected_language
-      when "ru"
-        "[Prompt text removed from public history]"
-      when "en"
-        "[Prompt text removed from public history]"
-      else
-        "[Prompt text removed from public history]"
-      end
-    end
-
     def prompt_cache_key
-      "facet-conversation-pv-#{@personality_version.id}-v1"
+      "facet-conversation-pv-#{@personality_version.id}-v3"
     end
 
     def total_tokens
@@ -286,8 +271,7 @@ module Ai
         "memories" => [ @memory_item ],
         "thread_summary" => [ @summary_item ],
         "recent_messages" => @history_items,
-        "current_message" => [ @current_item ],
-        "language_instruction" => [ @language_item ]
+        "current_message" => [ @current_item ]
       }
       truncated = {
         "relationship_state" => @relationship_truncated,

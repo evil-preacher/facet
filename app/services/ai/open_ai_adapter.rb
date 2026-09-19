@@ -53,6 +53,7 @@ module Ai
         store: false
       }.tap do |parameters|
         parameters[:prompt_cache_key] = prompt_cache_key if prompt_cache_key.present?
+        log_request(parameters)
       end
     end
 
@@ -76,15 +77,18 @@ module Ai
       raise MalformedResponseError, "Provider omitted the completed response" unless raw
 
       usage = raw.usage
-      Response.new(
+      response = Response.new(
         text: raw.output_text.presence || fallback_text,
         request_id: fallback_request_id.presence || response_request_id(raw),
+        model: raw.model,
         usage: Usage.new(
           input_tokens: usage.input_tokens,
           cached_input_tokens: usage.input_tokens_details&.cached_tokens || 0,
           output_tokens: usage.output_tokens
         )
       )
+      log_response(response)
+      response
     rescue NoMethodError, TypeError, ArgumentError => error
       raise MalformedResponseError.new("Provider returned an invalid response"), cause: error
     end
@@ -100,6 +104,29 @@ module Ai
 
     def stream_request_id(stream)
       stream._request_id if stream.respond_to?(:_request_id)
+    end
+
+    def log_request(parameters)
+      Rails.logger.info(
+        "OpenAI request model=#{parameters.fetch(:model)} " \
+        "input_items=#{Array(parameters[:input]).length} " \
+        "instructions=none previous_response_id=none conversation=none temperature=default"
+      )
+      return unless debug_payloads?
+
+      # Sidekiq logs at INFO by default, so an explicitly enabled diagnostic
+      # must use INFO as well or it remains invisible in worker logs.
+      Rails.logger.info("OpenAI request payload: #{parameters.inspect}")
+    end
+
+    def log_response(response)
+      Rails.logger.info(
+        "OpenAI response request_id=#{response.request_id} model=#{response.model}"
+      )
+    end
+
+    def debug_payloads?
+      Rails.env.development? && ENV["AI_DEBUG_PAYLOADS"].to_s.casecmp?("true")
     end
   end
 end

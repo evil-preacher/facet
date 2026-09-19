@@ -52,6 +52,7 @@ RSpec.describe Ai::Request do
       purpose: "conversation",
       provider: "openai",
       model: "gpt-4o",
+      response_model: "gpt-4o-2024-11-20",
       provider_request_id: "req_123",
       status: "completed",
       input_tokens: 1_000,

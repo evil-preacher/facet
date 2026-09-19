@@ -2,16 +2,27 @@
   <div class="max-w-[85%] rounded-2xl px-5 py-4 shadow-sm <%= message.user? ? "bg-emerald-800 text-white" : "bg-white text-slate-800 ring-1 ring-slate-200" %>">
     <div class="whitespace-pre-wrap break-words leading-7" data-message-content><%= message.content %></div>
     <div class="mt-2 flex flex-wrap items-center gap-2 text-xs <%= message.user? ? "text-emerald-100" : "text-slate-400" %>">
-      <span><%= t("app.messages.roles.#{message.role}") %></span>
+      <span data-message-author>
+        <% if message.user? %>
+          <%= t("app.messages.roles.user") %>
+        <% else %>
+          <%= message.conversation_thread.personality.name %>
+        <% end %>
+      </span>
       <span>·</span>
       <time datetime="<%= message.created_at.iso8601 %>"><%= l(message.created_at, format: :message) %></time>
       <% if message.failed? %>
-        <span class="font-bold text-rose-300"><%= t("app.messages.statuses.failed") %></span>
+        <span data-message-status class="font-bold text-rose-300"><%= t("app.messages.statuses.failed") %></span>
       <% elsif message.streaming? %>
-        <span><%= t("app.messages.statuses.streaming") %></span>
+        <span data-message-status><%= t("app.messages.statuses.streaming") %></span>
       <% elsif message.stopped? %>
-        <span><%= t("app.messages.statuses.stopped") %></span>
+        <span data-message-status><%= t("app.messages.statuses.stopped") %></span>
       <% end %>
     </div>
+    <% if ai_debug_ui? && message.assistant? %>
+      <% model_call = completed_model_call_for(message) %>
+      <div data-message-debug
+           class="mt-2 font-mono text-[0.7rem] text-slate-400 <%= "hidden" unless model_call %>"><%= model_call_debug_line(model_call) %></div>
+    <% end %>
   </div>
 </article>

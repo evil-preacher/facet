@@ -8,7 +8,7 @@ RSpec.describe PersonalityVersion, type: :model do
   it { is_expected.to belong_to(:source_version).class_name("PersonalityVersion").optional }
 
   it { is_expected.to validate_presence_of(:content) }
-  it { is_expected.to validate_length_of(:content).is_at_most(20_000) }
+  it { is_expected.to validate_length_of(:content).is_at_most(50_000) }
   it { is_expected.to validate_length_of(:change_note).is_at_most(500).allow_nil }
   it { is_expected.to validate_numericality_of(:number).only_integer.is_greater_than(0) }
   it { is_expected.to validate_uniqueness_of(:number).scoped_to(:personality_id) }

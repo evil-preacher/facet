@@ -129,6 +129,7 @@ ru:
       show:
         page_title: "%{name} — Facet"
         eyebrow: "Личность"
+        navigation: "Навигация по личности"
         character_bible: "Character bible"
         version: "Версия %{number}"
         edit: "Редактировать"
@@ -179,6 +180,7 @@ ru:
         archived: "В архиве"
       index:
         page_title: "Разговоры с %{name} — Facet"
+        navigation: "Навигация по диалогам"
         eyebrow: "Conversation threads"
         heading: "Разговоры с %{name}"
         description: "Каждый тред хранит отдельный разговор, но использует общую личность и её актуальный character bible."
@@ -196,12 +198,14 @@ ru:
         back: "К списку разговоров"
       show:
         page_title: "%{title} — Facet"
+        navigation: "Навигация по диалогу"
+        personality: "← %{name}"
         all_threads: "Все разговоры"
         other_threads: "Другие треды"
         archive: "Архивировать"
         archived_notice: "Этот тред находится в архиве. Его сообщения доступны только для чтения."
       generation:
-        generating: "Личность формулирует ответ…"
+        generating: "%{name} формулирует ответ…"
         stop: "Остановить"
         failed: "Не удалось получить ответ."
         retry: "Повторить"

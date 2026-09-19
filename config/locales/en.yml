@@ -129,6 +129,7 @@ en:
       show:
         page_title: "%{name} — Facet"
         eyebrow: "Personality"
+        navigation: "Personality navigation"
         character_bible: "Character bible"
         version: "Version %{number}"
         edit: "Edit"
@@ -179,6 +180,7 @@ en:
         archived: "Archived"
       index:
         page_title: "Conversations with %{name} — Facet"
+        navigation: "Conversation navigation"
         eyebrow: "Conversation threads"
         heading: "Conversations with %{name}"
         description: "Each thread keeps a separate conversation while sharing the personality and its current character bible."
@@ -196,12 +198,14 @@ en:
         back: "Back to conversations"
       show:
         page_title: "%{title} — Facet"
+        navigation: "Conversation navigation"
+        personality: "← %{name}"
         all_threads: "All conversations"
         other_threads: "Other threads"
         archive: "Archive"
         archived_notice: "This thread is archived. Its messages are read-only."
       generation:
-        generating: "The personality is composing a reply…"
+        generating: "%{name} is composing a reply…"
         stop: "Stop"
         failed: "The reply could not be generated."
         retry: "Retry"

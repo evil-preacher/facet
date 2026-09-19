@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_19_000010) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_19_000013) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -114,6 +114,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000010) do
     t.string "provider", null: false
     t.string "provider_request_id"
     t.string "purpose", null: false
+    t.string "response_model"
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
@@ -166,7 +167,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000010) do
   end
 
   create_table "personalities", force: :cascade do |t|
-    t.string "conversation_model", default: "gpt-4o", null: false
+    t.string "conversation_model", default: "gpt-4o-2024-11-20", null: false
     t.datetime "created_at", null: false
     t.bigint "current_version_id"
     t.text "description", default: "", null: false
@@ -197,7 +198,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000010) do
     t.index ["personality_id"], name: "index_personality_versions_on_personality_id"
     t.index ["source_version_id"], name: "index_personality_versions_on_source_version_id"
     t.check_constraint "change_note IS NULL OR char_length(change_note) <= 500", name: "personality_versions_change_note_length"
-    t.check_constraint "char_length(btrim(content)) >= 1 AND char_length(btrim(content)) <= 20000", name: "personality_versions_content_length"
+    t.check_constraint "char_length(btrim(content)) >= 1 AND char_length(btrim(content)) <= 50000", name: "personality_versions_content_length"
     t.check_constraint "number > 0", name: "personality_versions_positive_number"
   end
 

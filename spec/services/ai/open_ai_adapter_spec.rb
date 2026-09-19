@@ -10,6 +10,7 @@ RSpec.describe Ai::OpenAiAdapter do
   )
   ProviderResponse = Struct.new(
     :id,
+    :model,
     :output_text,
     :usage,
     :_request_id,
@@ -54,6 +55,7 @@ RSpec.describe Ai::OpenAiAdapter do
   def provider_response(request_id: "req_http")
     ProviderResponse.new(
       id: "resp_123",
+      model: "gpt-4o-2024-11-20",
       _request_id: request_id,
       output_text: "Hello",
       usage: ProviderUsage.new(
@@ -74,6 +76,7 @@ RSpec.describe Ai::OpenAiAdapter do
     expect(response).to have_attributes(
       text: "Hello",
       request_id: "req_http",
+      model: "gpt-4o-2024-11-20",
       usage: Ai::Usage.new(input_tokens: 12, cached_input_tokens: 4, output_tokens: 3)
     )
   end
@@ -96,6 +99,7 @@ RSpec.describe Ai::OpenAiAdapter do
 
     expect(deltas).to eq(%w[Hel lo])
     expect(response.request_id).to eq("req_stream")
+    expect(response.model).to eq("gpt-4o-2024-11-20")
     expect(response.usage.cached_input_tokens).to eq(4)
   end
 
@@ -120,6 +124,24 @@ RSpec.describe Ai::OpenAiAdapter do
       input: [ { role: "developer", content: "Stable prefix" } ],
       store: false,
       prompt_cache_key: "facet-pv-1"
+    )
+  end
+
+  it "logs the exact request payload only when explicitly enabled in development" do
+    resource = FakeResponsesResource.new(response: provider_response)
+    adapter = described_class.new(client: Struct.new(:responses).new(resource))
+    allow(Rails.env).to receive(:development?).and_return(true)
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with("AI_DEBUG_PAYLOADS").and_return("true")
+    allow(Rails.logger).to receive(:info)
+
+    adapter.response(model: "gpt-4o", input: "private prompt")
+
+    expect(Rails.logger).to have_received(:info).with(
+      include("OpenAI request payload", "private prompt", "model: \"gpt-4o\"")
+    )
+    expect(Rails.logger).to have_received(:info).with(
+      include("OpenAI response", "req_http", "gpt-4o-2024-11-20")
     )
   end
 end

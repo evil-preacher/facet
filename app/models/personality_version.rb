@@ -1,5 +1,5 @@
 class PersonalityVersion < ApplicationRecord
-  MAX_CONTENT_LENGTH = 20_000
+  MAX_CONTENT_LENGTH = 50_000
 
   belongs_to :personality, inverse_of: :versions
   belongs_to :author, class_name: "User"

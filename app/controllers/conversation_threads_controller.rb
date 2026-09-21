@@ -56,7 +56,12 @@ class ConversationThreadsController < ApplicationController
 
   def prepare_show
     @conversation_threads = @personality.conversation_threads.recent_first
-    @messages = @conversation_thread.messages.includes(:personality_version, :message_image, conversation_thread: :personality)
+    @messages = @conversation_thread.messages.includes(
+      :personality_version,
+      :message_image,
+      :attachment,
+      conversation_thread: :personality
+    )
     @latest_generation_run = @conversation_thread.generation_runs.order(created_at: :desc).first
     @client_token = SecureRandom.uuid
   end

@@ -35,6 +35,20 @@ RSpec.describe Ai::GenerateReplyJob do
     expect(generation_run.assistant_message.reload).to be_streaming
   end
 
+  it "retries when an attached image cannot be downloaded temporarily" do
+    generation_run = create(:generation_run)
+    allow(Ai::GenerateReply).to receive(:call).and_raise(
+      ObjectStorage::TransientError,
+      "private storage detail"
+    )
+
+    expect do
+      described_class.perform_now(generation_run.id)
+    end.to have_enqueued_job(described_class).once
+
+    expect(generation_run.reload).to be_pending
+  end
+
   it "persists a terminal state before reraising an unexpected crash" do
     generation_run = create(:generation_run)
     allow(Ai::GenerateReply).to receive(:call).and_raise(ArgumentError, "private detail")

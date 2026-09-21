@@ -215,6 +215,7 @@ en:
         stopped: "Generation stopped."
     messages:
       errors: "Please review the message:"
+      attachment_alt: "User image"
       roles:
         user: "You"
         assistant: "Personality"
@@ -229,6 +230,8 @@ en:
       composer:
         label: "Message"
         placeholder: "Message %{name}…"
+        image: "Attach an image"
+        image_hint: "JPEG, PNG, or WebP up to 10 MB"
         submit: "Send"
         submitting: "Sending…"
     genders:
@@ -273,9 +276,14 @@ en:
         client_token: "Submission identifier"
       "messages/create":
         content: "Message"
+        image: "Image"
         client_token: "Submission identifier"
       "personalities/update":
         name: "Personality name"
         description: "Description"
         character_bible: "Character bible"
         change_note: "Version note"
+    errors:
+      messages:
+        invalid_image: "must be a JPEG, PNG, or WebP image no larger than 10 MB"
+        upload_failed: "could not be uploaded to storage"

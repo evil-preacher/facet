@@ -215,6 +215,7 @@ ru:
         stopped: "Генерация остановлена."
     messages:
       errors: "Проверьте сообщение:"
+      attachment_alt: "Изображение пользователя"
       roles:
         user: "Вы"
         assistant: "Личность"
@@ -229,6 +230,8 @@ ru:
       composer:
         label: "Сообщение"
         placeholder: "Напишите %{name}…"
+        image: "Прикрепить изображение"
+        image_hint: "JPEG, PNG или WebP, не более 10 МБ"
         submit: "Отправить"
         submitting: "Отправляем…"
     genders:
@@ -276,6 +279,7 @@ ru:
         client_token: "Идентификатор отправки"
       "messages/create":
         content: "Сообщение"
+        image: "Изображение"
         client_token: "Идентификатор отправки"
       "personalities/update":
         name: "Имя личности"
@@ -286,3 +290,5 @@ ru:
       messages:
         blank: "не может быть пустым"
         too_long: "слишком длинный текст (максимум: %{count})"
+        invalid_image: "должно быть изображением JPEG, PNG или WebP размером не более 10 МБ"
+        upload_failed: "не удалось загрузить в хранилище"

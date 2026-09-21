@@ -12,6 +12,7 @@ class Message < ApplicationRecord
           dependent: :restrict_with_exception,
           inverse_of: :user_message
   has_one :message_image, dependent: :destroy, inverse_of: :message
+  has_one :attachment, class_name: "MessageAttachment", dependent: :destroy, inverse_of: :message
   has_one :generation_run_as_assistant,
           class_name: "GenerationRun",
           foreign_key: :assistant_message_id,
@@ -38,7 +39,10 @@ class Message < ApplicationRecord
   private
 
   def completed_message_has_content
-    errors.add(:content, :blank) if completed? && content.to_s.strip.blank?
+    return unless completed? && content.to_s.strip.blank?
+    return if user? && attachment.present?
+
+    errors.add(:content, :blank)
   end
 
   def user_message_has_client_token

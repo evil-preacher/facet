@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_21_000018) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_21_000020) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -74,6 +74,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000018) do
     t.index ["user_id"], name: "index_login_challenges_on_user_id"
   end
 
+  create_table "message_attachments", force: :cascade do |t|
+    t.bigint "byte_size", null: false
+    t.string "content_type", null: false
+    t.datetime "created_at", null: false
+    t.bigint "message_id", null: false
+    t.string "object_key", null: false
+    t.string "original_filename"
+    t.datetime "updated_at", null: false
+    t.index ["message_id"], name: "index_message_attachments_on_message_id", unique: true
+    t.index ["object_key"], name: "index_message_attachments_on_object_key", unique: true
+    t.check_constraint "byte_size > 0 AND byte_size <= 10485760", name: "message_attachments_byte_size"
+    t.check_constraint "content_type::text = ANY (ARRAY['image/jpeg'::character varying, 'image/png'::character varying, 'image/webp'::character varying]::text[])", name: "message_attachments_content_type"
+  end
+
   create_table "message_images", force: :cascade do |t|
     t.integer "attempts_count", default: 0, null: false
     t.bigint "byte_size"
@@ -115,7 +129,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000018) do
     t.index ["conversation_thread_id"], name: "index_messages_on_conversation_thread_id"
     t.index ["personality_version_id"], name: "index_messages_on_personality_version_id"
     t.check_constraint "\"position\" > 0", name: "messages_positive_position"
-    t.check_constraint "char_length(content) <= 100000 AND (status::text <> 'completed'::text OR char_length(btrim(content)) > 0)", name: "messages_content"
+    t.check_constraint "char_length(content) <= 100000 AND (status::text <> 'completed'::text OR role::text = 'user'::text OR char_length(btrim(content)) > 0)", name: "messages_content"
     t.check_constraint "language::text = ANY (ARRAY['ru'::character varying, 'en'::character varying, 'und'::character varying]::text[])", name: "messages_language"
     t.check_constraint "role::text = ANY (ARRAY['user'::character varying, 'assistant'::character varying]::text[])", name: "messages_role"
     t.check_constraint "status::text = ANY (ARRAY['streaming'::character varying, 'completed'::character varying, 'failed'::character varying, 'stopped'::character varying]::text[])", name: "messages_status"
@@ -271,6 +285,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000018) do
   add_foreign_key "generation_runs", "messages", column: "user_message_id", on_delete: :restrict
   add_foreign_key "generation_runs", "personality_versions"
   add_foreign_key "login_challenges", "users"
+  add_foreign_key "message_attachments", "messages", on_delete: :cascade
   add_foreign_key "message_images", "messages", on_delete: :cascade
   add_foreign_key "messages", "conversation_threads"
   add_foreign_key "messages", "personality_versions"

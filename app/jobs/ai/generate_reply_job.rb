@@ -18,6 +18,11 @@ module Ai
       schedule_retry!(generation_run, result.error_code) if TRANSIENT_ERROR_CODES.include?(result.error_code)
     rescue RetryableGenerationError
       raise
+    rescue ObjectStorage::TransientError
+      raise RetryableGenerationError.new(
+        generation_run_id: generation_run.id,
+        error_code: "storage_error"
+      )
     rescue StandardError => error
       mark_unexpected_failure!(generation_run, error) if generation_run
       raise

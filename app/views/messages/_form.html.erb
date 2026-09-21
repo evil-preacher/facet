@@ -15,12 +15,18 @@
     <%= form.label :content, t("app.messages.composer.label"), class: "sr-only" %>
     <%= form.text_area :content,
                        value: content,
-                       required: true,
                        maxlength: Messages::Create::MAX_USER_CONTENT_LENGTH,
                        rows: 4,
                        placeholder: t("app.messages.composer.placeholder", name: personality.name),
                        class: "block w-full min-w-0 resize-y rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-emerald-700 focus:ring-4 focus:ring-emerald-100" %>
-    <div class="flex justify-end">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <%= form.label :image, t("app.messages.composer.image"), class: "block text-sm font-bold text-slate-700" %>
+        <%= form.file_field :image,
+                            accept: MessageAttachment::CONTENT_TYPES.join(","),
+                            class: "mt-1 block max-w-full text-sm text-slate-600 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:font-bold file:text-emerald-800 hover:file:bg-emerald-50" %>
+        <p class="mt-1 text-xs text-slate-500"><%= t("app.messages.composer.image_hint") %></p>
+      </div>
       <%= form.submit t("app.messages.composer.submit"), class: "cursor-pointer rounded-xl border-0 bg-emerald-800 px-5 py-3 font-bold text-white hover:bg-emerald-950", data: { turbo_submits_with: t("app.messages.composer.submitting") } %>
     </div>
   <% end %>

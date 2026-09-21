@@ -1,7 +1,10 @@
+require "base64"
+
 module Ai
   class PromptBuilder
     InputItem = Data.define(:role, :content)
     Result = Data.define(:input, :manifest, :prompt_cache_key, :estimated_tokens)
+    IMAGE_TOKEN_ESTIMATE = 1_024
 
     APPLICATION_RULES = <<~RULES.strip.freeze
       [Prompt text removed from public history]
@@ -33,7 +36,8 @@ module Ai
     end
 
     def initialize(generation_run:, relationship_state: nil, memories: [],
-                   token_counter: TokenCounter.new, budgets: {})
+                   token_counter: TokenCounter.new, budgets: {},
+                   storage: ObjectStorage::S3Store.default)
       @generation_run = generation_run
       @thread = generation_run.conversation_thread
       @personality = @thread.personality
@@ -42,6 +46,7 @@ module Ai
       @relationship_state = owned_relationship(relationship_state)
       @memories = owned_memories(memories)
       @token_counter = token_counter
+      @storage = storage
       @budgets = DEFAULT_BUDGETS.merge(budgets.to_h.symbolize_keys)
       validate_context!
     end
@@ -90,7 +95,7 @@ module Ai
       prepare_memories
       prepare_summary
       prepare_history
-      @current_item = InputItem.new(role: "user", content: @current_message.content)
+      @current_item = current_message_item
       @detected_language = LanguageDetector.call(@current_message.content)
     end
 
@@ -192,6 +197,25 @@ module Ai
       end
     end
 
+    def current_message_item
+      attachment = @current_message.attachment
+      text = @current_message.content.presence || "[Prompt text removed from public history]"
+      return InputItem.new(role: "user", content: text) unless attachment
+
+      bytes = @storage.download(key: attachment.object_key)
+      data_url = "data:#{attachment.content_type};base64,#{Base64.strict_encode64(bytes)}"
+      InputItem.new(
+        role: "user",
+        content: [
+          { type: "text", text: text },
+          {
+            type: "image_url",
+            image_url: { url: data_url }
+          }
+        ]
+      )
+    end
+
     def assembled_input
       [
         @rules_item,
@@ -234,8 +258,19 @@ module Ai
       assembled_input.sum { |item| count(item.content) }
     end
 
-    def count(text)
-      @token_counter.count(text)
+    def count(content)
+      return @token_counter.count(content) unless content.is_a?(Array)
+
+      content.sum do |part|
+        case part[:type].to_s
+        when "text"
+          @token_counter.count(part[:text].to_s)
+        when "image_url"
+          IMAGE_TOKEN_ESTIMATE
+        else
+          0
+        end
+      end
     end
 
     def section_budget(name)

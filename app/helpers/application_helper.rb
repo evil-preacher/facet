@@ -26,4 +26,16 @@ module ApplicationHelper
     )
     nil
   end
+
+  def message_attachment_url(attachment)
+    return unless attachment&.object_key.present?
+
+    ObjectStorage::S3Store.default.presigned_url(key: attachment.object_key)
+  rescue StandardError => error
+    Rails.logger.warn(
+      "Could not create attachment URL message_attachment_id=#{attachment.id} " \
+      "error=#{error.class.name}"
+    )
+    nil
+  end
 end

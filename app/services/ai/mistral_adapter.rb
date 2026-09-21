@@ -123,7 +123,25 @@ module Ai
       )
       return unless debug_payloads?
 
-      Rails.logger.info("Mistral request payload: #{parameters.inspect}")
+      Rails.logger.info("Mistral request payload: #{redacted_parameters(parameters).inspect}")
+    end
+
+    def redacted_parameters(parameters)
+      parameters.deep_dup.tap do |copy|
+        copy.fetch(:messages).each do |message|
+          next unless message[:content].is_a?(Array)
+
+          message[:content].each do |part|
+            next unless part[:type].to_s == "image_url"
+
+            if part[:image_url].is_a?(Hash)
+              part[:image_url][:url] = "[image data redacted]"
+            else
+              part[:image_url] = "[image data redacted]"
+            end
+          end
+        end
+      end
     end
 
     def log_response(response)

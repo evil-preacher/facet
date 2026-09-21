@@ -1,5 +1,6 @@
 Rails.application.configure do
-  config.x.ai.provider = "mistral"
+  config.x.ai.provider = ENV.fetch("AI_PROVIDER", "mistral")
+  config.x.ai.platform_prompt_required = ENV.fetch("AI_PLATFORM_PROMPT_REQUIRED", "false").casecmp?("true")
   config.x.ai.conversation_model = ENV.fetch("MISTRAL_CONVERSATION_MODEL", "mistral-large-2512")
   config.x.ai.utility_model = ENV.fetch("MISTRAL_UTILITY_MODEL", "mistral-small-latest")
   config.x.ai.image_model = ENV.fetch("BFL_IMAGE_MODEL", "flux-2-klein-9b")

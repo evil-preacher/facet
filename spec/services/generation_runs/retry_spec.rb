@@ -56,6 +56,17 @@ RSpec.describe GenerationRuns::Retry do
     )
   end
 
+  it "preserves the provider and platform prompt revision" do
+    platform_prompt = create(:ai_platform_prompt)
+    source_run.update!(ai_provider: "mistral", ai_platform_prompt: platform_prompt)
+
+    expect(result).to be_success
+    expect(result.generation_run).to have_attributes(
+      ai_provider: "mistral",
+      ai_platform_prompt: platform_prompt
+    )
+  end
+
   it "does not retry a run that is already active" do
     source_run.update!(status: :running)
 

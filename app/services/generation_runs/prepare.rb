@@ -4,6 +4,11 @@ module GenerationRuns
 
     def self.call(conversation_thread:, user_message:)
       personality_version = user_message.personality_version
+      ai_provider = Rails.configuration.x.ai.provider.to_s
+      platform_prompt = AiPlatformPrompt.active_for(provider: ai_provider, purpose: :conversation)
+      if Rails.configuration.x.ai.platform_prompt_required && platform_prompt.nil?
+        raise Ai::ValidationError, "No active conversation platform prompt for #{ai_provider}"
+      end
       assistant_message = conversation_thread.messages.create!(
         personality_version: personality_version,
         position: user_message.position + 1,
@@ -23,6 +28,8 @@ module GenerationRuns
         personality_version: personality_version,
         user_message: user_message,
         assistant_message: assistant_message,
+        ai_provider: ai_provider,
+        ai_platform_prompt: platform_prompt,
         idempotency_key: "generation:#{user_message.client_token}",
         status: :pending
       )

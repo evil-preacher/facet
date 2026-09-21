@@ -6,6 +6,7 @@ class GenerationRun < ApplicationRecord
   belongs_to :user_message, class_name: "Message", inverse_of: :generation_runs_as_user
   belongs_to :assistant_message, class_name: "Message", optional: true, inverse_of: :generation_run_as_assistant
   belongs_to :retry_of, class_name: "GenerationRun", optional: true, inverse_of: :retry_run
+  belongs_to :ai_platform_prompt, optional: true, inverse_of: :generation_runs
   has_one :retry_run,
           class_name: "GenerationRun",
           foreign_key: :retry_of_id,
@@ -19,8 +20,10 @@ class GenerationRun < ApplicationRecord
   validates :assistant_message_id, uniqueness: true, allow_nil: true
   validates :retry_of_id, uniqueness: true, allow_nil: true
   validates :attempts_count, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :ai_provider, inclusion: { in: AiPlatformPrompt::PROVIDERS }
   validate :messages_match_thread_and_roles
   validate :personality_version_matches_thread
+  validate :platform_prompt_matches_provider
 
   private
 
@@ -41,5 +44,12 @@ class GenerationRun < ApplicationRecord
     return if personality_version.personality_id == conversation_thread.personality_id
 
     errors.add(:personality_version, :invalid)
+  end
+
+  def platform_prompt_matches_provider
+    return unless ai_platform_prompt
+    return if ai_platform_prompt.provider == ai_provider && ai_platform_prompt.purpose == "conversation"
+
+    errors.add(:ai_platform_prompt, :invalid)
   end
 end

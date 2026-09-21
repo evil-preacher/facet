@@ -10,9 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_21_000020) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_21_000021) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "ai_platform_prompts", force: :cascade do |t|
+    t.string "checksum", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.string "provider", null: false
+    t.datetime "published_at"
+    t.string "purpose", default: "conversation", null: false
+    t.integer "revision", null: false
+    t.string "status", default: "active", null: false
+    t.datetime "updated_at", null: false
+    t.index ["provider", "purpose", "revision"], name: "index_ai_platform_prompts_on_provider_and_purpose_and_revision", unique: true
+    t.index ["provider", "purpose"], name: "index_ai_platform_prompts_on_active_scope", unique: true, where: "((status)::text = 'active'::text)"
+    t.check_constraint "char_length(btrim(content)) >= 1 AND char_length(btrim(content)) <= 20000", name: "ai_platform_prompts_content_length"
+    t.check_constraint "provider::text = ANY (ARRAY['mistral'::character varying, 'openai'::character varying]::text[])", name: "ai_platform_prompts_provider"
+    t.check_constraint "purpose::text = 'conversation'::text", name: "ai_platform_prompts_purpose"
+    t.check_constraint "revision > 0", name: "ai_platform_prompts_positive_revision"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'retired'::character varying]::text[])", name: "ai_platform_prompts_status"
+  end
 
   create_table "conversation_threads", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -32,6 +51,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000020) do
   end
 
   create_table "generation_runs", force: :cascade do |t|
+    t.bigint "ai_platform_prompt_id"
+    t.string "ai_provider", default: "mistral", null: false
     t.bigint "assistant_message_id"
     t.integer "attempts_count", default: 0, null: false
     t.datetime "completed_at"
@@ -47,6 +68,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000020) do
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_message_id", null: false
+    t.index ["ai_platform_prompt_id"], name: "index_generation_runs_on_ai_platform_prompt_id"
     t.index ["assistant_message_id"], name: "index_generation_runs_on_assistant_message_id", unique: true, where: "(assistant_message_id IS NOT NULL)"
     t.index ["conversation_thread_id", "status"], name: "index_generation_runs_on_conversation_thread_id_and_status"
     t.index ["conversation_thread_id"], name: "index_generation_runs_on_conversation_thread_id"
@@ -54,6 +76,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000020) do
     t.index ["personality_version_id"], name: "index_generation_runs_on_personality_version_id"
     t.index ["retry_of_id"], name: "index_generation_runs_on_retry_of_id", unique: true
     t.index ["user_message_id"], name: "index_generation_runs_on_user_message_id"
+    t.check_constraint "ai_provider::text = ANY (ARRAY['mistral'::character varying, 'openai'::character varying]::text[])", name: "generation_runs_ai_provider"
     t.check_constraint "attempts_count >= 0", name: "generation_runs_attempts_count"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'running'::character varying, 'completed'::character varying, 'failed'::character varying, 'stopped'::character varying]::text[])", name: "generation_runs_status"
   end
@@ -279,6 +302,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000020) do
 
   add_foreign_key "conversation_threads", "messages", column: "summary_through_message_id", on_delete: :nullify
   add_foreign_key "conversation_threads", "personalities"
+  add_foreign_key "generation_runs", "ai_platform_prompts", on_delete: :nullify
   add_foreign_key "generation_runs", "conversation_threads"
   add_foreign_key "generation_runs", "generation_runs", column: "retry_of_id", on_delete: :restrict
   add_foreign_key "generation_runs", "messages", column: "assistant_message_id", on_delete: :restrict

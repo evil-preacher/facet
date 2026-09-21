@@ -12,6 +12,7 @@ module Ai
 
     DEFAULT_BUDGETS = {
       application_rules: 2_000,
+      platform_correction: 21_000,
       character_bible: 52_000,
       relationship_state: 2_000,
       memories: 4_000,
@@ -23,6 +24,7 @@ module Ai
 
     SECTION_ORDER = %w[
       application_rules
+      platform_correction
       character_bible
       relationship_state
       memories
@@ -87,6 +89,8 @@ module Ai
 
     def prepare_sections
       @rules_item = developer_item("Application rules", APPLICATION_RULES)
+      @platform_prompt = @generation_run.ai_platform_prompt
+      @platform_item = platform_prompt_item
       @bible_item = developer_item(
         "Character bible",
         wrap_section("character_bible", @personality_version.content)
@@ -97,6 +101,19 @@ module Ai
       prepare_history
       @current_item = current_message_item
       @detected_language = LanguageDetector.call(@current_message.content)
+    end
+
+    def platform_prompt_item
+      return unless @platform_prompt
+
+      valid = @platform_prompt.provider == @generation_run.ai_provider &&
+        @platform_prompt.purpose == "conversation"
+      raise ArgumentError, "Generation run platform prompt is inconsistent" unless valid
+
+      developer_item(
+        "Platform correction",
+        wrap_section("platform_correction", @platform_prompt.content)
+      )
     end
 
     def prepare_relationship
@@ -219,6 +236,7 @@ module Ai
     def assembled_input
       [
         @rules_item,
+        @platform_item,
         @bible_item,
         @relationship_item,
         @memory_item,
@@ -251,7 +269,8 @@ module Ai
     end
 
     def prompt_cache_key
-      "facet-conversation-pv-#{@personality_version.id}-v3"
+      prompt_revision = @platform_prompt ? @platform_prompt.checksum.first(12) : "none"
+      "facet-conversation-#{@generation_run.ai_provider}-pv-#{@personality_version.id}-pp-#{prompt_revision}-v4"
     end
 
     def total_tokens
@@ -279,7 +298,9 @@ module Ai
 
     def build_manifest
       {
-        "schema_version" => 1,
+        "schema_version" => 2,
+        "ai_provider" => @generation_run.ai_provider,
+        "platform_prompt" => platform_prompt_manifest,
         "personality_id" => @personality.id,
         "personality_version_id" => @personality_version.id,
         "conversation_thread_id" => @thread.id,
@@ -298,9 +319,20 @@ module Ai
       }
     end
 
+    def platform_prompt_manifest
+      return unless @platform_prompt
+
+      {
+        "id" => @platform_prompt.id,
+        "revision" => @platform_prompt.revision,
+        "checksum" => @platform_prompt.checksum
+      }
+    end
+
     def section_manifests
       items = {
         "application_rules" => [ @rules_item ],
+        "platform_correction" => [ @platform_item ],
         "character_bible" => [ @bible_item ],
         "relationship_state" => [ @relationship_item ],
         "memories" => [ @memory_item ],

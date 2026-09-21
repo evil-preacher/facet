@@ -14,12 +14,13 @@ module Ai
       new(**arguments).call
     end
 
-    def initialize(generation_run:, gateway: Gateway.default, now: Time.current,
+    def initialize(generation_run:, gateway: nil, now: Time.current,
                    clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
       @generation_run = generation_run
       @assistant_message = generation_run.assistant_message
       @personality = generation_run.conversation_thread.personality
-      @gateway = gateway
+      @provider = generation_run.ai_provider
+      @gateway = gateway || ProviderRegistry.gateway_for(@provider)
       @now = now
       @clock = clock
       @streamed_text = +""
@@ -40,6 +41,7 @@ module Ai
         stream: true,
         finalize_generation_run: false,
         gateway: @gateway,
+        provider: @provider,
         now: @now,
         clock: @clock
       ) { |delta| persist_delta(delta) }

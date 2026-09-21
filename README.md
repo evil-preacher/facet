@@ -121,15 +121,29 @@ either flag, then inspect generation calls with `docker compose logs -f worker`.
 ## Prompt assembly
 
 `Ai::PromptBuilder` assembles provider-neutral response input in a stable
-order: application rules, the immutable character bible version, relationship
+order: application rules, the pinned provider-specific platform correction,
+the immutable character bible version, relationship
 state, relevant memories, thread summary, recent messages, and the current user message. The response-language rule lives
 in Application rules so the current user message remains the final input item. The
 stable rules and bible prefix is reused with a personality-version cache key for provider prompt
 caching.
 
+Platform corrections are administrative, versioned records and never become
+part of a personality version or user-authored conversation history. Publish a
+new active revision from a UTF-8 text file with:
+
+```sh
+docker compose exec -T web bin/rails ai:platform_prompts:publish \
+  PROVIDER=mistral PURPOSE=conversation FILE=/app/config/prompts/mistral.txt
+```
+
+New generation runs pin the active revision so retries remain reproducible.
+Set `AI_PLATFORM_PROMPT_REQUIRED=true` to reject new generations when the
+configured provider has no active conversation correction.
+
 Each section has an explicit context budget. On overflow, the oldest recent
 messages are removed first, then memories and other optional context; application
-rules and the character bible are never shortened. Budget estimates use one
+rules, the platform correction, and the character bible are never shortened. Budget estimates use one
 Unicode character as one deterministic unit, while provider-reported token usage
 remains authoritative for billing.
 

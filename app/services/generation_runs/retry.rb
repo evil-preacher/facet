@@ -42,6 +42,8 @@ module GenerationRuns
           user_message: source_generation_run.user_message,
           assistant_message: assistant_message,
           retry_of: source_generation_run,
+          ai_provider: source_generation_run.ai_provider,
+          ai_platform_prompt: source_generation_run.ai_platform_prompt,
           idempotency_key: "retry:#{source_generation_run.id}",
           status: :pending
         )

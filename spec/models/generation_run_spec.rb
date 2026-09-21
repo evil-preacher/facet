@@ -7,6 +7,7 @@ RSpec.describe GenerationRun, type: :model do
   it { is_expected.to belong_to(:personality_version) }
   it { is_expected.to belong_to(:user_message).class_name("Message") }
   it { is_expected.to belong_to(:assistant_message).class_name("Message").optional }
+  it { is_expected.to belong_to(:ai_platform_prompt).optional }
   it do
     expect(generation_run).to define_enum_for(:status)
       .with_values(
@@ -49,5 +50,11 @@ RSpec.describe GenerationRun, type: :model do
 
     expect(generation_run).not_to be_valid
     expect(generation_run.errors[:personality_version]).to be_present
+  end
+  it "requires the platform prompt to match the run provider" do
+    generation_run.ai_platform_prompt = create(:ai_platform_prompt, provider: "openai")
+
+    expect(generation_run).not_to be_valid
+    expect(generation_run.errors[:ai_platform_prompt]).to be_present
   end
 end

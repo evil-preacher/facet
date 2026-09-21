@@ -36,6 +36,7 @@ module Personalities
         create_version!
       end
       @succeeded = true
+      AvatarGeneration.enqueue_safely(personality: personality, personality_version: @version)
 
       self
     rescue ActiveRecord::RecordInvalid => error
@@ -50,13 +51,13 @@ module Personalities
     private
 
     def create_version!
-      version = personality.versions.create!(
+      @version = personality.versions.create!(
         number: personality.versions.maximum(:number).to_i + 1,
         content: character_bible.strip,
         author: author,
         change_note: change_note.presence&.strip
       )
-      personality.update!(current_version: version)
+      personality.update!(current_version: @version)
     end
 
     def author_owns_personality

@@ -5,6 +5,7 @@ RSpec.describe Personality, type: :model do
 
   it { is_expected.to belong_to(:user) }
   it { is_expected.to belong_to(:current_version).class_name("PersonalityVersion").optional }
+  it { is_expected.to belong_to(:avatar_source_version).class_name("PersonalityVersion").optional }
   it { is_expected.to have_many(:versions).class_name("PersonalityVersion").dependent(:destroy) }
 
   it { is_expected.to validate_presence_of(:name) }
@@ -15,6 +16,12 @@ RSpec.describe Personality, type: :model do
     expect(personality).to define_enum_for(:status)
       .with_values(draft: "draft", active: "active", archived: "archived")
       .backed_by_column_of_type(:string)
+  end
+  it do
+    expect(personality).to define_enum_for(:avatar_status)
+      .with_values(missing: "missing", pending: "pending", generating: "generating", ready: "ready", failed: "failed")
+      .backed_by_column_of_type(:string)
+      .with_prefix(:avatar)
   end
   it "enforces allowed statuses at the database boundary" do
     persisted = create(:personality)

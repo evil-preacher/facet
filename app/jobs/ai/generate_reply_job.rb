@@ -52,6 +52,7 @@ module Ai
           completed_at: Time.current
         )
         generation_run.assistant_message&.update!(status: :failed)
+        generation_run.assistant_message&.message_image&.mark_failed!(error_code: error.error_code)
       end
     end
 
@@ -66,6 +67,7 @@ module Ai
           completed_at: Time.current
         )
         generation_run.assistant_message&.update!(status: :failed)
+        generation_run.assistant_message&.message_image&.mark_failed!(error_code: "unexpected_error")
       end
     rescue ActiveRecord::ActiveRecordError
       nil

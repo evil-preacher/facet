@@ -13,7 +13,8 @@ RSpec.describe ModelCall, type: :model do
         memory_extraction: "memory_extraction",
         memory_consolidation: "memory_consolidation",
         thread_summary: "thread_summary",
-        initiative: "initiative"
+        initiative: "initiative",
+        photo_planning: "photo_planning"
       )
       .backed_by_column_of_type(:string)
   end

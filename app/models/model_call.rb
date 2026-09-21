@@ -5,6 +5,7 @@ class ModelCall < ApplicationRecord
     memory_consolidation
     thread_summary
     initiative
+    photo_planning
   ].freeze
   STATUSES = %w[pending completed failed].freeze
 

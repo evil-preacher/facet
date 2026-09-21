@@ -11,6 +11,7 @@ class Message < ApplicationRecord
           foreign_key: :user_message_id,
           dependent: :restrict_with_exception,
           inverse_of: :user_message
+  has_one :message_image, dependent: :destroy, inverse_of: :message
   has_one :generation_run_as_assistant,
           class_name: "GenerationRun",
           foreign_key: :assistant_message_id,

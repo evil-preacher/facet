@@ -26,6 +26,7 @@ gem "diff-lcs"
 # Mistral exposes an OpenAI-compatible Chat Completions endpoint. The OpenAI
 # transport gives the Ruby app typed responses, streaming, and retry handling.
 gem "openai", "~> 0.91.0"
+gem "aws-sdk-s3", "1.228.2"
 gem "sidekiq", "~> 8.1.7"
 # Rack Session 2.1 passes options positionally; JSON 3 removed that compatibility.
 gem "json", "< 3"

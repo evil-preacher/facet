@@ -13,6 +13,12 @@ module GenerationRuns
         content: "",
         client_token: nil
       )
+      personality = conversation_thread.personality
+      if personality.avatar_ready? && Messages::PhotoRequestDetector.call(user_message.content)
+        assistant_message.create_message_image!(
+          source_avatar_object_key: personality.avatar_object_key
+        )
+      end
       generation_run = conversation_thread.generation_runs.create!(
         personality_version: personality_version,
         user_message: user_message,

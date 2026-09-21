@@ -92,6 +92,9 @@ en:
       edit: "Edit"
     personalities:
       errors: "Please review the form:"
+      avatar_alt: "%{name} personality avatar"
+      avatar_statuses:
+        generating: "Creating"
       fields:
         name: "Personality name"
         description: "Short description"
@@ -219,6 +222,10 @@ en:
         failed: "Failed"
         streaming: "Typing…"
         stopped: "Stopped"
+      photo:
+        alt: "Photo from %{name}"
+        generating: "Preparing a photo…"
+        failed: "The photo could not be generated."
       composer:
         label: "Message"
         placeholder: "Message %{name}…"

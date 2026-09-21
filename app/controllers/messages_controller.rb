@@ -55,7 +55,7 @@ class MessagesController < ApplicationController
 
   def prepare_show
     @conversation_threads = @personality.conversation_threads.recent_first
-    @messages = @conversation_thread.messages.includes(:personality_version)
+    @messages = @conversation_thread.messages.includes(:personality_version, :message_image)
     @latest_generation_run = @conversation_thread.generation_runs.order(created_at: :desc).first
     @client_token = message_params[:client_token]
   end

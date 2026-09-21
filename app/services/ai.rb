@@ -25,6 +25,7 @@ module Ai
   class RateLimitError < Error; end
   class ProviderError < Error; end
   class MalformedResponseError < Error; end
+  class MissingAvatarContextError < Error; end
   class PriceNotFoundError < Error; end
   class StoppedError < Error; end
   class ValidationError < Error; end
@@ -37,6 +38,27 @@ module Ai
       @generation_run_id = generation_run_id
       @error_code = error_code
       super("Retryable generation failure: #{error_code}")
+    end
+  end
+
+  class RetryableMessageImageError < StandardError
+    attr_reader :message_image_id, :error_code
+
+    def initialize(message_image_id:, error_code:)
+      @message_image_id = message_image_id
+      @error_code = error_code
+      super("Retryable message image failure: #{error_code}")
+    end
+  end
+
+  class RetryableAvatarError < StandardError
+    attr_reader :personality_id, :personality_version_id, :error_code
+
+    def initialize(personality_id:, personality_version_id:, error_code:)
+      @personality_id = personality_id
+      @personality_version_id = personality_version_id
+      @error_code = error_code
+      super("Retryable avatar generation failure: #{error_code}")
     end
   end
 end

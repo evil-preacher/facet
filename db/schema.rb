@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_19_000014) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_21_000018) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -74,6 +74,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000014) do
     t.index ["user_id"], name: "index_login_challenges_on_user_id"
   end
 
+  create_table "message_images", force: :cascade do |t|
+    t.integer "attempts_count", default: 0, null: false
+    t.bigint "byte_size"
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "error_code"
+    t.text "error_message"
+    t.datetime "generated_at"
+    t.bigint "message_id", null: false
+    t.string "model"
+    t.string "object_key"
+    t.string "provider_request_id"
+    t.text "scene_description"
+    t.string "source_avatar_object_key", null: false
+    t.datetime "started_at"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["message_id"], name: "index_message_images_on_message_id", unique: true
+    t.index ["object_key"], name: "index_message_images_on_object_key", unique: true, where: "(object_key IS NOT NULL)"
+    t.check_constraint "attempts_count >= 0", name: "message_images_attempts_count"
+    t.check_constraint "byte_size IS NULL OR byte_size >= 0", name: "message_images_byte_size"
+    t.check_constraint "status::text <> 'ready'::text OR object_key IS NOT NULL AND content_type IS NOT NULL AND byte_size IS NOT NULL AND generated_at IS NOT NULL", name: "message_images_ready_metadata"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'generating'::character varying, 'ready'::character varying, 'failed'::character varying, 'declined'::character varying]::text[])", name: "message_images_status"
+  end
+
   create_table "messages", force: :cascade do |t|
     t.string "client_token"
     t.text "content", default: "", null: false
@@ -125,7 +150,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000014) do
     t.index ["user_id", "created_at"], name: "index_model_calls_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_model_calls_on_user_id"
     t.check_constraint "(input_tokens IS NULL OR input_tokens >= 0) AND (cached_input_tokens IS NULL OR cached_input_tokens >= 0) AND (output_tokens IS NULL OR output_tokens >= 0) AND (cost_microusd IS NULL OR cost_microusd >= 0) AND (latency_ms IS NULL OR latency_ms >= 0) AND (cached_input_tokens IS NULL OR input_tokens IS NOT NULL) AND (cached_input_tokens IS NULL OR cached_input_tokens <= input_tokens)", name: "model_calls_nonnegative_usage"
-    t.check_constraint "purpose::text = ANY (ARRAY['conversation'::character varying, 'memory_extraction'::character varying, 'memory_consolidation'::character varying, 'thread_summary'::character varying, 'initiative'::character varying]::text[])", name: "model_calls_purpose"
+    t.check_constraint "purpose::text = ANY (ARRAY['conversation'::character varying, 'memory_extraction'::character varying, 'memory_consolidation'::character varying, 'thread_summary'::character varying, 'initiative'::character varying, 'photo_planning'::character varying]::text[])", name: "model_calls_purpose"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'completed'::character varying, 'failed'::character varying]::text[])", name: "model_calls_status"
   end
 
@@ -167,6 +192,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000014) do
   end
 
   create_table "personalities", force: :cascade do |t|
+    t.integer "avatar_attempts_count", default: 0, null: false
+    t.bigint "avatar_byte_size"
+    t.string "avatar_content_type"
+    t.string "avatar_error_code"
+    t.text "avatar_error_message"
+    t.datetime "avatar_generated_at"
+    t.string "avatar_object_key"
+    t.bigint "avatar_source_version_id"
+    t.datetime "avatar_started_at"
+    t.string "avatar_status", default: "missing", null: false
     t.string "conversation_model", default: "mistral-large-2512", null: false
     t.datetime "created_at", null: false
     t.bigint "current_version_id"
@@ -176,9 +211,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000014) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.string "utility_model", default: "mistral-small-latest", null: false
+    t.index ["avatar_object_key"], name: "index_personalities_on_avatar_object_key", unique: true, where: "(avatar_object_key IS NOT NULL)"
+    t.index ["avatar_source_version_id"], name: "index_personalities_on_avatar_source_version_id"
     t.index ["current_version_id"], name: "index_personalities_on_current_version_id", unique: true
     t.index ["user_id", "status"], name: "index_personalities_on_user_id_and_status"
     t.index ["user_id"], name: "index_personalities_on_user_id"
+    t.check_constraint "avatar_attempts_count >= 0", name: "personalities_avatar_attempts_count"
+    t.check_constraint "avatar_byte_size IS NULL OR avatar_byte_size >= 0", name: "personalities_avatar_byte_size"
+    t.check_constraint "avatar_status::text <> 'ready'::text OR avatar_object_key IS NOT NULL AND avatar_content_type IS NOT NULL AND avatar_byte_size IS NOT NULL AND avatar_generated_at IS NOT NULL AND avatar_source_version_id IS NOT NULL", name: "personalities_ready_avatar_metadata"
+    t.check_constraint "avatar_status::text = ANY (ARRAY['missing'::character varying, 'pending'::character varying, 'generating'::character varying, 'ready'::character varying, 'failed'::character varying]::text[])", name: "personalities_avatar_status"
     t.check_constraint "char_length(btrim(name::text)) >= 1 AND char_length(btrim(name::text)) <= 80", name: "personalities_name_length"
     t.check_constraint "char_length(description) <= 500", name: "personalities_description_length"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'active'::character varying, 'archived'::character varying]::text[])", name: "personalities_status"
@@ -230,11 +271,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_19_000014) do
   add_foreign_key "generation_runs", "messages", column: "user_message_id", on_delete: :restrict
   add_foreign_key "generation_runs", "personality_versions"
   add_foreign_key "login_challenges", "users"
+  add_foreign_key "message_images", "messages", on_delete: :cascade
   add_foreign_key "messages", "conversation_threads"
   add_foreign_key "messages", "personality_versions"
   add_foreign_key "model_calls", "generation_runs"
   add_foreign_key "model_calls", "personalities"
   add_foreign_key "model_calls", "users"
+  add_foreign_key "personalities", "personality_versions", column: "avatar_source_version_id", on_delete: :nullify
   add_foreign_key "personalities", "personality_versions", column: "current_version_id", on_delete: :nullify
   add_foreign_key "personalities", "users"
   add_foreign_key "personality_versions", "personalities"

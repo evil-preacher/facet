@@ -18,13 +18,18 @@
     <div class="mt-10 grid gap-5 sm:grid-cols-2">
       <% @personalities.each do |personality| %>
         <article class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <div class="flex items-start justify-between gap-4">
-            <h2 class="text-2xl font-bold"><%= link_to personality.name, personality_path(personality), class: "text-slate-950 no-underline hover:text-emerald-800" %></h2>
-            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600"><%= t("app.personalities.statuses.#{personality.status}") %></span>
+          <div class="flex items-start gap-4">
+            <%= render "personalities/avatar", personality: personality, class_name: "h-16 w-16" %>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-start justify-between gap-4">
+                <h2 class="text-2xl font-bold"><%= link_to personality.name, personality_path(personality), class: "text-slate-950 no-underline hover:text-emerald-800" %></h2>
+                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600"><%= t("app.personalities.statuses.#{personality.status}") %></span>
+              </div>
+              <% if personality.description.present? %>
+                <p class="mt-3 leading-6 text-slate-600"><%= personality.description %></p>
+              <% end %>
+            </div>
           </div>
-          <% if personality.description.present? %>
-            <p class="mt-3 leading-6 text-slate-600"><%= personality.description %></p>
-          <% end %>
         </article>
       <% end %>
     </div>

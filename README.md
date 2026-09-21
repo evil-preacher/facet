@@ -25,12 +25,18 @@ docker compose up --build
 
 - Application: <http://localhost:3000>
 - Development mailbox (Mailpit): <http://localhost:8025>
+- Development object storage (MinIO API): <http://localhost:9000>
+- MinIO console: <http://localhost:9001>
 
 The interface and authentication emails are available in Russian and English.
 The language switcher stores the selection in the encrypted session cookie.
 
 Tailwind CSS is rebuilt automatically by the `css` service. Development emails
 are delivered over SMTP to Mailpit; no external email account is needed.
+Docker Compose also starts a private S3-compatible MinIO bucket named
+`facet-development`. The `minio-init` service creates it idempotently before the
+web and worker services start. Local credentials and endpoints can be overridden
+with the `S3_*` variables documented in `.env.example`.
 
 ## Authentication flow
 
@@ -76,6 +82,18 @@ uses Mistral's OpenAI-compatible Chat Completions endpoint through the typed Rub
 OpenAI transport for buffered and streaming calls;
 ordinary tests use a deterministic fake adapter and never access the network.
 
+Image generation calls Black Forest Labs directly through `Ai::BflImageAdapter`.
+The default is the pinned `flux-2-klein-9b` endpoint at 768x1024 (3:4),
+with `safety_tolerance=5`. BFL returns an asynchronous polling URL; completed
+images are downloaded immediately and copied into the private S3 bucket.
+
+Explicit photo requests in a conversation create a pending image placeholder.
+After the character replies, the utility text model decides whether the
+character actually chose to send a photo and extracts the exact visible scene
+into a compact specification. Refusals never call BFL. Accepted specifications
+are placed before character context in the BFL prompt, while the personality
+avatar is supplied as the facial reference image.
+
 Every request creates a `ModelCall` audit record with provider request ID,
 latency, input/cached/output token usage, and integer `cost_microusd`. Pricing is
 effective-dated in `ModelPrice`; `db:seed` installs the verified Mistral Large 3
@@ -92,8 +110,9 @@ Every completed `ModelCall` stores both the requested model alias and the actual
 model snapshot and input/output token counts below assistant messages. Existing
 records created before this field was added fall back to the requested alias.
 
-Set `AI_DEBUG_PAYLOADS=true` only during local development to log the exact hash
-passed to `client.chat.completions.create` or `client.chat.completions.stream`. The payload does
+Set `AI_DEBUG_PAYLOADS=true` only during local development to log text-model
+payloads and BFL image request/status metadata. BFL reference-image Base64 is always
+redacted from logs. The payload does
 not contain the API key, but it does contain the private character bible and
 conversation text. This opt-in payload entry is emitted at `INFO` so it is visible
 in Sidekiq's default logs. Restart the `web` and `worker` services after changing

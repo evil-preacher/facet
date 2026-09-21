@@ -56,6 +56,20 @@ module GenerationRuns
       @generation_run.reload
       case @generation_run.status
       when "completed"
+        image = @generation_run.assistant_message&.message_image&.reload
+        return false if image&.status_pending? || image&.status_generating?
+
+        if image&.status_ready?
+          if (url = message_image_url(image))
+            yield event("image", { url: url })
+          else
+            yield event("image_error", { code: "storage_error" })
+          end
+        elsif image&.status_failed?
+          yield event("image_error", { code: image.error_code })
+        elsif image&.status_declined?
+          yield event("image_declined", {})
+        end
         emit_usage { |payload| yield payload }
         yield event("done", { status: "completed" })
         true
@@ -71,6 +85,13 @@ module GenerationRuns
       else
         false
       end
+    end
+
+    def message_image_url(image)
+      ObjectStorage::S3Store.default.presigned_url(key: image.object_key)
+    rescue StandardError => error
+      Rails.logger.warn("Could not sign message image id=#{image.id} error=#{error.class.name}")
+      nil
     end
 
     def emit_usage

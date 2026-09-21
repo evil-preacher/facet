@@ -34,6 +34,7 @@ module Personalities
         )
         personality.update!(current_version: version)
       end
+      AvatarGeneration.enqueue_safely(personality: personality, personality_version: version)
 
       self
     rescue ActiveRecord::RecordInvalid => error

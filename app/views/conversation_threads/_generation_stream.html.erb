@@ -1,5 +1,8 @@
 <div id="generation_stream">
-  <% if generation_run&.pending? || generation_run&.running? %>
+  <% message_image = generation_run&.assistant_message&.message_image %>
+  <% stream_active = generation_run&.pending? || generation_run&.running? ||
+                     (generation_run&.completed? && (message_image&.status_pending? || message_image&.status_generating?)) %>
+  <% if stream_active %>
     <div data-controller="generation-stream"
          data-generation-stream-url-value="<%= stream_personality_conversation_thread_generation_run_path(@personality, @conversation_thread, generation_run) %>"
          data-generation-stream-message-id-value="<%= dom_id(generation_run.assistant_message) %>"

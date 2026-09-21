@@ -21,6 +21,7 @@ module GenerationRuns
         end
 
         generation_run.assistant_message&.update!(status: :stopped)
+        generation_run.assistant_message&.message_image&.mark_failed!(error_code: "reply_stopped")
         generation_run.update!(status: :stopped, completed_at: @now)
       end
       self

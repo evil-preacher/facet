@@ -1,0 +1,20 @@
+<% avatar_url = personality_avatar_url(personality) %>
+<div class="relative shrink-0 overflow-hidden rounded-full bg-emerald-950 text-white ring-2 ring-white shadow-md <%= local_assigns.fetch(:class_name, "h-16 w-16") %>"
+     data-avatar-status="<%= personality.avatar_status %>">
+  <% if avatar_url %>
+    <%= image_tag avatar_url,
+                  alt: t("app.personalities.avatar_alt", name: personality.name),
+                  class: "h-full w-full object-cover",
+                  loading: "lazy" %>
+  <% else %>
+    <div class="flex h-full w-full items-center justify-center text-xl font-black"
+         aria-label="<%= t("app.personalities.avatar_alt", name: personality.name) %>">
+      <%= personality.name.to_s.first&.upcase %>
+    </div>
+    <% if personality.avatar_pending? || personality.avatar_generating? %>
+      <span class="absolute inset-x-0 bottom-0 bg-slate-950/75 py-0.5 text-center text-[0.55rem] font-bold uppercase tracking-wide">
+        <%= t("app.personalities.avatar_statuses.generating") %>
+      </span>
+    <% end %>
+  <% end %>
+</div>

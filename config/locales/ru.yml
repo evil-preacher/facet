@@ -92,6 +92,9 @@ ru:
       edit: "Редактировать"
     personalities:
       errors: "Проверьте заполнение формы:"
+      avatar_alt: "Аватар личности %{name}"
+      avatar_statuses:
+        generating: "Создаётся"
       fields:
         name: "Имя личности"
         description: "Короткое описание"
@@ -219,6 +222,10 @@ ru:
         failed: "Ошибка"
         streaming: "Печатает…"
         stopped: "Остановлено"
+      photo:
+        alt: "Фотография от %{name}"
+        generating: "Готовит фотографию…"
+        failed: "Не удалось создать фотографию."
       composer:
         label: "Сообщение"
         placeholder: "Напишите %{name}…"

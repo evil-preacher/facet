@@ -16,9 +16,14 @@ RSpec.describe GenerationRuns::Stop do
   end
 
   it "marks the run and its partial assistant message as stopped" do
+    image = assistant_message.create_message_image!(
+      source_avatar_object_key: "personalities/1/avatars/current.jpg"
+    )
+
     expect(result).to be_success
     expect(generation_run.reload).to have_attributes(status: "stopped", completed_at: now)
     expect(assistant_message.reload).to be_stopped
+    expect(image.reload).to have_attributes(status: "failed", error_code: "reply_stopped")
   end
 
   it "does not stop a terminal run" do

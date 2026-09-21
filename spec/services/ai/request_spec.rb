@@ -32,7 +32,7 @@ RSpec.describe Ai::Request do
       input_microusd_per_million: 2_500_000,
       cached_input_microusd_per_million: 1_250_000,
       output_microusd_per_million: 10_000_000,
-      effective_from: 1.day.ago
+      effective_from: now - 1.day
     )
   end
 

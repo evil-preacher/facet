@@ -1,6 +1,18 @@
 <article id="<%= dom_id(message) %>" class="flex <%= message.user? ? "justify-end" : "justify-start" %>">
   <div class="max-w-[85%] rounded-2xl px-5 py-4 shadow-sm <%= message.user? ? "bg-emerald-800 text-white" : "bg-white text-slate-800 ring-1 ring-slate-200" %>">
     <div class="whitespace-pre-wrap break-words leading-7" data-message-content><%= message.content %></div>
+    <% if (message_image = message.message_image) && !message_image.status_declined? %>
+      <% image_url = message_image_url(message_image) %>
+      <div data-message-image class="mt-3 overflow-hidden rounded-xl bg-slate-100">
+        <% if image_url %>
+          <%= image_tag image_url, alt: t("app.messages.photo.alt", name: message.conversation_thread.personality.name), class: "max-h-[36rem] w-full rounded-xl object-cover", loading: "lazy" %>
+        <% elsif message_image.status_failed? %>
+          <p class="px-4 py-3 text-sm text-rose-700"><%= t("app.messages.photo.failed") %></p>
+        <% else %>
+          <p class="animate-pulse px-4 py-3 text-sm text-slate-500"><%= t("app.messages.photo.generating") %></p>
+        <% end %>
+      </div>
+    <% end %>
     <div class="mt-2 flex flex-wrap items-center gap-2 text-xs <%= message.user? ? "text-emerald-100" : "text-slate-400" %>">
       <span data-message-author>
         <% if message.user? %>

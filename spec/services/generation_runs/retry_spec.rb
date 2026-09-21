@@ -34,6 +34,28 @@ RSpec.describe GenerationRuns::Retry do
     expect(result.generation_run.assistant_message).to be_streaming
   end
 
+  it "preserves a requested photo when retrying the reply" do
+    assistant_message = create(
+      :message,
+      :assistant,
+      conversation_thread: source_run.conversation_thread,
+      personality_version: source_run.personality_version,
+      position: 2,
+      status: :failed,
+      content: ""
+    )
+    source_run.update!(assistant_message: assistant_message)
+    assistant_message.create_message_image!(
+      source_avatar_object_key: "personalities/1/avatars/current.jpg"
+    )
+
+    expect(result).to be_success
+    expect(result.generation_run.assistant_message.message_image).to have_attributes(
+      status: "pending",
+      source_avatar_object_key: "personalities/1/avatars/current.jpg"
+    )
+  end
+
   it "does not retry a run that is already active" do
     source_run.update!(status: :running)
 

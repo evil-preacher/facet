@@ -14,6 +14,9 @@ export default class extends Controller {
     this.source = new EventSource(this.urlValue)
     this.source.addEventListener("delta", this.appendDelta)
     this.source.addEventListener("usage", this.updateUsage)
+    this.source.addEventListener("image", this.showImage)
+    this.source.addEventListener("image_error", this.showImageError)
+    this.source.addEventListener("image_declined", this.hideImage)
     this.source.addEventListener("done", this.finish)
     this.source.addEventListener("error", this.handleError)
   }
@@ -38,6 +41,29 @@ export default class extends Controller {
 
     debug.textContent = `${usage.model} · ${usage.input_tokens} in / ${usage.output_tokens} out`
     debug.classList.remove("hidden")
+  }
+
+  showImage = (event) => {
+    const { url } = JSON.parse(event.data)
+    const message = document.getElementById(this.messageIdValue)
+    const container = message?.querySelector("[data-message-image]")
+    if (!container || !url) return
+
+    const image = document.createElement("img")
+    image.src = url
+    image.alt = ""
+    image.className = "max-h-[36rem] w-full rounded-xl object-cover"
+    image.loading = "lazy"
+    container.replaceChildren(image)
+  }
+
+  showImageError = () => {
+    this.refresh()
+  }
+
+  hideImage = () => {
+    const message = document.getElementById(this.messageIdValue)
+    message?.querySelector("[data-message-image]")?.remove()
   }
 
   finish = (event) => {

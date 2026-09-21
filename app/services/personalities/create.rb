@@ -51,13 +51,14 @@ module Personalities
           conversation_model: Rails.configuration.x.ai.conversation_model,
           utility_model: Rails.configuration.x.ai.utility_model
         )
-        version = personality.versions.create!(
+        @version = personality.versions.create!(
           number: 1,
           content: CharacterBible.compile(character_attributes),
           author: user
         )
-        personality.update!(current_version: version, status: :active)
+        personality.update!(current_version: @version, status: :active)
       end
+      AvatarGeneration.enqueue_safely(personality: personality, personality_version: @version)
 
       self
     rescue ActiveRecord::RecordInvalid => error

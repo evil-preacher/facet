@@ -32,6 +32,11 @@ module GenerationRuns
           content: "",
           client_token: nil
         )
+        if (source_image = source_generation_run.assistant_message&.message_image)
+          assistant_message.create_message_image!(
+            source_avatar_object_key: source_image.source_avatar_object_key
+          )
+        end
         @generation_run = source_generation_run.conversation_thread.generation_runs.create!(
           personality_version: source_generation_run.personality_version,
           user_message: source_generation_run.user_message,

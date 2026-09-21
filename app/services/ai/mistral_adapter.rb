@@ -145,8 +145,13 @@ module Ai
     end
 
     def log_response(response)
+      cached_tokens = response.usage.cached_input_tokens
+      input_tokens = response.usage.input_tokens
+      cached_percent = input_tokens.positive? ? ((cached_tokens * 100.0) / input_tokens).round(1) : 0.0
       Rails.logger.info(
-        "Mistral response request_id=#{response.request_id} model=#{response.model}"
+        "Mistral response request_id=#{response.request_id} model=#{response.model} " \
+        "input_tokens=#{input_tokens} cached_input_tokens=#{cached_tokens} " \
+        "cache_hit=#{cached_tokens.positive?} cached_percent=#{cached_percent}"
       )
     end
 

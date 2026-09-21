@@ -158,6 +158,9 @@ module Ai
         .where.not(id: @current_message.id)
         .where("position < ?", @current_message.position)
         .reorder(position: :desc)
+      if @thread.summary.present? && @thread.summary_through_message
+        messages = messages.where("position > ?", @thread.summary_through_message.position)
+      end
       remaining = section_budget(:recent_messages)
       selected = []
 
@@ -270,7 +273,10 @@ module Ai
 
     def prompt_cache_key
       prompt_revision = @platform_prompt ? @platform_prompt.checksum.first(12) : "none"
-      "facet-conversation-#{@generation_run.ai_provider}-pv-#{@personality_version.id}-pp-#{prompt_revision}-v4"
+      summary_boundary = @thread.summary_through_message_id || "none"
+      "facet-conversation-thread-#{@thread.id}-#{@generation_run.ai_provider}-" \
+        "pv-#{@personality_version.id}-pp-#{prompt_revision}-" \
+        "summary-#{summary_boundary}-v5"
     end
 
     def total_tokens
@@ -298,7 +304,7 @@ module Ai
 
     def build_manifest
       {
-        "schema_version" => 2,
+        "schema_version" => 3,
         "ai_provider" => @generation_run.ai_provider,
         "platform_prompt" => platform_prompt_manifest,
         "personality_id" => @personality.id,

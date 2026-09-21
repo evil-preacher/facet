@@ -123,10 +123,13 @@ either flag, then inspect generation calls with `docker compose logs -f worker`.
 `Ai::PromptBuilder` assembles provider-neutral response input in a stable
 order: application rules, the pinned provider-specific platform correction,
 the immutable character bible version, relationship
-state, relevant memories, thread summary, recent messages, and the current user message. The response-language rule lives
-in Application rules so the current user message remains the final input item. The
-stable rules and bible prefix is reused with a personality-version cache key for provider prompt
-caching.
+state, relevant memories, thread summary, recent messages, and the current user message. When a
+summary checkpoint exists, messages covered by it are excluded from recent history. The
+response-language rule lives in Application rules so the current user message remains the final
+input item. The stable rules and bible prefix is reused with a conversation-thread cache key that
+also identifies the provider, personality version, platform-prompt revision, and summary
+checkpoint. This keeps each thread’s growing prefix isolated while invalidating the cache when a
+stable prompt component changes.
 
 Platform corrections are administrative, versioned records and never become
 part of a personality version or user-authored conversation history. Publish a

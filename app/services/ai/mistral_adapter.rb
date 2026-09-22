@@ -6,8 +6,18 @@ module Ai
       @client = client
     end
 
-    def response(model:, input:, prompt_cache_key: nil)
-      raw = client.chat.completions.create(request_parameters(model, input, prompt_cache_key))
+    def response(model:, input:, prompt_cache_key: nil, response_schema: nil,
+                 temperature: nil, max_output_tokens: nil)
+      raw = client.chat.completions.create(
+        request_parameters(
+          model,
+          input,
+          prompt_cache_key,
+          response_schema,
+          temperature,
+          max_output_tokens
+        )
+      )
       normalize(raw)
     rescue OpenAI::Errors::APITimeoutError => error
       raise TimeoutError.new(error.message, request_id: request_id_from(error)), cause: error
@@ -43,14 +53,29 @@ module Ai
 
     private
 
-    def request_parameters(model, input, prompt_cache_key)
+    def request_parameters(model, input, prompt_cache_key, response_schema = nil,
+                           temperature = nil, max_output_tokens = nil)
       {
         model: model,
         messages: serialize_input(input)
       }.tap do |parameters|
         parameters[:prompt_cache_key] = prompt_cache_key if prompt_cache_key.present?
+        parameters[:response_format] = response_format(response_schema) if response_schema
+        parameters[:temperature] = temperature unless temperature.nil?
+        parameters[:max_tokens] = max_output_tokens unless max_output_tokens.nil?
         log_request(parameters)
       end
+    end
+
+    def response_format(response_schema)
+      {
+        type: "json_schema",
+        json_schema: {
+          name: response_schema.fetch(:name),
+          strict: true,
+          schema: response_schema.fetch(:schema)
+        }
+      }
     end
 
     def serialize_input(input)
@@ -119,7 +144,8 @@ module Ai
     def log_request(parameters)
       Rails.logger.info(
         "Mistral request model=#{parameters.fetch(:model)} " \
-        "messages=#{parameters.fetch(:messages).length} temperature=default"
+        "messages=#{parameters.fetch(:messages).length} " \
+        "temperature=#{parameters.fetch(:temperature, "default")}"
       )
       return unless debug_payloads?
 

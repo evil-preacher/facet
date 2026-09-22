@@ -12,6 +12,7 @@ class ModelCall < ApplicationRecord
   belongs_to :user
   belongs_to :personality, optional: true
   belongs_to :generation_run, optional: true
+  has_one :memory_extraction, dependent: :nullify
 
   enum :purpose, PURPOSES.index_with(&:itself), validate: true
   enum :status, STATUSES.index_with(&:itself), validate: true

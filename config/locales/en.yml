@@ -29,6 +29,10 @@ en:
       personality_rolled_back: "Version %{number} was created from the selected version."
       conversation_thread_archived: "Conversation archived."
       generation_retry_queued: "Reply retry was queued."
+      memory_updated: "Memory updated."
+      memory_deleted: "Memory deleted."
+      memory_approved: "Memory approved."
+      memory_settings_updated: "Memory settings updated."
     home:
       title: "Facet — personalities that remember"
       eyebrow: "Your personal AI companion"
@@ -138,6 +142,7 @@ en:
         edit: "Edit"
         history: "Version history"
         conversations: "Conversations"
+        memories: "Memory"
         back: "All personalities"
         archive: "Archive"
       edit:
@@ -213,6 +218,39 @@ en:
         failed: "The reply could not be generated."
         retry: "Retry"
         stopped: "Generation stopped."
+    memories:
+      page_title: "%{name} memory — Facet"
+      eyebrow: "Long-term memory"
+      heading: "What %{name} remembers"
+      description: "Review, correct, approve, or delete anything this personality has saved from your conversations."
+      back: "Back to personality"
+      empty: "No saved memories match this filter."
+      errors: "Please review the memory:"
+      pending: "Needs approval"
+      importance: "Importance %{value}/100"
+      sources: "Sources:"
+      settings:
+        title: "Automatic memory"
+        description: "Analyze completed conversation turns in the background and propose durable memories."
+        save: "Save setting"
+      filters:
+        label: "Memory filters"
+        all: "All"
+      fields:
+        kind: "Type"
+        importance: "Importance"
+      kinds:
+        fact: "Fact"
+        preference: "Preference"
+        shared_event: "Shared event"
+        relationship: "Relationship"
+        boundary: "Boundary"
+        other: "Other"
+      actions:
+        save: "Save correction"
+        approve: "Approve"
+        delete: "Delete"
+        delete_confirm: "Delete this memory immediately?"
     messages:
       errors: "Please review the message:"
       attachment_alt: "User image"

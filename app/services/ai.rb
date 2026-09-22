@@ -61,4 +61,14 @@ module Ai
       super("Retryable avatar generation failure: #{error_code}")
     end
   end
+
+  class RetryableMemoryExtractionError < StandardError
+    attr_reader :memory_extraction_id, :error_code
+
+    def initialize(memory_extraction_id:, error_code:)
+      @memory_extraction_id = memory_extraction_id
+      @error_code = error_code
+      super("Retryable memory extraction failure: #{error_code}")
+    end
+  end
 end

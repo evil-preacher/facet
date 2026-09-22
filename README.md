@@ -155,6 +155,27 @@ record IDs, section estimates, truncation flags, detected language, and the cach
 key. It deliberately does not persist a duplicate of the private assembled
 prompt.
 
+## Managed memory
+
+Every completed conversation turn can enqueue an idempotent extraction on the
+`memory` queue through the database outbox. The personality's utility model
+returns candidates through Mistral JSON Schema structured output; the server
+then validates the schema, tenant ownership, source message IDs, memory IDs, and
+content limits before writing anything.
+
+Memories retain links to their source messages and are scoped to one personality.
+Exact normalized duplicates add provenance instead of creating another record,
+while corrections create a new record and mark the previous one as superseded.
+Sensitive candidates wait for explicit approval, and credentials or likely
+authentication/payment secrets are discarded.
+
+The personality Memory page supports type filters, user-authored corrections,
+approval, deletion, and an automatic-memory toggle. Deletion removes a memory
+from the current/retrievable scope immediately while retaining the historical
+record for the future retention workflow. This release manages extraction and
+the memory corpus; automatic relevance ranking and prompt retrieval belong to
+the next implementation stage.
+
 ## Background streaming
 
 User messages atomically create an assistant placeholder and a `GenerationRun`.

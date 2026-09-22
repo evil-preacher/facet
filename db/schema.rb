@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_21_000021) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_22_000022) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -95,6 +95,63 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000021) do
     t.index ["requested_ip", "created_at"], name: "index_login_challenges_on_requested_ip_and_created_at"
     t.index ["token"], name: "index_login_challenges_on_token", unique: true
     t.index ["user_id"], name: "index_login_challenges_on_user_id"
+  end
+
+  create_table "memories", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.integer "importance", null: false
+    t.string "kind", null: false
+    t.datetime "last_recalled_at"
+    t.text "normalized_content", null: false
+    t.datetime "occurred_at"
+    t.string "origin", null: false
+    t.bigint "personality_id", null: false
+    t.string "sensitivity", default: "normal", null: false
+    t.string "status", default: "active", null: false
+    t.bigint "supersedes_id"
+    t.datetime "updated_at", null: false
+    t.index ["personality_id", "kind", "normalized_content"], name: "index_current_memories_on_normalized_content", unique: true, where: "((status)::text = ANY ((ARRAY['active'::character varying, 'pending'::character varying])::text[]))"
+    t.index ["personality_id", "status", "importance"], name: "index_memories_for_management"
+    t.index ["personality_id"], name: "index_memories_on_personality_id"
+    t.index ["supersedes_id"], name: "index_memories_on_supersedes_id"
+    t.check_constraint "(status::text = 'deleted'::text) = (deleted_at IS NOT NULL)", name: "memories_deleted_at"
+    t.check_constraint "char_length(btrim(content)) >= 1 AND char_length(btrim(content)) <= 500", name: "memories_content_length"
+    t.check_constraint "importance >= 1 AND importance <= 100", name: "memories_importance"
+    t.check_constraint "kind::text = ANY (ARRAY['fact'::character varying, 'preference'::character varying, 'shared_event'::character varying, 'relationship'::character varying, 'boundary'::character varying, 'other'::character varying]::text[])", name: "memories_kind"
+    t.check_constraint "origin::text = ANY (ARRAY['model'::character varying, 'user'::character varying]::text[])", name: "memories_origin"
+    t.check_constraint "sensitivity::text = ANY (ARRAY['normal'::character varying, 'sensitive'::character varying]::text[])", name: "memories_sensitivity"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'pending'::character varying, 'superseded'::character varying, 'deleted'::character varying]::text[])", name: "memories_status"
+  end
+
+  create_table "memory_extractions", force: :cascade do |t|
+    t.integer "attempts_count", default: 0, null: false
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.string "error_code"
+    t.text "error_message"
+    t.bigint "generation_run_id", null: false
+    t.bigint "model_call_id"
+    t.bigint "personality_id", null: false
+    t.datetime "started_at"
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["generation_run_id"], name: "index_memory_extractions_on_generation_run_id", unique: true
+    t.index ["model_call_id"], name: "index_memory_extractions_on_model_call_id"
+    t.index ["personality_id"], name: "index_memory_extractions_on_personality_id"
+    t.check_constraint "attempts_count >= 0", name: "memory_extractions_attempts_count"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'running'::character varying, 'completed'::character varying, 'failed'::character varying, 'skipped'::character varying]::text[])", name: "memory_extractions_status"
+  end
+
+  create_table "memory_sources", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "memory_id", null: false
+    t.bigint "message_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["memory_id", "message_id"], name: "index_memory_sources_on_memory_id_and_message_id", unique: true
+    t.index ["memory_id"], name: "index_memory_sources_on_memory_id"
+    t.index ["message_id"], name: "index_memory_sources_on_message_id"
   end
 
   create_table "message_attachments", force: :cascade do |t|
@@ -229,6 +286,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000021) do
   end
 
   create_table "personalities", force: :cascade do |t|
+    t.boolean "automatic_memory_enabled", default: true, null: false
     t.integer "avatar_attempts_count", default: 0, null: false
     t.bigint "avatar_byte_size"
     t.string "avatar_content_type"
@@ -309,6 +367,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_21_000021) do
   add_foreign_key "generation_runs", "messages", column: "user_message_id", on_delete: :restrict
   add_foreign_key "generation_runs", "personality_versions"
   add_foreign_key "login_challenges", "users"
+  add_foreign_key "memories", "memories", column: "supersedes_id", on_delete: :nullify
+  add_foreign_key "memories", "personalities", on_delete: :cascade
+  add_foreign_key "memory_extractions", "generation_runs", on_delete: :cascade
+  add_foreign_key "memory_extractions", "model_calls", on_delete: :nullify
+  add_foreign_key "memory_extractions", "personalities", on_delete: :cascade
+  add_foreign_key "memory_sources", "memories", on_delete: :cascade
+  add_foreign_key "memory_sources", "messages", on_delete: :cascade
   add_foreign_key "message_attachments", "messages", on_delete: :cascade
   add_foreign_key "message_images", "messages", on_delete: :cascade
   add_foreign_key "messages", "conversation_threads"

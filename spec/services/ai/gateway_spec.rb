@@ -47,4 +47,23 @@ RSpec.describe Ai::Gateway do
 
     expect(adapter.requests.first).to include(prompt_cache_key: "facet-pv-1")
   end
+
+  it "forwards structured output and sampling controls" do
+    adapter.enqueue_response(text: "{}", request_id: "req_json", usage: usage)
+    schema = { name: "result", schema: { type: "object" } }
+
+    gateway.response(
+      model: "mistral-small-latest",
+      input: "Return JSON",
+      response_schema: schema,
+      temperature: 0.1,
+      max_output_tokens: 1_000
+    )
+
+    expect(adapter.requests.first).to include(
+      response_schema: schema,
+      temperature: 0.1,
+      max_output_tokens: 1_000
+    )
+  end
 end

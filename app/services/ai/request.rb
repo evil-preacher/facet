@@ -21,7 +21,8 @@ module Ai
       new(**arguments).call(&block)
     end
 
-    def initialize(user:, personality:, purpose:, model:, input:, prompt_cache_key: nil, generation_run: nil,
+    def initialize(user:, personality:, purpose:, model:, input:, prompt_cache_key: nil,
+                   response_schema: nil, temperature: nil, max_output_tokens: nil, generation_run: nil,
                    stream: false, finalize_generation_run: true,
                    gateway: Gateway.default, provider: Rails.configuration.x.ai.provider, now: Time.current,
                    clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
@@ -32,6 +33,9 @@ module Ai
       @model = model
       @input = input
       @prompt_cache_key = prompt_cache_key
+      @response_schema = response_schema
+      @temperature = temperature
+      @max_output_tokens = max_output_tokens
       @stream = stream
       @finalize_generation_run = finalize_generation_run
       @gateway = gateway
@@ -175,6 +179,9 @@ module Ai
         input: @input,
         prompt_cache_key: @prompt_cache_key
       }
+      arguments[:response_schema] = @response_schema if @response_schema
+      arguments[:temperature] = @temperature unless @temperature.nil?
+      arguments[:max_output_tokens] = @max_output_tokens unless @max_output_tokens.nil?
       return @gateway.response(**arguments) unless @stream
 
       @gateway.stream_response(**arguments, &on_delta)

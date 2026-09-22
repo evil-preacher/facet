@@ -29,6 +29,10 @@ ru:
       personality_rolled_back: "Создана версия %{number} из выбранной версии."
       conversation_thread_archived: "Тред отправлен в архив."
       generation_retry_queued: "Повтор ответа поставлен в очередь."
+      memory_updated: "Воспоминание обновлено."
+      memory_deleted: "Воспоминание удалено."
+      memory_approved: "Воспоминание подтверждено."
+      memory_settings_updated: "Настройки памяти обновлены."
     home:
       title: "Facet — личности, которые помнят"
       eyebrow: "Личный AI-собеседник"
@@ -138,6 +142,7 @@ ru:
         edit: "Редактировать"
         history: "История версий"
         conversations: "Разговоры"
+        memories: "Память"
         back: "Все личности"
         archive: "Архивировать"
       edit:
@@ -213,6 +218,39 @@ ru:
         failed: "Не удалось получить ответ."
         retry: "Повторить"
         stopped: "Генерация остановлена."
+    memories:
+      page_title: "Память %{name} — Facet"
+      eyebrow: "Долговременная память"
+      heading: "Что помнит %{name}"
+      description: "Просматривайте, исправляйте, подтверждайте и удаляйте всё, что личность сохранила из ваших разговоров."
+      back: "Вернуться к личности"
+      empty: "Для этого фильтра сохранённых воспоминаний нет."
+      errors: "Проверьте воспоминание:"
+      pending: "Нужно подтверждение"
+      importance: "Важность %{value}/100"
+      sources: "Источники:"
+      settings:
+        title: "Автоматическая память"
+        description: "В фоне анализировать завершённые реплики и предлагать долговременные воспоминания."
+        save: "Сохранить настройку"
+      filters:
+        label: "Фильтры памяти"
+        all: "Все"
+      fields:
+        kind: "Тип"
+        importance: "Важность"
+      kinds:
+        fact: "Факт"
+        preference: "Предпочтение"
+        shared_event: "Общее событие"
+        relationship: "Отношения"
+        boundary: "Граница"
+        other: "Другое"
+      actions:
+        save: "Сохранить исправление"
+        approve: "Подтвердить"
+        delete: "Удалить"
+        delete_confirm: "Сразу удалить это воспоминание?"
     messages:
       errors: "Проверьте сообщение:"
       attachment_alt: "Изображение пользователя"

@@ -13,6 +13,7 @@ class GenerationRun < ApplicationRecord
           dependent: :restrict_with_exception,
           inverse_of: :retry_of
   has_many :model_calls, dependent: :nullify
+  has_one :memory_extraction, dependent: :destroy
 
   enum :status, STATUSES.index_with(&:itself), validate: true
 

@@ -1,0 +1,96 @@
+<% content_for :title, t("app.memories.page_title", name: @personality.name) %>
+
+<section class="py-10 sm:py-16">
+  <div class="flex flex-wrap items-start justify-between gap-5">
+    <div>
+      <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-700"><%= t("app.memories.eyebrow") %></p>
+      <h1 class="mt-2 text-4xl font-black tracking-tight"><%= t("app.memories.heading", name: @personality.name) %></h1>
+      <p class="mt-3 max-w-2xl leading-7 text-slate-600"><%= t("app.memories.description") %></p>
+    </div>
+    <%= link_to t("app.memories.back"), personality_path(@personality), class: "rounded-xl bg-white px-4 py-2 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
+  </div>
+
+  <div class="mt-8 rounded-2xl bg-white p-6 ring-1 ring-slate-200">
+    <%= form_with url: settings_personality_memories_path(@personality), scope: :personality, method: :patch, class: "flex flex-wrap items-center justify-between gap-4" do |form| %>
+      <div>
+        <p class="font-bold"><%= t("app.memories.settings.title") %></p>
+        <p class="mt-1 text-sm text-slate-500"><%= t("app.memories.settings.description") %></p>
+      </div>
+      <div class="flex items-center gap-3">
+        <%= form.hidden_field :automatic_memory_enabled, value: "0" %>
+        <%= form.check_box :automatic_memory_enabled,
+                           { checked: @personality.automatic_memory_enabled?, class: "h-5 w-5 rounded border-slate-300 text-emerald-800" },
+                           "1",
+                           "0" %>
+        <%= form.submit t("app.memories.settings.save"), class: "cursor-pointer rounded-xl border-0 bg-emerald-800 px-4 py-2 font-bold text-white hover:bg-emerald-950" %>
+      </div>
+    <% end %>
+  </div>
+
+  <nav class="mt-6 flex flex-wrap gap-2" aria-label="<%= t("app.memories.filters.label") %>">
+    <%= link_to t("app.memories.filters.all"), personality_memories_path(@personality), class: "rounded-full px-4 py-2 text-sm font-bold no-underline #{if @kind.nil? then "bg-emerald-800 text-white" else "bg-white text-slate-600 ring-1 ring-slate-200" end}" %>
+    <% Memory::KINDS.each do |kind| %>
+      <%= link_to t("app.memories.kinds.#{kind}"), personality_memories_path(@personality, kind: kind), class: "rounded-full px-4 py-2 text-sm font-bold no-underline #{if @kind == kind then "bg-emerald-800 text-white" else "bg-white text-slate-600 ring-1 ring-slate-200" end}" %>
+    <% end %>
+  </nav>
+
+  <% if @memory_errors&.any? %>
+    <div class="mt-6 rounded-xl bg-rose-50 p-4 text-rose-800 ring-1 ring-rose-200" role="alert">
+      <p class="font-bold"><%= t("app.memories.errors") %></p>
+      <ul class="mt-2 list-disc pl-5 text-sm">
+        <% @memory_errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @memories.any? %>
+    <div class="mt-6 grid gap-5">
+      <% @memories.each do |memory| %>
+        <article class="rounded-2xl bg-white p-6 shadow-sm ring-1 <%= memory.pending? ? "ring-amber-300" : "ring-slate-200" %>">
+          <div class="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wide">
+            <span class="rounded-full bg-slate-100 px-3 py-1 text-slate-600"><%= t("app.memories.kinds.#{memory.kind}") %></span>
+            <% if memory.pending? %>
+              <span class="rounded-full bg-amber-100 px-3 py-1 text-amber-800"><%= t("app.memories.pending") %></span>
+            <% end %>
+            <span class="text-slate-400"><%= t("app.memories.importance", value: memory.importance) %></span>
+          </div>
+
+          <%= form_with url: personality_memory_path(@personality, memory), scope: :memory, method: :patch, class: "mt-4 grid gap-4" do |form| %>
+            <%= form.text_area :content, value: memory.content, maxlength: Memory::MAX_CONTENT_LENGTH, required: true, rows: 2, class: "block w-full rounded-xl border border-slate-300 px-4 py-3 leading-6 outline-none focus:border-emerald-700 focus:ring-4 focus:ring-emerald-100" %>
+            <div class="flex flex-wrap items-end gap-4">
+              <div class="grid gap-1">
+                <%= form.label :kind, t("app.memories.fields.kind"), class: "text-sm font-bold" %>
+                <%= form.select :kind, Memory::KINDS.map { |kind| [ t("app.memories.kinds.#{kind}"), kind ] }, { selected: memory.kind }, class: "rounded-xl border border-slate-300 px-3 py-2" %>
+              </div>
+              <div class="grid gap-1">
+                <%= form.label :importance, t("app.memories.fields.importance"), class: "text-sm font-bold" %>
+                <%= form.number_field :importance, value: memory.importance, in: 1..100, required: true, class: "w-24 rounded-xl border border-slate-300 px-3 py-2" %>
+              </div>
+              <%= form.submit t("app.memories.actions.save"), class: "cursor-pointer rounded-xl border-0 bg-emerald-800 px-4 py-2 font-bold text-white hover:bg-emerald-950" %>
+            </div>
+          <% end %>
+
+          <% if memory.source_messages.any? %>
+            <p class="mt-4 text-sm text-slate-500">
+              <%= t("app.memories.sources") %>
+              <% memory.source_messages.each_with_index do |message, index| %>
+                <%= ", " unless index.zero? %><%= link_to l(message.created_at, format: :message), personality_conversation_thread_path(@personality, message.conversation_thread, anchor: dom_id(message)), class: "font-bold text-emerald-800" %>
+              <% end %>
+            </p>
+          <% end %>
+
+          <div class="mt-4 flex flex-wrap gap-3">
+            <% if memory.pending? %>
+              <%= button_to t("app.memories.actions.approve"), approve_personality_memory_path(@personality, memory), method: :patch, class: "cursor-pointer rounded-xl border-0 bg-amber-100 px-4 py-2 font-bold text-amber-900 hover:bg-amber-200" %>
+            <% end %>
+            <%= button_to t("app.memories.actions.delete"), personality_memory_path(@personality, memory), method: :delete, class: "cursor-pointer rounded-xl border-0 bg-rose-50 px-4 py-2 font-bold text-rose-700 hover:bg-rose-100", form: { data: { turbo_confirm: t("app.memories.actions.delete_confirm") } } %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="mt-6 rounded-2xl bg-white p-8 text-slate-600 ring-1 ring-slate-200"><%= t("app.memories.empty") %></p>
+  <% end %>
+</section>

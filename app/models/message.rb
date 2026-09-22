@@ -18,6 +18,8 @@ class Message < ApplicationRecord
           foreign_key: :assistant_message_id,
           dependent: :restrict_with_exception,
           inverse_of: :assistant_message
+  has_many :memory_sources, dependent: :destroy
+  has_many :sourced_memories, through: :memory_sources, source: :memory
 
   enum :role, ROLES.index_with(&:itself), validate: true
   enum :status, STATUSES.index_with(&:itself), validate: true

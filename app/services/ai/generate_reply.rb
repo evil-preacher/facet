@@ -50,7 +50,7 @@ module Ai
       return failure_result(request) unless request.success?
 
       completed = complete!(request.response.text)
-      dispatch_message_image if completed
+      dispatch_post_reply_jobs if completed
       Result.new(
         generation_run: generation_run,
         model_call: request.model_call,
@@ -94,20 +94,27 @@ module Ai
         )
         generation_run.update!(status: :completed, completed_at: @now)
         if (message_image = assistant_message.message_image)
-          @message_image_event = Outbox::Publish.call(
+          post_reply_events << Outbox::Publish.call(
             event_key: "generate-message-image:#{message_image.id}",
             job_class: Ai::GenerateMessageImageJob,
             arguments: [ message_image.id ]
           )
         end
+        if (prepared = Memories::Extraction::Prepare.call(generation_run: generation_run))
+          post_reply_events << prepared.last
+        end
         true
       end
     end
 
-    def dispatch_message_image
-      return unless @message_image_event
+    def post_reply_events
+      @post_reply_events ||= []
+    end
 
-      Outbox::Dispatcher.call(limit: 1, event_ids: [ @message_image_event.id ])
+    def dispatch_post_reply_jobs
+      return if post_reply_events.empty?
+
+      Outbox::Dispatcher.call(limit: post_reply_events.length, event_ids: post_reply_events.map(&:id))
     end
 
     def failure_result(request)

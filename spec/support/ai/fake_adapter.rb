@@ -28,8 +28,16 @@ module Ai
       @queued << [ :error, error ]
     end
 
-    def response(model:, input:, prompt_cache_key: nil)
-      record_request(model, input, prompt_cache_key)
+    def response(model:, input:, prompt_cache_key: nil, response_schema: nil,
+                 temperature: nil, max_output_tokens: nil)
+      record_request(
+        model,
+        input,
+        prompt_cache_key,
+        response_schema: response_schema,
+        temperature: temperature,
+        max_output_tokens: max_output_tokens
+      )
       type, value = @queued.shift
       raise value if type == :error
 
@@ -50,9 +58,13 @@ module Ai
 
     private
 
-    def record_request(model, input, prompt_cache_key)
+    def record_request(model, input, prompt_cache_key, response_schema: nil,
+                       temperature: nil, max_output_tokens: nil)
       request = { model: model, input: input }
       request[:prompt_cache_key] = prompt_cache_key if prompt_cache_key
+      request[:response_schema] = response_schema if response_schema
+      request[:temperature] = temperature unless temperature.nil?
+      request[:max_output_tokens] = max_output_tokens unless max_output_tokens.nil?
       @requests << request
     end
   end

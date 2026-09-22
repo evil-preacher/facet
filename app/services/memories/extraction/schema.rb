@@ -27,7 +27,6 @@ module Memories
           properties: {
             candidates: {
               type: "array",
-              maxItems: 12,
               items: {
                 type: "object",
                 additionalProperties: false,
@@ -35,19 +34,16 @@ module Memories
                 properties: {
                   action: { type: "string", enum: ACTIONS },
                   kind: { type: "string", enum: Memory::KINDS },
-                  content: { type: "string", minLength: 1, maxLength: Memory::MAX_CONTENT_LENGTH },
-                  importance: { type: "integer", minimum: 1, maximum: 100 },
+                  content: { type: "string" },
+                  importance: { type: "integer" },
                   occurred_at: {
                     anyOf: [
-                      { type: "string", format: "date-time" },
+                      { type: "string" },
                       { type: "null" }
                     ]
                   },
                   source_message_ids: {
                     type: "array",
-                    minItems: 1,
-                    maxItems: 2,
-                    uniqueItems: true,
                     items: { type: "integer" }
                   },
                   existing_memory_id: {
@@ -108,7 +104,7 @@ module Memories
 
         source_ids = candidate["source_message_ids"]
         invalid!("invalid source messages") unless source_ids.is_a?(Array) &&
-          source_ids.length.between?(1, 2) &&
+          source_ids.length.between?(1, 3) &&
           source_ids.uniq.length == source_ids.length &&
           source_ids.all? { |id| id.is_a?(Integer) && @allowed_message_ids.include?(id) }
 

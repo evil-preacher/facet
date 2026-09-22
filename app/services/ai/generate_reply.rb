@@ -29,7 +29,16 @@ module Ai
     end
 
     def call
-      prompt = PromptBuilder.call(generation_run: generation_run)
+      retrieval = Memories::Retrieve.call(
+        personality: personality,
+        query: generation_run.user_message.content
+      )
+      prompt = PromptBuilder.call(
+        generation_run: generation_run,
+        relationship_state: personality.relationship_state,
+        memories: retrieval.memories,
+        retrieval_diagnostics: retrieval.diagnostics
+      )
       request = Request.call(
         user: personality.user,
         personality: personality,
@@ -103,6 +112,9 @@ module Ai
         if (prepared = Memories::Extraction::Prepare.call(generation_run: generation_run))
           post_reply_events << prepared.last
         end
+        post_reply_events.concat(ConversationThreads::ContextUpdates.prepare(generation_run: generation_run))
+        recalled_ids = Array(generation_run.prompt_manifest["memory_ids"])
+        personality.memories.active.where(id: recalled_ids).update_all(last_recalled_at: @now) if recalled_ids.any?
         true
       end
     end

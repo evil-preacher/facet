@@ -50,7 +50,10 @@ class MemoriesController < ApplicationController
 
   def load_memories
     @kind = params[:kind].presence_in(Memory::KINDS)
-    @memories = @personality.memories.current
+    current_memories = @personality.memories.current
+    @memory_counts = Memory::KINDS.index_with { 0 }.merge(current_memories.group(:kind).count)
+    @memory_total = @memory_counts.values.sum
+    @memories = current_memories
       .then { |scope| @kind ? scope.where(kind: @kind) : scope }
       .includes(source_messages: :conversation_thread)
       .order(Arel.sql("CASE status WHEN 'pending' THEN 0 ELSE 1 END"), importance: :desc, updated_at: :desc)

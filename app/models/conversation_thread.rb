@@ -4,6 +4,8 @@ class ConversationThread < ApplicationRecord
   belongs_to :personality
   belongs_to :summary_through_message, class_name: "Message", optional: true
   has_many :generation_runs, dependent: :destroy
+  has_many :summary_versions, class_name: "ThreadSummaryVersion", dependent: :destroy,
+                              inverse_of: :conversation_thread
   has_many :messages,
            -> { order(position: :asc) },
            dependent: :destroy,

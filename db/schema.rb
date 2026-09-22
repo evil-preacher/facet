@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_22_000022) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_22_000023) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -349,6 +349,59 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_000022) do
     t.index ["user_id"], name: "index_profiles_on_user_id", unique: true
   end
 
+  create_table "relationship_state_versions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "generation_run_id"
+    t.bigint "model_call_id"
+    t.string "reason", default: "model_update", null: false
+    t.bigint "relationship_state_id", null: false
+    t.integer "revision", null: false
+    t.jsonb "source_message_ids", default: [], null: false
+    t.bigint "source_version_id"
+    t.text "summary", null: false
+    t.datetime "updated_at", null: false
+    t.index ["generation_run_id"], name: "index_relationship_state_versions_on_generation_run_id", unique: true
+    t.index ["model_call_id"], name: "index_relationship_state_versions_on_model_call_id"
+    t.index ["relationship_state_id", "revision"], name: "index_relationship_versions_on_state_and_revision", unique: true
+    t.index ["relationship_state_id"], name: "index_relationship_state_versions_on_relationship_state_id"
+    t.index ["source_version_id"], name: "index_relationship_state_versions_on_source_version_id"
+    t.check_constraint "char_length(btrim(summary)) >= 1 AND char_length(btrim(summary)) <= 100000", name: "relationship_state_versions_summary_length"
+    t.check_constraint "reason::text = ANY (ARRAY['model_update'::character varying, 'rollback'::character varying]::text[])", name: "relationship_state_versions_reason"
+    t.check_constraint "revision > 0", name: "relationship_state_versions_revision"
+  end
+
+  create_table "relationship_states", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "personality_id", null: false
+    t.integer "revision", default: 0, null: false
+    t.text "summary", default: "", null: false
+    t.datetime "updated_at", null: false
+    t.index ["personality_id"], name: "index_relationship_states_on_personality_id", unique: true
+    t.check_constraint "char_length(summary) <= 100000", name: "relationship_states_summary_length"
+    t.check_constraint "revision >= 0", name: "relationship_states_revision"
+  end
+
+  create_table "thread_summary_versions", force: :cascade do |t|
+    t.bigint "conversation_thread_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "generation_run_id", null: false
+    t.bigint "model_call_id"
+    t.bigint "previous_version_id"
+    t.integer "revision", null: false
+    t.jsonb "source_message_ids", default: [], null: false
+    t.text "summary", null: false
+    t.bigint "through_message_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["conversation_thread_id", "revision"], name: "index_thread_summary_versions_on_thread_and_revision", unique: true
+    t.index ["conversation_thread_id"], name: "index_thread_summary_versions_on_conversation_thread_id"
+    t.index ["generation_run_id"], name: "index_thread_summary_versions_on_generation_run_id", unique: true
+    t.index ["model_call_id"], name: "index_thread_summary_versions_on_model_call_id"
+    t.index ["previous_version_id"], name: "index_thread_summary_versions_on_previous_version_id"
+    t.index ["through_message_id"], name: "index_thread_summary_versions_on_through_message_id"
+    t.check_constraint "char_length(btrim(summary)) >= 1 AND char_length(btrim(summary)) <= 100000", name: "thread_summary_versions_summary_length"
+    t.check_constraint "revision > 0", name: "thread_summary_versions_revision"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "confirmation_sent_at"
     t.datetime "confirmed_at"
@@ -388,4 +441,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_000022) do
   add_foreign_key "personality_versions", "personality_versions", column: "source_version_id", on_delete: :nullify
   add_foreign_key "personality_versions", "users", column: "author_id"
   add_foreign_key "profiles", "users"
+  add_foreign_key "relationship_state_versions", "generation_runs", on_delete: :nullify
+  add_foreign_key "relationship_state_versions", "model_calls", on_delete: :nullify
+  add_foreign_key "relationship_state_versions", "relationship_state_versions", column: "source_version_id", on_delete: :nullify
+  add_foreign_key "relationship_state_versions", "relationship_states", on_delete: :cascade
+  add_foreign_key "relationship_states", "personalities", on_delete: :cascade
+  add_foreign_key "thread_summary_versions", "conversation_threads", on_delete: :cascade
+  add_foreign_key "thread_summary_versions", "generation_runs", on_delete: :cascade
+  add_foreign_key "thread_summary_versions", "messages", column: "through_message_id", on_delete: :restrict
+  add_foreign_key "thread_summary_versions", "model_calls", on_delete: :nullify
+  add_foreign_key "thread_summary_versions", "thread_summary_versions", column: "previous_version_id", on_delete: :nullify
 end

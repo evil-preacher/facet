@@ -37,7 +37,7 @@ module Ai
       new(**arguments).call
     end
 
-    def initialize(generation_run:, relationship_state: nil, memories: [],
+    def initialize(generation_run:, relationship_state: nil, memories: [], retrieval_diagnostics: [],
                    token_counter: TokenCounter.new, budgets: {},
                    storage: ObjectStorage::S3Store.default)
       @generation_run = generation_run
@@ -47,6 +47,7 @@ module Ai
       @current_message = generation_run.user_message
       @relationship_state = owned_relationship(relationship_state)
       @memories = owned_memories(memories)
+      @retrieval_diagnostics = Array(retrieval_diagnostics)
       @token_counter = token_counter
       @storage = storage
       @budgets = DEFAULT_BUDGETS.merge(budgets.to_h.symbolize_keys)
@@ -304,7 +305,7 @@ module Ai
 
     def build_manifest
       {
-        "schema_version" => 3,
+        "schema_version" => 4,
         "ai_provider" => @generation_run.ai_provider,
         "platform_prompt" => platform_prompt_manifest,
         "personality_id" => @personality.id,
@@ -314,6 +315,7 @@ module Ai
         "relationship_state_id" => @relationship_state&.id,
         "relationship_revision" => @relationship_state&.revision,
         "memory_ids" => @selected_memories.map(&:id),
+        "memory_retrieval" => selected_retrieval_diagnostics,
         "summary_through_message_id" => @thread.summary_through_message_id,
         "recent_message_ids" => @history_messages.map(&:id),
         "detected_language" => @detected_language,
@@ -323,6 +325,11 @@ module Ai
         "protected_over_budget" => total_tokens > section_budget(:total),
         "sections" => section_manifests
       }
+    end
+
+    def selected_retrieval_diagnostics
+      selected_ids = @selected_memories.map(&:id)
+      @retrieval_diagnostics.select { |item| selected_ids.include?(item["memory_id"]) }
     end
 
     def platform_prompt_manifest

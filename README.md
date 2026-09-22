@@ -166,15 +166,26 @@ content limits before writing anything.
 Memories retain links to their source messages and are scoped to one personality.
 Exact normalized duplicates add provenance instead of creating another record,
 while corrections create a new record and mark the previous one as superseded.
-Sensitive candidates wait for explicit approval, and credentials or likely
+Sensitive candidates are stored as active memories with a `sensitive` classification, while credentials or likely
 authentication/payment secrets are discarded.
 
 The personality Memory page supports type filters, user-authored corrections,
 approval, deletion, and an automatic-memory toggle. Deletion removes a memory
 from the current/retrievable scope immediately while retaining the historical
-record for the future retention workflow. This release manages extraction and
-the memory corpus; automatic relevance ranking and prompt retrieval belong to
-the next implementation stage.
+record for the future retention workflow.
+
+Before every reply, PostgreSQL ranks active memories from the same personality by
+text relevance, importance, recency, and memory kind. The result count and token
+budget are bounded; pending, superseded, deleted, and foreign memories never enter
+the prompt. The generation manifest records scores and ranking reasons without
+duplicating memory content, and successful use updates `last_recalled_at`.
+
+Completed replies also enqueue relationship-state maintenance and periodic thread
+summarization through the outbox. Thread summaries advance an explicit
+`summary_through_message_id` checkpoint and retain immutable, grounded versions.
+Relationship state is shared by every thread of a personality, has immutable
+revisions, and supports rollback by creating a new revision. Both utility-model
+flows require structured source-message provenance and reject unknown sources.
 
 ## Background streaming
 

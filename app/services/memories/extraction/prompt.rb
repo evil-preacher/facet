@@ -47,10 +47,14 @@ module Memories
       end
 
       def source_messages
-        @source_messages ||= [
-          extraction.generation_run.user_message,
-          extraction.generation_run.assistant_message
-        ].compact
+        current_message = extraction.generation_run.user_message
+        extraction.generation_run.conversation_thread.messages.completed
+          .where(role: :user)
+          .where("position <= ?", current_message.position)
+          .reorder(position: :desc)
+          .limit(3)
+          .to_a
+          .reverse
       end
     end
   end

@@ -1,5 +1,22 @@
 module Memories
   class ApplyCandidates
+    CORRECTION_PHRASES = [
+      "actually", "now", "no longer", "used to",
+      "на самом деле", "теперь", "больше не", "раньше", "ошиб", "исправ"
+    ].freeze
+    CONTENT_STOP_WORDS = %w[
+      пользователь пользователю пользователя пользовательница
+      сказал сказала говорит выразил выразила считает использовал использовала
+      фраза фразу свой свою что этот эта это эти как или при для про
+      the user said says expressed thinks used phrase that this with from
+    ].freeze
+    KIND_PRIORITY = {
+      "boundary" => 4,
+      "preference" => 3,
+      "fact" => 2,
+      "other" => 1
+    }.freeze
+
     def self.call(**arguments)
       new(**arguments).call
     end
@@ -13,7 +30,7 @@ module Memories
     def call
       created = []
       personality.with_lock do
-        candidates.each do |candidate|
+        compacted_candidates.each do |candidate|
           memory = apply_candidate(candidate)
           created << memory if memory
         end
@@ -24,6 +41,45 @@ module Memories
     private
 
     attr_reader :extraction, :personality, :candidates
+
+    def compacted_candidates
+      candidates
+        .sort_by { |candidate| candidate_rank(candidate) }
+        .reverse
+        .each_with_object([]) do |candidate, kept|
+          kept << candidate unless kept.any? { |other| batch_duplicate?(candidate, other) }
+        end
+    end
+
+    def candidate_rank(candidate)
+      [ candidate.fetch("importance"), KIND_PRIORITY.fetch(candidate.fetch("kind"), 0),
+        content_tokens(candidate.fetch("content")).length ]
+    end
+
+    def batch_duplicate?(candidate, other)
+      return false unless candidate.fetch("source_message_ids").sort == other.fetch("source_message_ids").sort
+
+      candidate_tokens = content_tokens(candidate.fetch("content"))
+      other_tokens = content_tokens(other.fetch("content"))
+      overlap = (candidate_tokens & other_tokens).length
+      shorter_size = [ candidate_tokens.length, other_tokens.length ].min
+      return false if shorter_size.zero?
+
+      overlap.fdiv(shorter_size) >= 0.6 || quote_duplicate?(candidate, other, overlap)
+    end
+
+    def quote_duplicate?(candidate, other, overlap)
+      return false unless [ candidate.fetch("kind"), other.fetch("kind") ].include?("other")
+
+      overlap >= 2
+    end
+
+    def content_tokens(content)
+      content.downcase.scan(/[[:alpha:][:digit:]]+/)
+        .reject { |token| token.length < 4 || CONTENT_STOP_WORDS.include?(token) }
+        .map { |token| token[0, 6] }
+        .uniq
+    end
 
     def apply_candidate(candidate)
       classification = SensitivityPolicy.classify(
@@ -40,7 +96,7 @@ module Memories
       end
 
       replaced = replaced_memory(candidate)
-      status = if classification == :sensitive || candidate.fetch("action") == "contradiction"
+      status = if candidate.fetch("action") == "contradiction"
         :pending
       else
         :active
@@ -70,7 +126,17 @@ module Memories
     def replaced_memory(candidate)
       return if candidate.fetch("action") == "create"
 
-      personality.memories.active.find(candidate.fetch("existing_memory_id"))
+      memory = personality.memories.active.find(candidate.fetch("existing_memory_id"))
+      return unless memory.kind == candidate.fetch("kind")
+
+      return memory if candidate.fetch("action") == "contradiction"
+
+      memory if explicit_correction?(candidate.fetch("source_message_ids"))
+    end
+
+    def explicit_correction?(message_ids)
+      text = Message.where(id: message_ids).pluck(:content).join(" ").downcase
+      CORRECTION_PHRASES.any? { |phrase| text.include?(phrase) }
     end
 
     def attach_sources(memory, message_ids)

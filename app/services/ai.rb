@@ -62,6 +62,16 @@ module Ai
     end
   end
 
+  class RetryableContextUpdateError < StandardError
+    attr_reader :generation_run_id, :error_code
+
+    def initialize(generation_run_id:, error_code:)
+      @generation_run_id = generation_run_id
+      @error_code = error_code
+      super("Retryable context update failure: #{error_code}")
+    end
+  end
+
   class RetryableMemoryExtractionError < StandardError
     attr_reader :memory_extraction_id, :error_code
 

@@ -228,6 +228,8 @@ en:
       errors: "Please review the memory:"
       pending: "Needs approval"
       importance: "Importance %{value}/100"
+      total: "Total memories: %{count}"
+      sensitive: "Sensitive"
       sources: "Sources:"
       settings:
         title: "Automatic memory"

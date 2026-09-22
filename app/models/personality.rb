@@ -8,6 +8,7 @@ class Personality < ApplicationRecord
   has_many :conversation_threads, dependent: :destroy
   has_many :memories, dependent: :destroy
   has_many :memory_extractions, dependent: :destroy
+  has_one :relationship_state, dependent: :destroy
   has_many :model_calls, dependent: :nullify
   has_many :versions,
            -> { order(number: :asc) },

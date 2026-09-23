@@ -121,7 +121,7 @@ either flag, then inspect generation calls with `docker compose logs -f worker`.
 ## Prompt assembly
 
 `Ai::PromptBuilder` assembles provider-neutral response input in a stable
-order: application rules, the pinned provider-specific platform correction,
+order: application rules, the optional pinned provider-specific platform correction,
 the immutable character bible version, relationship
 state, relevant memories, thread summary, recent messages, and the current user message. When a
 summary checkpoint exists, messages covered by it are excluded from recent history. The
@@ -141,6 +141,8 @@ docker compose exec -T web bin/rails ai:platform_prompts:publish \
 ```
 
 New generation runs pin the active revision so retries remain reproducible.
+Set `AI_PLATFORM_PROMPT_ENABLED=false` to temporarily exclude platform corrections
+from assembled prompts without deleting their version history.
 Set `AI_PLATFORM_PROMPT_REQUIRED=true` to reject new generations when the
 configured provider has no active conversation correction.
 

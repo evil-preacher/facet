@@ -91,7 +91,7 @@ module Ai
     def prepare_sections
       @rules_item = developer_item("Application rules", APPLICATION_RULES)
       @platform_prompt = @generation_run.ai_platform_prompt
-      @platform_item = platform_prompt_item
+      @platform_item = platform_prompt_item if Rails.configuration.x.ai.platform_prompt_enabled
       @bible_item = developer_item(
         "Character bible",
         wrap_section("character_bible", @personality_version.content)
@@ -273,7 +273,7 @@ module Ai
     end
 
     def prompt_cache_key
-      prompt_revision = @platform_prompt ? @platform_prompt.checksum.first(12) : "none"
+      prompt_revision = @platform_item ? @platform_prompt.checksum.first(12) : "none"
       summary_boundary = @thread.summary_through_message_id || "none"
       "facet-conversation-thread-#{@thread.id}-#{@generation_run.ai_provider}-" \
         "pv-#{@personality_version.id}-pp-#{prompt_revision}-" \
@@ -333,7 +333,7 @@ module Ai
     end
 
     def platform_prompt_manifest
-      return unless @platform_prompt
+      return unless @platform_item
 
       {
         "id" => @platform_prompt.id,

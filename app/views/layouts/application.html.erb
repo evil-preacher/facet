@@ -9,6 +9,15 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= yield :head %>
+    <script>
+      try {
+        const savedTheme = localStorage.getItem("facet-theme")
+        const theme = ["light", "dark"].includes(savedTheme)
+          ? savedTheme
+          : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+        document.documentElement.dataset.theme = theme
+      } catch (_) {}
+    </script>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
@@ -32,6 +41,14 @@
                           form_class: "inline" %>
           <% end %>
         </div>
+        <button type="button"
+                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-0 bg-white text-base text-slate-700 ring-1 ring-slate-200 hover:text-emerald-800"
+                data-controller="theme"
+                data-action="theme#toggle"
+                data-theme-light-label-value="<%= t("app.nav.themes.light") %>"
+                data-theme-dark-label-value="<%= t("app.nav.themes.dark") %>"
+                data-theme-toggle-label-value="<%= t("app.nav.theme") %>"
+                aria-label="<%= t("app.nav.theme") %>">☀</button>
       </nav>
     </header>
 

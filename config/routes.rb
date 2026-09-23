@@ -37,4 +37,5 @@ Rails.application.routes.draw do
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "operations/health" => "operations/health#show", as: :operations_health
+  mount Sidekiq::Web => "/operations/sidekiq", as: :operations_sidekiq
 end

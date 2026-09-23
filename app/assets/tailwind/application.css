@@ -1,1 +1,103 @@
 @import "tailwindcss";
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] body {
+  background-color: var(--color-slate-950);
+  color: var(--color-slate-100);
+}
+
+html[data-theme="dark"] .bg-white {
+  background-color: var(--color-slate-900);
+}
+
+html[data-theme="dark"] .bg-slate-50 {
+  background-color: var(--color-slate-950);
+}
+
+html[data-theme="dark"] .bg-slate-50\/95 {
+  background-color: color-mix(in oklab, var(--color-slate-950) 95%, transparent);
+}
+
+html[data-theme="dark"] .bg-slate-100 {
+  background-color: var(--color-slate-800);
+}
+
+html[data-theme="dark"] :is(.text-slate-950, .text-slate-900, .text-slate-800) {
+  color: var(--color-slate-100);
+}
+
+html[data-theme="dark"] .text-slate-700 {
+  color: var(--color-slate-200);
+}
+
+html[data-theme="dark"] .text-slate-600 {
+  color: var(--color-slate-300);
+}
+
+html[data-theme="dark"] .text-slate-500 {
+  color: var(--color-slate-400);
+}
+
+html[data-theme="dark"] :is(.text-emerald-700, .text-emerald-800, .text-emerald-950) {
+  color: var(--color-emerald-300);
+}
+
+html[data-theme="dark"] :is(.bg-emerald-50, .bg-emerald-100) {
+  background-color: color-mix(in oklab, var(--color-emerald-950) 75%, var(--color-slate-900));
+}
+
+html[data-theme="dark"] :is(.bg-rose-50, .bg-rose-100) {
+  background-color: color-mix(in oklab, var(--color-rose-950) 65%, var(--color-slate-900));
+}
+
+html[data-theme="dark"] :is(.text-rose-700, .text-rose-800) {
+  color: var(--color-rose-300);
+}
+
+html[data-theme="dark"] :is(.bg-amber-50, .bg-amber-100, .bg-amber-200) {
+  background-color: color-mix(in oklab, var(--color-amber-950) 65%, var(--color-slate-900));
+}
+
+html[data-theme="dark"] :is(.text-amber-700, .text-amber-800, .text-amber-900) {
+  color: var(--color-amber-300);
+}
+
+html[data-theme="dark"] .bg-violet-100 {
+  background-color: color-mix(in oklab, var(--color-violet-950) 65%, var(--color-slate-900));
+}
+
+html[data-theme="dark"] .text-violet-800 {
+  color: var(--color-violet-300);
+}
+
+html[data-theme="dark"] :is(.border-slate-100, .border-slate-200, .border-slate-300) {
+  border-color: var(--color-slate-700);
+}
+
+html[data-theme="dark"] :is(.divide-slate-200 > :not(:last-child)) {
+  border-color: var(--color-slate-700);
+}
+
+html[data-theme="dark"] :is(.ring-slate-200, .ring-slate-300) {
+  --tw-ring-color: var(--color-slate-700);
+}
+
+html[data-theme="dark"] :is(.shadow-slate-200\/50, .shadow-slate-200\/60, .shadow-slate-200\/70, .shadow-slate-300\/40) {
+  --tw-shadow-color: color-mix(in oklab, var(--color-black) 55%, transparent);
+}
+
+html[data-theme="dark"] :is(input, textarea, select) {
+  background-color: var(--color-slate-900);
+  color: var(--color-slate-100);
+}
+
+html[data-theme="dark"] :is(input, textarea)::placeholder {
+  color: var(--color-slate-500);
+}
+
+html[data-theme="dark"] :is(.hover\:text-emerald-800:hover, .hover\:text-emerald-950:hover) {
+  color: var(--color-emerald-200);
+}

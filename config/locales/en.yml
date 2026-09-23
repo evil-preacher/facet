@@ -13,6 +13,10 @@ en:
       profile: "Profile"
       logout: "Log out"
       language: "Language"
+      theme: "Theme"
+      themes:
+        light: "Light"
+        dark: "Dark"
     flash:
       authentication_required: "Please sign in first"
       registration_sent: "If the address is available for registration, we sent a confirmation link."

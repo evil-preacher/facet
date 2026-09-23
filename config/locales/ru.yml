@@ -13,6 +13,10 @@ ru:
       profile: "Профиль"
       logout: "Выйти"
       language: "Язык"
+      theme: "Тема"
+      themes:
+        light: "Светлая"
+        dark: "Тёмная"
     flash:
       authentication_required: "Сначала войдите в аккаунт"
       registration_sent: "Если адрес доступен для регистрации, мы отправили ссылку для подтверждения."

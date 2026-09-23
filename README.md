@@ -227,7 +227,9 @@ configurable separately from the web process.
 `GET /operations/health` reports database/Redis health, Sidekiq process and
 queue depth/latency, retry/dead counts, and pending outbox work. It returns 404
 unless `OPERATIONS_USERNAME` and `OPERATIONS_PASSWORD` are configured, and then
-requires HTTP Basic authentication; it must not be exposed publicly.
+requires HTTP Basic authentication. The Sidekiq dashboard is mounted at
+`/operations/sidekiq` behind the same credentials. Neither endpoint should be
+exposed publicly.
 
 ## Tests
 

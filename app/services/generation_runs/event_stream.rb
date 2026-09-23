@@ -71,7 +71,13 @@ module GenerationRuns
           yield event("image_declined", {})
         end
         emit_usage { |payload| yield payload }
-        yield event("done", { status: "completed" })
+        yield event(
+          "done",
+          {
+            status: "completed",
+            html: Messages::MarkdownRenderer.call(@generation_run.assistant_message.content)
+          }
+        )
         true
       when "failed"
         yield event(

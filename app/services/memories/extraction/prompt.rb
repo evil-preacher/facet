@@ -11,6 +11,17 @@ module Memories
         new(extraction: extraction, active_memories: active_memories, now: now).call
       end
 
+      def self.source_messages(extraction:)
+        current_message = extraction.generation_run.user_message
+        extraction.generation_run.conversation_thread.messages.completed
+          .where(role: :user)
+          .where("position <= ?", current_message.position)
+          .reorder(position: :desc)
+          .limit(3)
+          .to_a
+          .reverse
+      end
+
       def initialize(extraction:, active_memories:, now:)
         @extraction = extraction
         @active_memories = active_memories
@@ -47,14 +58,7 @@ module Memories
       end
 
       def source_messages
-        current_message = extraction.generation_run.user_message
-        extraction.generation_run.conversation_thread.messages.completed
-          .where(role: :user)
-          .where("position <= ?", current_message.position)
-          .reorder(position: :desc)
-          .limit(3)
-          .to_a
-          .reverse
+        @source_messages ||= self.class.source_messages(extraction: extraction)
       end
     end
   end

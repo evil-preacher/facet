@@ -1,4 +1,8 @@
 module MessagesHelper
+  def render_message_markdown(content)
+    Messages::MarkdownRenderer.call(content).html_safe
+  end
+
   def ai_debug_ui?
     Rails.configuration.x.ai.debug_ui
   end

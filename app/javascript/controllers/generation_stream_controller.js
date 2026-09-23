@@ -67,12 +67,24 @@ export default class extends Controller {
   }
 
   finish = (event) => {
-    const { status } = JSON.parse(event.data)
+    const { status, html } = JSON.parse(event.data)
 
     this.source?.close()
+    this.renderMarkdown(html)
     this.updateMessageStatus(status)
     document.getElementById("generation_status")?.replaceChildren()
     this.element.remove()
+  }
+
+  renderMarkdown(html) {
+    if (typeof html !== "string") return
+
+    const message = document.getElementById(this.messageIdValue)
+    const content = message?.querySelector("[data-message-content]")
+    if (!content) return
+
+    content.innerHTML = html
+    content.removeAttribute("data-markdown-pending")
   }
 
   handleError = (event) => {

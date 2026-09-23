@@ -1,97 +1,238 @@
 @import "tailwindcss";
 
+@layer components {
+  .chat-markdown {
+    overflow-wrap: anywhere;
+    line-height: 1.75;
+  }
+
+  .chat-markdown[data-markdown-pending] {
+    white-space: pre-wrap;
+  }
+
+  .chat-markdown > :first-child {
+    margin-top: 0;
+  }
+
+  .chat-markdown > :last-child {
+    margin-bottom: 0;
+  }
+
+  .chat-markdown :is(p, ul, ol, blockquote, pre, table) {
+    margin-block: 0.75rem;
+  }
+
+  .chat-markdown :is(ul, ol) {
+    padding-left: 1.5rem;
+  }
+
+  .chat-markdown ul {
+    list-style: disc;
+  }
+
+  .chat-markdown ol {
+    list-style: decimal;
+  }
+
+  .chat-markdown :is(h1, h2, h3, h4, h5, h6) {
+    margin-block: 1rem 0.5rem;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  .chat-markdown h1 { font-size: 1.35rem; }
+  .chat-markdown h2 { font-size: 1.2rem; }
+  .chat-markdown h3 { font-size: 1.1rem; }
+
+  .chat-markdown blockquote {
+    border-left: 3px solid var(--color-slate-300);
+    padding-left: 1rem;
+    opacity: 0.85;
+  }
+
+  .chat-markdown code {
+    border-radius: 0.35rem;
+    background: color-mix(in oklab, currentColor 12%, transparent);
+    padding: 0.1rem 0.35rem;
+    font-size: 0.9em;
+  }
+
+  .chat-markdown pre {
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    background: var(--color-slate-900);
+    padding: 1rem;
+    color: var(--color-slate-100);
+  }
+
+  .chat-markdown pre code {
+    background: transparent;
+    padding: 0;
+  }
+
+  .chat-markdown a {
+    color: var(--color-emerald-700);
+    font-weight: 700;
+    text-decoration: underline;
+  }
+
+  .chat-markdown--user a {
+    color: white;
+  }
+
+  .chat-markdown table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+  }
+
+  .chat-markdown :is(th, td) {
+    border: 1px solid var(--color-slate-300);
+    padding: 0.35rem 0.6rem;
+    text-align: left;
+  }
+}
+
 html[data-theme="dark"] {
   color-scheme: dark;
+  --facet-dark-canvas: color-mix(in oklab, var(--color-slate-950) 94%, var(--color-emerald-950));
+  --facet-dark-surface: color-mix(in oklab, var(--color-slate-900) 94%, var(--color-emerald-950));
+  --facet-dark-surface-raised: color-mix(in oklab, var(--color-slate-800) 72%, var(--color-slate-900));
+  --facet-dark-line: color-mix(in oklab, var(--color-slate-400) 17%, transparent);
+  --facet-dark-line-strong: color-mix(in oklab, var(--color-slate-400) 28%, transparent);
+  --facet-dark-accent: color-mix(in oklab, var(--color-emerald-400) 68%, var(--color-slate-400));
+  --facet-dark-accent-bg: color-mix(in oklab, var(--color-emerald-900) 58%, var(--color-slate-900));
+}
+
+html[data-theme="dark"] .chat-markdown a {
+  color: var(--facet-dark-accent);
+}
+
+html[data-theme="dark"] .chat-markdown--user a {
+  color: white;
 }
 
 html[data-theme="dark"] body {
-  background-color: var(--color-slate-950);
-  color: var(--color-slate-100);
-}
-
-html[data-theme="dark"] .bg-white {
-  background-color: var(--color-slate-900);
-}
-
-html[data-theme="dark"] .bg-slate-50 {
-  background-color: var(--color-slate-950);
-}
-
-html[data-theme="dark"] .bg-slate-50\/95 {
-  background-color: color-mix(in oklab, var(--color-slate-950) 95%, transparent);
-}
-
-html[data-theme="dark"] .bg-slate-100 {
-  background-color: var(--color-slate-800);
-}
-
-html[data-theme="dark"] :is(.text-slate-950, .text-slate-900, .text-slate-800) {
-  color: var(--color-slate-100);
-}
-
-html[data-theme="dark"] .text-slate-700 {
+  background-color: var(--facet-dark-canvas);
   color: var(--color-slate-200);
 }
 
-html[data-theme="dark"] .text-slate-600 {
+html[data-theme="dark"] .bg-white {
+  background-color: var(--facet-dark-surface);
+}
+
+html[data-theme="dark"] .bg-slate-50 {
+  background-color: var(--facet-dark-canvas);
+}
+
+html[data-theme="dark"] .bg-slate-50\/95 {
+  background-color: color-mix(in oklab, var(--facet-dark-surface) 90%, transparent);
+}
+
+html[data-theme="dark"] .bg-slate-100 {
+  background-color: var(--facet-dark-surface-raised);
+}
+
+html[data-theme="dark"] .bg-slate-900 {
+  background-color: color-mix(in oklab, var(--color-slate-950) 74%, var(--color-slate-800));
+}
+
+html[data-theme="dark"] :is(.bg-emerald-800, .bg-emerald-950) {
+  background-color: var(--facet-dark-accent-bg);
+}
+
+html[data-theme="dark"] .bg-amber-300 {
+  background-color: color-mix(in oklab, var(--color-amber-700) 42%, var(--facet-dark-surface));
+}
+
+html[data-theme="dark"] .bg-amber-800 {
+  background-color: color-mix(in oklab, var(--color-amber-900) 56%, var(--color-slate-900));
+}
+
+html[data-theme="dark"] .bg-rose-700 {
+  background-color: color-mix(in oklab, var(--color-rose-900) 54%, var(--color-slate-900));
+}
+
+html[data-theme="dark"] :is(.text-slate-950, .text-slate-900, .text-slate-800) {
+  color: var(--color-slate-200);
+}
+
+html[data-theme="dark"] .text-slate-700 {
   color: var(--color-slate-300);
 }
 
-html[data-theme="dark"] .text-slate-500 {
+html[data-theme="dark"] .text-slate-600 {
   color: var(--color-slate-400);
 }
 
+html[data-theme="dark"] .text-slate-500 {
+  color: color-mix(in oklab, var(--color-slate-400) 76%, var(--color-slate-500));
+}
+
 html[data-theme="dark"] :is(.text-emerald-700, .text-emerald-800, .text-emerald-950) {
-  color: var(--color-emerald-300);
+  color: var(--facet-dark-accent);
 }
 
 html[data-theme="dark"] :is(.bg-emerald-50, .bg-emerald-100) {
-  background-color: color-mix(in oklab, var(--color-emerald-950) 75%, var(--color-slate-900));
+  background-color: color-mix(in oklab, var(--color-emerald-950) 30%, var(--facet-dark-surface));
 }
 
 html[data-theme="dark"] :is(.bg-rose-50, .bg-rose-100) {
-  background-color: color-mix(in oklab, var(--color-rose-950) 65%, var(--color-slate-900));
+  background-color: color-mix(in oklab, var(--color-rose-950) 30%, var(--facet-dark-surface));
 }
 
 html[data-theme="dark"] :is(.text-rose-700, .text-rose-800) {
-  color: var(--color-rose-300);
+  color: color-mix(in oklab, var(--color-rose-400) 70%, var(--color-slate-300));
 }
 
 html[data-theme="dark"] :is(.bg-amber-50, .bg-amber-100, .bg-amber-200) {
-  background-color: color-mix(in oklab, var(--color-amber-950) 65%, var(--color-slate-900));
+  background-color: color-mix(in oklab, var(--color-amber-950) 28%, var(--facet-dark-surface));
 }
 
 html[data-theme="dark"] :is(.text-amber-700, .text-amber-800, .text-amber-900) {
-  color: var(--color-amber-300);
+  color: color-mix(in oklab, var(--color-amber-400) 68%, var(--color-slate-300));
 }
 
 html[data-theme="dark"] .bg-violet-100 {
-  background-color: color-mix(in oklab, var(--color-violet-950) 65%, var(--color-slate-900));
+  background-color: color-mix(in oklab, var(--color-violet-950) 28%, var(--facet-dark-surface));
 }
 
 html[data-theme="dark"] .text-violet-800 {
-  color: var(--color-violet-300);
+  color: color-mix(in oklab, var(--color-violet-400) 68%, var(--color-slate-300));
 }
 
 html[data-theme="dark"] :is(.border-slate-100, .border-slate-200, .border-slate-300) {
-  border-color: var(--color-slate-700);
+  border-color: var(--facet-dark-line);
 }
 
 html[data-theme="dark"] :is(.divide-slate-200 > :not(:last-child)) {
-  border-color: var(--color-slate-700);
+  border-color: var(--facet-dark-line);
 }
 
 html[data-theme="dark"] :is(.ring-slate-200, .ring-slate-300) {
-  --tw-ring-color: var(--color-slate-700);
+  --tw-ring-color: var(--facet-dark-line);
+}
+
+html[data-theme="dark"] :is(.ring-emerald-200, .ring-emerald-600, .ring-emerald-700) {
+  --tw-ring-color: color-mix(in oklab, var(--facet-dark-accent) 38%, transparent);
+}
+
+html[data-theme="dark"] :is(.ring-rose-200, .ring-amber-200, .ring-amber-300) {
+  --tw-ring-color: var(--facet-dark-line-strong);
+}
+
+html[data-theme="dark"] .ring-white {
+  --tw-ring-color: var(--facet-dark-line-strong);
 }
 
 html[data-theme="dark"] :is(.shadow-slate-200\/50, .shadow-slate-200\/60, .shadow-slate-200\/70, .shadow-slate-300\/40) {
-  --tw-shadow-color: color-mix(in oklab, var(--color-black) 55%, transparent);
+  --tw-shadow-color: color-mix(in oklab, var(--color-black) 24%, transparent);
 }
 
 html[data-theme="dark"] :is(input, textarea, select) {
-  background-color: var(--color-slate-900);
-  color: var(--color-slate-100);
+  background-color: color-mix(in oklab, var(--color-slate-950) 62%, var(--facet-dark-surface));
+  color: var(--color-slate-200);
 }
 
 html[data-theme="dark"] :is(input, textarea)::placeholder {
@@ -99,5 +240,65 @@ html[data-theme="dark"] :is(input, textarea)::placeholder {
 }
 
 html[data-theme="dark"] :is(.hover\:text-emerald-800:hover, .hover\:text-emerald-950:hover) {
-  color: var(--color-emerald-200);
+  color: color-mix(in oklab, var(--color-emerald-300) 72%, var(--color-slate-300));
+}
+
+html[data-theme="dark"] .hover\:bg-emerald-950:hover {
+  background-color: color-mix(in oklab, var(--color-emerald-950) 72%, var(--color-slate-950));
+}
+
+html[data-theme="dark"] :is(.hover\:bg-amber-100:hover, .hover\:bg-amber-200:hover) {
+  background-color: color-mix(in oklab, var(--color-amber-950) 40%, var(--facet-dark-surface));
+}
+
+html[data-theme="dark"] .hover\:bg-amber-900:hover {
+  background-color: color-mix(in oklab, var(--color-amber-950) 66%, var(--color-slate-950));
+}
+
+html[data-theme="dark"] .hover\:bg-rose-100:hover {
+  background-color: color-mix(in oklab, var(--color-rose-950) 40%, var(--facet-dark-surface));
+}
+
+html[data-theme="dark"] .hover\:bg-rose-800:hover {
+  background-color: color-mix(in oklab, var(--color-rose-950) 64%, var(--color-slate-950));
+}
+
+html[data-theme="dark"] .hover\:text-slate-900:hover {
+  color: var(--color-slate-200);
+}
+
+html[data-theme="dark"] .hover\:ring-emerald-700:hover {
+  --tw-ring-color: color-mix(in oklab, var(--facet-dark-accent) 46%, transparent);
+}
+
+html[data-theme="dark"] .focus\:border-emerald-700:focus {
+  border-color: color-mix(in oklab, var(--facet-dark-accent) 52%, transparent);
+}
+
+html[data-theme="dark"] .focus\:ring-emerald-100:focus {
+  --tw-ring-color: color-mix(in oklab, var(--facet-dark-accent) 14%, transparent);
+}
+
+html[data-theme="dark"] .border-emerald-700 {
+  border-color: color-mix(in oklab, var(--facet-dark-accent) 52%, transparent);
+}
+
+html[data-theme="dark"] .chat-markdown :is(blockquote, th, td) {
+  border-color: var(--facet-dark-line-strong);
+}
+
+html[data-theme="dark"] .chat-markdown pre {
+  background-color: color-mix(in oklab, var(--color-slate-950) 82%, black);
+}
+
+html[data-theme="dark"] .file\:bg-slate-100::file-selector-button {
+  background-color: var(--facet-dark-surface-raised);
+}
+
+html[data-theme="dark"] .file\:text-emerald-800::file-selector-button {
+  color: var(--facet-dark-accent);
+}
+
+html[data-theme="dark"] .hover\:file\:bg-emerald-50:hover::file-selector-button {
+  background-color: color-mix(in oklab, var(--color-emerald-950) 30%, var(--facet-dark-surface));
 }

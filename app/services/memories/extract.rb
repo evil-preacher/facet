@@ -147,10 +147,7 @@ module Memories
     end
 
     def source_message_ids
-      [
-        extraction.generation_run.user_message_id,
-        extraction.generation_run.assistant_message_id
-      ].compact
+      Extraction::Prompt.source_messages(extraction: extraction).map(&:id)
     end
 
     def active_memories

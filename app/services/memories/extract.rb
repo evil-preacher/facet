@@ -147,7 +147,7 @@ module Memories
     end
 
     def source_message_ids
-      Extraction::Prompt.source_messages(extraction: extraction).map(&:id)
+      [ extraction.generation_run.user_message.id ]
     end
 
     def active_memories

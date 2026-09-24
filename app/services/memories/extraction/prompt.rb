@@ -42,7 +42,12 @@ module Memories
       def payload
         {
           current_time: now.iso8601,
-          allowed_message_ids: source_messages.map(&:id),
+          current_message_id: extraction.generation_run.user_message.id,
+          participants: {
+            user_name: extraction.personality.user.profile&.first_name.presence,
+            character_name: extraction.personality.name
+          },
+          allowed_message_ids: [ extraction.generation_run.user_message.id ],
           conversation_turn: source_messages.map do |message|
             { id: message.id, role: message.role, content: message.content }
           end,

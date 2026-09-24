@@ -88,10 +88,13 @@ module Memories
       )
       return if classification == :prohibited
 
-      duplicate = current_duplicate(candidate)
+      duplicate = current_duplicate(candidate) || semantic_duplicate(candidate)
       if duplicate
         attach_sources(duplicate, candidate.fetch("source_message_ids"))
-        duplicate.update!(importance: [ duplicate.importance, candidate.fetch("importance") ].max)
+        duplicate.update!(
+          importance: [ duplicate.importance, candidate.fetch("importance") ].max,
+          sensitivity: classification == :sensitive ? :sensitive : duplicate.sensitivity
+        )
         return
       end
 
@@ -121,6 +124,28 @@ module Memories
         kind: candidate.fetch("kind"),
         normalized_content: Memory.normalize(candidate.fetch("content"))
       )
+    end
+
+    def semantic_duplicate(candidate)
+      return unless candidate.fetch("action") == "create"
+
+      candidate_content = candidate.fetch("content")
+      candidate_tokens = content_tokens(candidate_content)
+      return if candidate_tokens.length < 3
+
+      personality.memories.current.where(kind: candidate.fetch("kind")).find_each.find do |memory|
+        next false unless negative?(candidate_content) == negative?(memory.content)
+
+        existing_tokens = content_tokens(memory.content)
+        next false if existing_tokens.length < 3
+
+        overlap = (candidate_tokens & existing_tokens).length
+        overlap >= 3 && overlap.fdiv([ candidate_tokens.length, existing_tokens.length ].min) >= 0.75
+      end
+    end
+
+    def negative?(content)
+      content.downcase.scan(/[[:alpha:]]+/).any? { |word| %w[не нет без not no never].include?(word) }
     end
 
     def replaced_memory(candidate)

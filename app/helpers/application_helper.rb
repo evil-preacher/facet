@@ -4,7 +4,7 @@ module ApplicationHelper
   end
 
   def personality_avatar_url(personality)
-    return unless personality.avatar_ready? && personality.avatar_object_key.present?
+    return unless personality.avatar_object_key.present?
 
     ObjectStorage::S3Store.default.presigned_url(key: personality.avatar_object_key)
   rescue StandardError => error

@@ -8,9 +8,8 @@ module Personalities
 
         personality.with_lock do
           next unless personality.current_version_id == personality_version.id
-          next if personality.avatar_object_key.present? || personality.avatar_ready?
           next if personality.avatar_source_version_id == personality_version.id &&
-                  (personality.avatar_pending? || personality.avatar_generating?)
+                  (personality.avatar_pending? || personality.avatar_generating? || personality.avatar_ready?)
 
           personality.update!(
             avatar_status: :pending,

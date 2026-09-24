@@ -59,10 +59,12 @@ module Ai
       key = object_key(image.content_type)
       storage.upload(key: key, body: image.bytes, content_type: image.content_type)
 
-      unless complete!(key: key, image: image)
+      completed, previous_key = complete!(key: key, image: image)
+      unless completed
         safely_delete(key)
         return Result.new(status: :skipped, error_code: nil)
       end
+      safely_delete(previous_key) if previous_key.present? && previous_key != key
 
       Result.new(status: :completed, error_code: nil)
     rescue *TERMINAL_ERRORS.keys => error
@@ -86,7 +88,7 @@ module Ai
     def claim!
       personality.with_lock do
         return false unless personality.avatar_source_version_id == personality_version.id
-        return false if personality.avatar_ready? || personality.avatar_object_key.present?
+        return false if personality.avatar_ready?
         return false unless personality.avatar_pending? || personality.avatar_failed?
 
         personality.update!(
@@ -102,8 +104,10 @@ module Ai
 
     def complete!(key:, image:)
       personality.with_lock do
-        return false unless personality.avatar_source_version_id == personality_version.id
-        return false if personality.avatar_ready?
+        return [ false, nil ] unless personality.avatar_source_version_id == personality_version.id
+        return [ false, nil ] if personality.avatar_ready?
+
+        previous_key = personality.avatar_object_key
 
         personality.update!(
           avatar_status: :ready,
@@ -115,8 +119,8 @@ module Ai
           avatar_error_code: nil,
           avatar_error_message: nil
         )
+        [ true, previous_key ]
       end
-      true
     end
 
     def retryable_failure!(code)

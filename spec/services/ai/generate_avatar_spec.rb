@@ -85,20 +85,46 @@ RSpec.describe Ai::GenerateAvatar do
     )
   end
 
-  it "fails without calling Mistral when selected bible sections are absent" do
-    missing_context_version = create(
-      :personality_version,
-      personality: personality,
-      number: 2,
-      content: "# Communication style\n\nFriendly"
-    )
+  it "replaces an avatar from an older version and deletes the old object after upload" do
+    old_key = "personalities/#{personality.id}/avatars/version-0.png"
     personality.update!(
-      current_version: missing_context_version,
-      avatar_source_version: missing_context_version
+      avatar_object_key: old_key,
+      avatar_content_type: "image/png",
+      avatar_byte_size: 64,
+      avatar_generated_at: 1.day.ago
     )
 
     result = described_class.call(
       personality: personality,
+      personality_version: version,
+      generator: generator,
+      storage: storage
+    )
+
+    expect(result.status).to eq(:completed)
+    expect(personality.reload.avatar_object_key).to eq(
+      "personalities/#{personality.id}/avatars/version-#{version.id}.png"
+    )
+    expect(storage).to have_received(:delete).with(key: old_key)
+  end
+
+  it "fails without calling Mistral when selected bible sections are absent" do
+    missing_context_personality = create(:personality)
+    missing_context_version = create(
+      :personality_version,
+      personality: missing_context_personality,
+      number: 1,
+      content: "# Communication style\n\nFriendly"
+    )
+    missing_context_personality.update!(
+      current_version: missing_context_version,
+      status: :active,
+      avatar_status: :pending,
+      avatar_source_version: missing_context_version
+    )
+
+    result = described_class.call(
+      personality: missing_context_personality,
       personality_version: missing_context_version,
       generator: generator,
       storage: storage
@@ -106,7 +132,7 @@ RSpec.describe Ai::GenerateAvatar do
 
     expect(result).to have_attributes(status: :failed, error_code: "missing_avatar_context")
     expect(generator).not_to have_received(:generate)
-    expect(personality.reload).to have_attributes(
+    expect(missing_context_personality.reload).to have_attributes(
       avatar_status: "failed",
       avatar_error_code: "missing_avatar_context"
     )

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_22_000023) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_25_000024) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -63,6 +63,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_000023) do
     t.string "idempotency_key", null: false
     t.bigint "personality_version_id", null: false
     t.jsonb "prompt_manifest", default: {}, null: false
+    t.datetime "relationship_consolidated_at"
+    t.datetime "relationship_update_processed_at"
     t.bigint "retry_of_id"
     t.datetime "started_at"
     t.string "status", default: "pending", null: false
@@ -365,13 +367,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_000023) do
     t.index ["relationship_state_id", "revision"], name: "index_relationship_versions_on_state_and_revision", unique: true
     t.index ["relationship_state_id"], name: "index_relationship_state_versions_on_relationship_state_id"
     t.index ["source_version_id"], name: "index_relationship_state_versions_on_source_version_id"
-    t.check_constraint "char_length(btrim(summary)) >= 1 AND char_length(btrim(summary)) <= 100000", name: "relationship_state_versions_summary_length"
-    t.check_constraint "reason::text = ANY (ARRAY['model_update'::character varying, 'rollback'::character varying]::text[])", name: "relationship_state_versions_reason"
+    t.check_constraint "char_length(summary) <= 100000", name: "relationship_state_versions_summary_length"
+    t.check_constraint "reason::text = ANY (ARRAY['model_update'::character varying, 'cleanup'::character varying, 'consolidation'::character varying, 'rollback'::character varying]::text[])", name: "relationship_state_versions_reason"
     t.check_constraint "revision > 0", name: "relationship_state_versions_revision"
   end
 
   create_table "relationship_states", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.bigint "last_consolidated_message_id"
     t.bigint "personality_id", null: false
     t.integer "revision", default: 0, null: false
     t.text "summary", default: "", null: false

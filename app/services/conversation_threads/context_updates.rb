@@ -1,6 +1,7 @@
 module ConversationThreads
   class ContextUpdates
     SUMMARY_MESSAGE_INTERVAL = 12
+    RELATIONSHIP_CONSOLIDATION_INTERVAL = 25
 
     def self.prepare(generation_run:)
       return [] unless generation_run.completed? && generation_run.assistant_message&.completed?
@@ -19,6 +20,13 @@ module ConversationThreads
           arguments: [ generation_run.id ]
         )
       end
+      if relationship_consolidation_due?(generation_run)
+        events << Outbox::Publish.call(
+          event_key: "relationship-consolidation:#{generation_run.id}",
+          job_class: Ai::RelationshipConsolidationJob,
+          arguments: [ generation_run.id ]
+        )
+      end
       events
     end
 
@@ -29,5 +37,13 @@ module ConversationThreads
       relation.count >= SUMMARY_MESSAGE_INTERVAL
     end
     private_class_method :summary_due?
+
+    def self.relationship_consolidation_due?(generation_run)
+      personality_id = generation_run.conversation_thread.personality_id
+      completed_count = GenerationRun.joins(:conversation_thread)
+        .where(conversation_threads: { personality_id: personality_id }, status: "completed").count
+      completed_count.positive? && (completed_count % RELATIONSHIP_CONSOLIDATION_INTERVAL).zero?
+    end
+    private_class_method :relationship_consolidation_due?
   end
 end

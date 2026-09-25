@@ -142,6 +142,10 @@ en:
         eyebrow: "Personality"
         navigation: "Personality navigation"
         character_bible: "Character bible"
+        relationship_state:
+          title: "Relationship state"
+          description: "An automatically updated summary of your relationship with this personality. It is included in future replies."
+          empty: "No established relationship context yet."
         version: "Version %{number}"
         edit: "Edit"
         history: "Version history"

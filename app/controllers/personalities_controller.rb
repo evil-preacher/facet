@@ -11,6 +11,7 @@ class PersonalitiesController < ApplicationController
   end
 
   def show
+    @relationship_state = @personality.relationship_state
   end
 
   def new

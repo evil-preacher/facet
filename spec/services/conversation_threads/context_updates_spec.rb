@@ -19,4 +19,18 @@ RSpec.describe ConversationThreads::ContextUpdates do
       "Ai::RelationshipUpdateJob", "Ai::ThreadSummaryJob"
     )
   end
+
+  it "publishes a separate relationship audit every 25 completed replies" do
+    runs = 25.times.map do |index|
+      user_message = create(:message, conversation_thread: thread, position: index * 2 + 1)
+      assistant_message = create(:message, :assistant, conversation_thread: thread, position: index * 2 + 2)
+      create(:generation_run, conversation_thread: thread, personality_version: personality.current_version,
+             user_message: user_message, assistant_message: assistant_message, status: :completed)
+    end
+
+    events = described_class.prepare(generation_run: runs.last)
+
+    expect(events.map(&:job_class)).to include("Ai::RelationshipConsolidationJob")
+    expect(events.map(&:event_key)).to include("relationship-consolidation:#{runs.last.id}")
+  end
 end

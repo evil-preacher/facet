@@ -8,7 +8,10 @@ module MessagesHelper
   end
 
   def completed_model_call_for(message)
-    message.generation_run_as_assistant&.model_calls&.select(&:completed?)&.max_by(&:created_at)
+    message.generation_run_as_assistant&.model_calls
+      &.where(purpose: :conversation, status: :completed)
+      &.order(created_at: :desc, id: :desc)
+      &.first
   end
 
   def model_call_debug_line(model_call)

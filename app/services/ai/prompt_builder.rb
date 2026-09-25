@@ -119,7 +119,7 @@ module Ai
 
     def prepare_relationship
       @relationship_truncated = false
-      return @relationship_item = nil unless @relationship_state
+      return @relationship_item = nil if @relationship_state&.summary.blank?
 
       @relationship_item, @relationship_truncated = budgeted_context_item(
         "Relationship state",

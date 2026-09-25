@@ -16,6 +16,7 @@ Rails.application.routes.draw do
     resources :memories, only: %i[index update destroy] do
       patch :approve, on: :member
       patch :settings, on: :collection
+      delete :clear, on: :collection
     end
     resources :versions, only: :index, controller: "personality_versions" do
       get :compare, on: :collection

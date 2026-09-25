@@ -33,7 +33,7 @@
       <h2 class="text-xl font-bold"><%= t("app.personalities.show.character_bible") %></h2>
       <span class="text-sm text-slate-500"><%= t("app.personalities.show.version", number: @personality.current_version.number) %></span>
     </div>
-    <div class="mt-6 whitespace-pre-wrap font-sans leading-7 text-slate-700"><%= @personality.current_version.content %></div>
+    <div class="mt-6 max-h-[36rem] overflow-y-auto overscroll-contain whitespace-pre-wrap pr-3 font-sans leading-7 text-slate-700" tabindex="0" role="region" aria-label="<%= t("app.personalities.show.character_bible") %>"><%= @personality.current_version.content %></div>
   </article>
 
   <article id="relationship-state" class="mt-6 scroll-mt-24 rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-200 sm:p-10">

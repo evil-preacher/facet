@@ -36,9 +36,14 @@
                 <% end %>
               </p>
             </div>
-            <span class="rounded-full px-3 py-1 text-xs font-bold <%= conversation_thread.active? ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600" %>">
-              <%= t("app.conversation_threads.statuses.#{conversation_thread.status}") %>
-            </span>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="rounded-full px-3 py-1 text-xs font-bold <%= conversation_thread.active? ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600" %>">
+                <%= t("app.conversation_threads.statuses.#{conversation_thread.status}") %>
+              </span>
+              <% if conversation_thread.active? %>
+                <%= button_to t("app.conversation_threads.show.archive"), archive_personality_conversation_thread_path(@personality, conversation_thread), method: :patch, class: "cursor-pointer rounded-lg border-0 bg-rose-50 px-3 py-1.5 text-sm font-bold text-rose-700 hover:bg-rose-100" %>
+              <% end %>
+            </div>
           </div>
         </article>
       <% end %>

@@ -35,6 +35,7 @@ en:
       generation_retry_queued: "Reply retry was queued."
       memory_updated: "Memory updated."
       memory_deleted: "Memory deleted."
+      memories_cleared: "All personality memories cleared."
       memory_approved: "Memory approved."
       memory_settings_updated: "Memory settings updated."
     home:
@@ -261,6 +262,8 @@ en:
         approve: "Approve"
         delete: "Delete"
         delete_confirm: "Delete this memory immediately?"
+        clear_all: "Clear all memories"
+        clear_all_confirm: "Permanently delete all memories for %{name}, including edit history? Conversations will remain."
     messages:
       errors: "Please review the message:"
       attachment_alt: "User image"

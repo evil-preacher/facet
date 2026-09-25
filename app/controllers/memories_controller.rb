@@ -28,6 +28,11 @@ class MemoriesController < ApplicationController
     redirect_to personality_memories_path(@personality), notice: t("app.flash.memory_deleted")
   end
 
+  def clear
+    @personality.memories.delete_all
+    redirect_to personality_memories_path(@personality), notice: t("app.flash.memories_cleared")
+  end
+
   def approve
     Memories::Approve.call(memory: @memory, user: current_user)
     redirect_to personality_memories_path(@personality), notice: t("app.flash.memory_approved")

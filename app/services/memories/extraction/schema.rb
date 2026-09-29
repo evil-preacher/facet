@@ -11,6 +11,7 @@ module Memories
         action
         kind
         content
+        evidence_quote
         importance
         occurred_at
         source_message_ids
@@ -35,6 +36,7 @@ module Memories
                   action: { type: "string", enum: ACTIONS },
                   kind: { type: "string", enum: Memory::KINDS },
                   content: { type: "string" },
+                  evidence_quote: { type: "string" },
                   importance: { type: "integer" },
                   occurred_at: {
                     anyOf: [
@@ -62,18 +64,20 @@ module Memories
 
       class InvalidOutput < StandardError; end
 
-      def self.parse(text:, allowed_message_ids:, allowed_memory_ids:)
+      def self.parse(text:, allowed_message_ids:, allowed_memory_ids:, source_message_texts:)
         new(
           text: text,
           allowed_message_ids: allowed_message_ids,
-          allowed_memory_ids: allowed_memory_ids
+          allowed_memory_ids: allowed_memory_ids,
+          source_message_texts: source_message_texts
         ).parse
       end
 
-      def initialize(text:, allowed_message_ids:, allowed_memory_ids:)
+      def initialize(text:, allowed_message_ids:, allowed_memory_ids:, source_message_texts:)
         @text = text
         @allowed_message_ids = allowed_message_ids.map { |id| Integer(id) }.to_set
         @allowed_memory_ids = allowed_memory_ids.map { |id| Integer(id) }.to_set
+        @source_message_texts = source_message_texts
       end
 
       def parse
@@ -83,7 +87,7 @@ module Memories
         candidates = document.fetch("candidates")
         invalid!("candidates must be an array") unless candidates.is_a?(Array) && candidates.length <= 12
 
-        candidates.map { |candidate| validate_candidate(candidate) }
+        candidates.filter_map { |candidate| validate_candidate(candidate) }
       rescue JSON::ParserError, TypeError, ArgumentError, KeyError => error
         raise InvalidOutput, error.message
       end
@@ -108,6 +112,12 @@ module Memories
           source_ids.uniq.length == source_ids.length &&
           source_ids.all? { |id| id.is_a?(Integer) && @allowed_message_ids.include?(id) }
 
+        quote = candidate["evidence_quote"]
+        return unless quote.is_a?(String) &&
+          quote.strip.length.between?(10, 500) &&
+          !quote.include?("?") &&
+          source_ids.any? { |id| direct_user_evidence?(@source_message_texts[id].to_s, quote.strip) }
+
         existing_id = candidate["existing_memory_id"]
         if candidate["action"] == "create"
           invalid!("create cannot reference an existing memory") unless existing_id.nil?
@@ -117,6 +127,28 @@ module Memories
         end
 
         candidate.merge("occurred_at" => parse_occurred_at(candidate["occurred_at"]))
+      end
+
+      def direct_user_evidence?(source_text, quote)
+        spoken_text = source_text.gsub(/\*[^*]*\*/m, " ")
+        return false if question_only_without_self_report?(spoken_text)
+        return false if character_directed_without_self_report?(quote)
+
+        spoken_text.include?(quote)
+      end
+
+      def character_directed_without_self_report?(quote)
+        addresses_character = quote.match?(/(?:^|[^\p{L}])(?:ты|тебя|тебе|тобой|твой|твоя|твоё|твои|твою|you|your)(?:$|[^\p{L}])/i)
+        return false unless addresses_character
+
+        !quote.match?(/я люблю|мне нравится|я предпочитаю|мне важно|я не люблю|я не хочу|я всегда|я обычно|\bi like\b|\bi prefer\b|\bi always\b|\bi usually\b|\bi don't want\b/i)
+      end
+
+      def question_only_without_self_report?(text)
+        first_question = text.split("?", 2).first.to_s
+        return false unless text.include?("?") && !first_question.match?(/[.!]/)
+
+        !first_question.match?(/я люблю|мне нравится|я предпочитаю|\bi like\b|\bi love\b|\bi prefer\b/i)
       end
 
       def parse_occurred_at(value)

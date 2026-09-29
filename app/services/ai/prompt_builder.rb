@@ -11,7 +11,7 @@ module Ai
     RULES
 
     DEFAULT_BUDGETS = {
-      application_rules: 2_000,
+      application_rules: 4_000,
       platform_correction: 21_000,
       character_bible: 52_000,
       relationship_state: 2_000,
@@ -277,7 +277,7 @@ module Ai
       summary_boundary = @thread.summary_through_message_id || "none"
       "facet-conversation-thread-#{@thread.id}-#{@generation_run.ai_provider}-" \
         "pv-#{@personality_version.id}-pp-#{prompt_revision}-" \
-        "summary-#{summary_boundary}-v5"
+        "summary-#{summary_boundary}-v7"
     end
 
     def total_tokens

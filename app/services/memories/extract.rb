@@ -60,7 +60,8 @@ module Memories
       candidates = Extraction::Schema.parse(
         text: request.response.text,
         allowed_message_ids: source_message_ids,
-        allowed_memory_ids: active_memories.map(&:id)
+        allowed_memory_ids: active_memories.map(&:id),
+        source_message_texts: { extraction.generation_run.user_message.id => extraction.generation_run.user_message.content.to_s }
       )
       memories = []
       MemoryExtraction.transaction do

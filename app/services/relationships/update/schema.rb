@@ -16,6 +16,18 @@ class Relationships::Update::Schema
     }
   }.freeze
 
+  UPDATE_RESPONSE_SCHEMA = {
+    name: "durable_relationship_update",
+    schema: {
+      type: "object",
+      additionalProperties: false,
+      required: %w[status summary source_message_ids durable_evidence_quote],
+      properties: RESPONSE_SCHEMA.fetch(:schema).fetch(:properties).merge(
+        durable_evidence_quote: { anyOf: [ { type: "string" }, { type: "null" } ] }
+      )
+    }
+  }.freeze
+
   class InvalidOutput < StandardError; end
 
   def self.parse(text:, previous_summary:, allowed_message_ids:)
@@ -46,5 +58,36 @@ class Relationships::Update::Schema
     { status: status, summary: summary, source_message_ids: ids }
   rescue JSON::ParserError, TypeError, ArgumentError => error
     raise InvalidOutput, error.message
+  end
+
+  def self.parse_update(text:, previous_summary:, user_message:, allowed_message_ids:)
+    document = JSON.parse(text)
+    raise InvalidOutput, "invalid update shape" unless document.is_a?(Hash) &&
+      document.keys.sort == %w[durable_evidence_quote source_message_ids status summary]
+
+    quote = document.delete("durable_evidence_quote")
+    parsed = parse(
+      text: document.to_json,
+      previous_summary: previous_summary,
+      allowed_message_ids: allowed_message_ids
+    )
+    if parsed.fetch(:status) == "changed"
+      return parsed if durable_user_evidence?(quote, user_message) &&
+        parsed.fetch(:source_message_ids).include?(user_message.id)
+
+      return { status: "unchanged", summary: previous_summary, source_message_ids: [] }
+    end
+
+    raise InvalidOutput, "non-change cannot cite durable evidence" unless quote.nil?
+
+    parsed
+  rescue JSON::ParserError, TypeError, ArgumentError => error
+    raise InvalidOutput, error.message
+  end
+
+  def self.durable_user_evidence?(quote, user_message)
+    return false unless quote.is_a?(String) && quote.strip.length >= 15 && !quote.include?("?")
+
+    user_message.content.to_s.gsub(/\*[^*]*\*/m, " ").include?(quote.strip)
   end
 end

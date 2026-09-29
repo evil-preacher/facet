@@ -23,7 +23,7 @@ module Relationships
       def success? = error_code.nil?
     end
 
-    def self.call(personality:, provider:, summary:, messages:, gateway:, now:, clock:)
+    def self.call(personality:, provider:, previous_summary:, summary:, messages:, gateway:, now:, clock:)
       return Result.new(valid: true, error_code: nil) if summary.blank?
 
       request = Ai::Request.call(
@@ -32,6 +32,7 @@ module Relationships
         input: [
           { role: "developer", content: INSTRUCTIONS },
           { role: "user", content: JSON.pretty_generate(
+            previous_relationship_state: previous_summary,
             proposed_summary: summary,
             evidence_messages: messages.map do |message|
               { id: message.id, role: message.role, content: message.content }

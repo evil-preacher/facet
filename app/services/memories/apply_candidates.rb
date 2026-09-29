@@ -1,5 +1,6 @@
 module Memories
   class ApplyCandidates
+    MIN_IMPORTANCE = 50
     CORRECTION_PHRASES = [
       "actually", "now", "no longer", "used to",
       "на самом деле", "теперь", "больше не", "раньше", "ошиб", "исправ"
@@ -44,6 +45,7 @@ module Memories
 
     def compacted_candidates
       candidates
+        .select { |candidate| candidate.fetch("importance") >= MIN_IMPORTANCE }
         .sort_by { |candidate| candidate_rank(candidate) }
         .reverse
         .each_with_object([]) do |candidate, kept|

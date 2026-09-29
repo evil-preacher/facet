@@ -29,19 +29,21 @@ module Relationships
         model: personality.utility_model,
         input: Update::Prompt.call(previous_summary: state.summary, messages: messages,
                                    language: summary_language(messages)),
-        response_schema: Update::Schema::RESPONSE_SCHEMA,
+        response_schema: Update::Schema::UPDATE_RESPONSE_SCHEMA,
         temperature: 0.1, max_output_tokens: 1_500, gateway: gateway,
         provider: generation_run.ai_provider, now: now, clock: clock
       )
       return request_failure(request) unless request.success?
 
-      parsed = Update::Schema.parse(
+      parsed = Update::Schema.parse_update(
         text: request.response.text, previous_summary: state.summary,
+        user_message: generation_run.user_message,
         allowed_message_ids: messages.map(&:id)
       )
       if parsed.fetch(:status) != "unchanged"
         scope_check = ScopeCheck.call(
           personality: personality, provider: generation_run.ai_provider,
+          previous_summary: state.summary,
           summary: parsed.fetch(:summary), messages: messages,
           gateway: gateway, now: now, clock: clock
         )

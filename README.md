@@ -137,7 +137,7 @@ new active revision from a UTF-8 text file with:
 
 ```sh
 docker compose exec -T web bin/rails ai:platform_prompts:publish \
-  PROVIDER=mistral PURPOSE=conversation FILE=/app/config/prompts/mistral.txt
+  PROVIDER=mistral PURPOSE=conversation FILE=/app/tmp/mistral-prompt.txt
 ```
 
 New generation runs pin the active revision so retries remain reproducible.

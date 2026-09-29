@@ -55,6 +55,7 @@ module Relationships
       if parsed.fetch(:status) != "unchanged"
         scope_check = ScopeCheck.call(
           personality: personality, provider: generation_run.ai_provider,
+          previous_summary: state.summary,
           summary: parsed.fetch(:summary), messages: messages,
           gateway: gateway, now: now, clock: clock
         )

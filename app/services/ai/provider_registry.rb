@@ -4,6 +4,8 @@ module Ai
       case provider.to_s
       when "mistral"
         Gateway.new(adapter: MistralAdapter.new)
+      when "openai"
+        Gateway.new(adapter: OpenaiAdapter.new)
       else
         raise ValidationError, "AI provider is not configured: #{provider}"
       end

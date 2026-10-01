@@ -8,6 +8,7 @@ RSpec.describe Ai::Request do
       personality: personality,
       generation_run: generation_run,
       purpose: :conversation,
+      provider: "mistral",
       model: "mistral-large-2512",
       input: "private prompt",
       gateway: gateway,
@@ -117,6 +118,7 @@ RSpec.describe Ai::Request do
       personality: personality,
       generation_run: generation_run,
       purpose: :conversation,
+      provider: "mistral",
       model: "mistral-large-2512",
       input: "private prompt",
       prompt_cache_key: "facet-pv-1",
@@ -145,5 +147,23 @@ RSpec.describe Ai::Request do
     expect(rejected.error_code).to eq("invalid_context")
     expect(adapter.requests).to be_empty
     expect(ModelCall.count).to eq(0)
+  end
+
+  it "uses the selected provider's model for an existing personality" do
+    create(:model_price, provider: "openai", model: "gpt-4o-2024-11-20", effective_from: now - 1.day)
+    adapter.enqueue_response(
+      text: "Hello", request_id: "req_openai",
+      usage: Ai::Usage.new(input_tokens: 10, cached_input_tokens: 0, output_tokens: 2)
+    )
+
+    switched = described_class.call(
+      user: user, personality: personality, purpose: :conversation,
+      model: "mistral-large-2512", input: "Hi", provider: "openai",
+      gateway: gateway, now: now, clock: -> { 1.0 }
+    )
+
+    expect(switched).to be_success
+    expect(switched.model_call).to have_attributes(provider: "openai", model: "gpt-4o-2024-11-20")
+    expect(adapter.requests.first).to include(model: "gpt-4o-2024-11-20")
   end
 end

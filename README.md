@@ -13,10 +13,18 @@ the environment template first:
 cp .env.example .env
 ```
 
-Set `MISTRAL_API_KEY` in `.env` before making real model calls. Conversation and
+Set `MISTRAL_API_KEY` in `.env` before making Mistral model calls. Conversation and
 utility model roles default to `mistral-large-2512` and `mistral-small-latest`; override them with
 `MISTRAL_CONVERSATION_MODEL` and `MISTRAL_UTILITY_MODEL`. `MISTRAL_BASE_URL`
-defaults to Mistral's global API endpoint. Credentials, prompts,
+defaults to Mistral's global API endpoint. To use OpenAI, set `AI_PROVIDER=openai`
+and `OPENAI_API_KEY` in `.env`, then recreate the web and worker containers with
+`docker compose up -d --no-deps --force-recreate web worker`. OpenAI uses
+`OPENAI_CONVERSATION_MODEL` (default `gpt-4o-2024-11-20`) and
+`OPENAI_UTILITY_MODEL` (default `gpt-4o-mini`). Switching back requires only
+`AI_PROVIDER=mistral` and the same container recreation. Existing personalities
+automatically use the configured models when their saved models belong to the
+other provider. Existing generation runs and retries retain their original provider.
+Each configured model needs a `ModelPrice` record. Credentials, prompts,
 character bibles, and message content are filtered from Rails parameter logs.
 
 ```sh

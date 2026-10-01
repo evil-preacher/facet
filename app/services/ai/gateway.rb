@@ -2,7 +2,7 @@ module Ai
   class Gateway
     class << self
       def default
-        @default ||= new(adapter: MistralAdapter.new)
+        @default ||= ProviderRegistry.gateway_for(Rails.configuration.x.ai.provider)
       end
 
       attr_writer :default

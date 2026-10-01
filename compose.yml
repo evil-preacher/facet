@@ -107,6 +107,10 @@ services:
       MISTRAL_BASE_URL: ${MISTRAL_BASE_URL:-https://api.mistral.ai/v1}
       MISTRAL_CONVERSATION_MODEL: ${MISTRAL_CONVERSATION_MODEL:-mistral-large-2512}
       MISTRAL_UTILITY_MODEL: ${MISTRAL_UTILITY_MODEL:-mistral-small-latest}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_CONVERSATION_MODEL: ${OPENAI_CONVERSATION_MODEL:-gpt-4o-2024-11-20}
+      OPENAI_UTILITY_MODEL: ${OPENAI_UTILITY_MODEL:-gpt-4o-mini}
       BFL_API_KEY: ${BFL_API_KEY:-}
       BFL_BASE_URL: ${BFL_BASE_URL:-https://api.bfl.ai/v1}
       BFL_IMAGE_MODEL: ${BFL_IMAGE_MODEL:-flux-2-klein-9b}
@@ -163,6 +167,10 @@ services:
       MISTRAL_BASE_URL: ${MISTRAL_BASE_URL:-https://api.mistral.ai/v1}
       MISTRAL_CONVERSATION_MODEL: ${MISTRAL_CONVERSATION_MODEL:-mistral-large-2512}
       MISTRAL_UTILITY_MODEL: ${MISTRAL_UTILITY_MODEL:-mistral-small-latest}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_CONVERSATION_MODEL: ${OPENAI_CONVERSATION_MODEL:-gpt-4o-2024-11-20}
+      OPENAI_UTILITY_MODEL: ${OPENAI_UTILITY_MODEL:-gpt-4o-mini}
       BFL_API_KEY: ${BFL_API_KEY:-}
       BFL_BASE_URL: ${BFL_BASE_URL:-https://api.bfl.ai/v1}
       BFL_IMAGE_MODEL: ${BFL_IMAGE_MODEL:-flux-2-klein-9b}

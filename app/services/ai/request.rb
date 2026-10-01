@@ -42,6 +42,7 @@ module Ai
       @provider = provider
       @now = now
       @clock = clock
+      @model = configured_model if ModelPrice.current_for(provider: @provider, model: @model, at: @now).nil?
     end
 
     def call(&on_delta)
@@ -72,6 +73,18 @@ module Ai
     end
 
     private
+
+    def configured_model
+      role = @purpose.to_s == "conversation" ? "CONVERSATION" : "UTILITY"
+      case @provider.to_s
+      when "mistral"
+        ENV.fetch("MISTRAL_#{role}_MODEL", role == "CONVERSATION" ? "mistral-large-2512" : "mistral-small-latest")
+      when "openai"
+        ENV.fetch("OPENAI_#{role}_MODEL", role == "CONVERSATION" ? "gpt-4o-2024-11-20" : "gpt-4o-mini")
+      else
+        @model
+      end
+    end
 
     def valid_context?
       return false unless @user && @personality&.user_id == @user.id

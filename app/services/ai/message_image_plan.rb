@@ -19,12 +19,13 @@ module Ai
       new(**arguments).call
     end
 
-    def initialize(message_image:, gateway: Gateway.default, now: Time.current)
+    def initialize(message_image:, gateway: nil, now: Time.current)
       @message_image = message_image
       @message = message_image.message
       @thread = @message.conversation_thread
       @personality = @thread.personality
-      @gateway = gateway
+      @provider = @message.generation_run_as_assistant&.ai_provider || Rails.configuration.x.ai.provider
+      @gateway = gateway || ProviderRegistry.gateway_for(@provider)
       @now = now
     end
 
@@ -36,6 +37,7 @@ module Ai
         model: personality.utility_model,
         input: input,
         gateway: gateway,
+        provider: @provider,
         now: now
       )
       raise_request_error!(request.error_code) unless request.success?

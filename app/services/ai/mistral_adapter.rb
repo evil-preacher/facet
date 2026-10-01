@@ -28,7 +28,7 @@ module Ai
     end
 
     def stream_response(model:, input:, prompt_cache_key: nil)
-      stream = client.chat.completions.stream(request_parameters(model, input, prompt_cache_key))
+      stream = client.chat.completions.stream(stream_parameters(model, input, prompt_cache_key))
       streamed_text = +""
 
       stream.each do |event|
@@ -52,6 +52,10 @@ module Ai
     end
 
     private
+
+    def stream_parameters(model, input, prompt_cache_key)
+      request_parameters(model, input, prompt_cache_key)
+    end
 
     def request_parameters(model, input, prompt_cache_key, response_schema = nil,
                            temperature = nil, max_output_tokens = nil)
@@ -88,8 +92,16 @@ module Ai
           [ item.fetch(:role), item.fetch(:content) ]
         end
 
-        { role: role.to_s == "developer" ? "system" : role, content: content }
+        { role: serialized_role(role), content: content }
       end
+    end
+
+    def serialized_role(role)
+      role.to_s == "developer" ? "system" : role
+    end
+
+    def provider_name
+      "Mistral"
     end
 
     def client
@@ -143,13 +155,13 @@ module Ai
 
     def log_request(parameters)
       Rails.logger.info(
-        "Mistral request model=#{parameters.fetch(:model)} " \
+        "#{provider_name} request model=#{parameters.fetch(:model)} " \
         "messages=#{parameters.fetch(:messages).length} " \
         "temperature=#{parameters.fetch(:temperature, "default")}"
       )
       return unless debug_payloads?
 
-      Rails.logger.info("Mistral request payload: #{redacted_parameters(parameters).inspect}")
+      Rails.logger.info("#{provider_name} request payload: #{redacted_parameters(parameters).inspect}")
     end
 
     def redacted_parameters(parameters)
@@ -175,7 +187,7 @@ module Ai
       input_tokens = response.usage.input_tokens
       cached_percent = input_tokens.positive? ? ((cached_tokens * 100.0) / input_tokens).round(1) : 0.0
       Rails.logger.info(
-        "Mistral response request_id=#{response.request_id} model=#{response.model} " \
+        "#{provider_name} response request_id=#{response.request_id} model=#{response.model} " \
         "input_tokens=#{input_tokens} cached_input_tokens=#{cached_tokens} " \
         "cache_hit=#{cached_tokens.positive?} cached_percent=#{cached_percent}"
       )

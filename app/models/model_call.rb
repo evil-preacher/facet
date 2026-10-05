@@ -25,12 +25,14 @@ class ModelCall < ApplicationRecord
             :cached_input_tokens,
             :output_tokens,
             :cost_microusd,
+            :reserved_cost_microusd,
             :latency_ms,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 },
             allow_nil: true
   validate :cached_input_is_part_of_input
   validate :completed_call_has_usage_and_price
   validate :references_share_owner
+  validates :reserved_cost_microusd, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
   private
 

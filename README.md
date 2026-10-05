@@ -27,6 +27,14 @@ other provider. Existing generation runs and retries retain their original provi
 Each configured model needs a `ModelPrice` record. Credentials, prompts,
 character bibles, and message content are filtered from Rails parameter logs.
 
+Text model calls have a monthly spending limit. Each user starts with a 20 USD limit and
+can change it on the Usage page. `AI_GLOBAL_MONTHLY_LIMIT_MICROUSD` sets the
+application emergency ceiling (default: 100 USD). Calls reserve a conservative
+maximum before contacting the provider; completed calls replace the reserve with
+the recorded cost. The outbox process schedules cleanup of reservations left by
+interrupted calls. Usage is grouped by day, personality, and call type.
+Direct BFL image generation is currently outside this ledger and limit.
+
 ```sh
 docker compose up --build
 ```

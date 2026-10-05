@@ -62,7 +62,13 @@ RSpec.describe Ai::Request do
       cost_microusd: 3_250,
       pricing_version: "2026-09"
     )
+    expect(result.model_call.reserved_cost_microusd).to eq(0)
+    expect(result.model_call.reservation_expires_at).to be_nil
     expect(result.model_call.latency_ms).to eq(0)
+    ModelPrice.find_by!(provider: "mistral", model: "mistral-large-2512").update!(
+      output_microusd_per_million: 20_000_000
+    )
+    expect(result.model_call.reload.cost_microusd).to eq(3_250)
   end
 
   it "records normalized timeout failures without storing the prompt" do
@@ -73,6 +79,7 @@ RSpec.describe Ai::Request do
     expect(result.model_call).to have_attributes(status: "failed", error_class: "Ai::TimeoutError")
     expect(result.model_call.error_message).not_to include("secret provider detail")
     expect(ModelCall.column_names).not_to include("prompt")
+    expect(result.model_call.reserved_cost_microusd).to eq(0)
   end
 
   it "records rate limits with a stable code" do
@@ -165,5 +172,29 @@ RSpec.describe Ai::Request do
     expect(switched).to be_success
     expect(switched.model_call).to have_attributes(provider: "openai", model: "gpt-4o-2024-11-20")
     expect(adapter.requests.first).to include(model: "gpt-4o-2024-11-20")
+  end
+
+  it "blocks a request before contacting the provider when the user limit is exhausted" do
+    user.update!(monthly_ai_limit_microusd: 1)
+
+    expect(result).not_to be_success
+    expect(result.error_code).to eq("budget_exceeded")
+    expect(adapter.requests).to be_empty
+    expect(ModelCall.count).to eq(0)
+  end
+
+  it "blocks a request when the application emergency limit is exhausted" do
+    allow(Ai::SpendingBudget).to receive(:global_limit).and_return(1)
+
+    expect(result.error_code).to eq("budget_exceeded")
+    expect(adapter.requests).to be_empty
+  end
+
+  it "releases a reservation after a provider failure with partial usage" do
+    user.update!(monthly_ai_limit_microusd: 50_000)
+    adapter.enqueue_error(Ai::ProviderError.new("detail", usage: Ai::Usage.new(input_tokens: 100, output_tokens: 2)))
+
+    expect(result.model_call).to have_attributes(status: "failed", reserved_cost_microusd: 0)
+    expect(Ai::SpendingBudget.snapshot(user: user, now: now)).to have_attributes(spent: 270, reserved: 0)
   end
 end

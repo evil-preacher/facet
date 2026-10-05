@@ -1,0 +1,2 @@
+class AiBudgetLock < ApplicationRecord
+end

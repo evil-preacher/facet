@@ -28,9 +28,9 @@ module Ai
       )
     end
 
-    def stream_response(model:, input:, prompt_cache_key: nil, &on_delta)
+    def stream_response(model:, input:, prompt_cache_key: nil, max_output_tokens: nil, &on_delta)
       validate_response!(
-        @adapter.stream_response(**request_arguments(model, input, prompt_cache_key), &on_delta)
+        @adapter.stream_response(**request_arguments(model, input, prompt_cache_key, nil, nil, max_output_tokens), &on_delta)
       )
     end
 

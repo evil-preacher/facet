@@ -1,0 +1,60 @@
+<% content_for :title, t("app.usage.title") %>
+<section class="mx-auto mt-10 max-w-4xl space-y-7">
+  <div>
+    <p class="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-700"><%= t("app.usage.eyebrow") %></p>
+    <h1 class="mt-2 text-3xl font-black"><%= t("app.usage.heading") %></h1>
+    <p class="mt-2 text-slate-600"><%= l(@report.snapshot.month_start.to_date) %> – <%= l((@report.snapshot.month_end - 1.day).to_date) %></p>
+  </div>
+
+  <% if @report.snapshot.warning? %>
+    <p role="status" class="rounded-xl bg-amber-50 p-4 font-semibold text-amber-900 ring-1 ring-amber-200"><%= t("app.usage.warning") %></p>
+  <% end %>
+  <div class="grid gap-4 sm:grid-cols-3">
+    <% { spent: @report.snapshot.spent, reserved: @report.snapshot.reserved, remaining: @report.snapshot.remaining }.each do |key, value| %>
+      <div class="rounded-2xl bg-white p-5 ring-1 ring-slate-200">
+        <p class="text-sm text-slate-500"><%= t("app.usage.#{key}") %></p>
+        <p class="mt-2 text-2xl font-bold"><%= number_to_currency(value / 1_000_000.0, unit: "$", precision: 4) %></p>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="rounded-2xl bg-white p-6 ring-1 ring-slate-200">
+    <h2 class="text-xl font-bold"><%= t("app.usage.limit") %></h2>
+    <p class="mt-2 text-sm text-slate-600"><%= t("app.usage.global_limit", value: number_to_currency(@report.snapshot.global_limit / 1_000_000.0, unit: "$")) %></p>
+    <p class="mt-2 text-sm text-slate-600"><%= t("app.usage.scope_note") %></p>
+    <%= form_with url: usage_path, method: :patch, class: "mt-4 flex flex-wrap items-end gap-3" do |form| %>
+      <div>
+        <%= form.label :monthly_limit_usd, t("app.usage.monthly_limit"), class: "block text-sm font-semibold" %>
+        <%= form.number_field :monthly_limit_usd, value: @report.snapshot.user_limit / 1_000_000.0, min: 0, max: 10000, step: 0.000001,
+                              class: "mt-1 rounded-lg border border-slate-300 p-2" %>
+      </div>
+      <%= form.submit t("app.usage.save"), class: "cursor-pointer rounded-lg bg-emerald-800 px-4 py-2 font-bold text-white" %>
+    <% end %>
+  </div>
+
+  <div class="rounded-2xl bg-white p-6 ring-1 ring-slate-200">
+    <h2 class="text-xl font-bold"><%= t("app.usage.tokens") %></h2>
+    <dl class="mt-3 grid gap-3 sm:grid-cols-3">
+      <% @report.tokens.each do |kind, count| %>
+        <div><dt class="text-sm text-slate-500"><%= t("app.usage.token_#{kind}") %></dt><dd class="font-semibold"><%= number_with_delimiter(count) %></dd></div>
+      <% end %>
+    </dl>
+  </div>
+
+  <% { purposes: @report.by_purpose, personalities: @report.by_personality, days: @report.by_day }.each do |section, items| %>
+    <div class="rounded-2xl bg-white p-6 ring-1 ring-slate-200">
+      <h2 class="text-xl font-bold"><%= t("app.usage.#{section}") %></h2>
+      <% if items.empty? %><p class="mt-3 text-slate-500"><%= t("app.usage.empty") %></p><% end %>
+      <dl class="mt-3 divide-y divide-slate-100">
+        <% items.each do |key, cost| %>
+          <% label = case section
+            when :purposes then t("app.usage.purpose.#{key}", default: key.to_s)
+            when :personalities then @personalities[key]&.name || t("app.usage.deleted_personality")
+            else l(key)
+          end %>
+          <div class="flex justify-between gap-4 py-2"><dt><%= label %></dt><dd class="font-semibold"><%= number_to_currency(cost / 1_000_000.0, unit: "$", precision: 4) %></dd></div>
+        <% end %>
+      </dl>
+    </div>
+  <% end %>
+</section>

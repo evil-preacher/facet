@@ -27,8 +27,8 @@ module Ai
       raise ProviderError.new(error.message, request_id: request_id_from(error)), cause: error
     end
 
-    def stream_response(model:, input:, prompt_cache_key: nil)
-      stream = client.chat.completions.stream(stream_parameters(model, input, prompt_cache_key))
+    def stream_response(model:, input:, prompt_cache_key: nil, max_output_tokens: nil)
+      stream = client.chat.completions.stream(stream_parameters(model, input, prompt_cache_key, max_output_tokens))
       streamed_text = +""
 
       stream.each do |event|
@@ -53,8 +53,8 @@ module Ai
 
     private
 
-    def stream_parameters(model, input, prompt_cache_key)
-      request_parameters(model, input, prompt_cache_key)
+    def stream_parameters(model, input, prompt_cache_key, max_output_tokens = nil)
+      request_parameters(model, input, prompt_cache_key, nil, nil, max_output_tokens)
     end
 
     def request_parameters(model, input, prompt_cache_key, response_schema = nil,

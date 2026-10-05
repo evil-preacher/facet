@@ -9,8 +9,13 @@ module Outbox
     def call
       install_signal_handlers
       Rails.logger.info("Outbox dispatcher started")
+      next_budget_maintenance = Time.current
 
       until @stopping
+        if Time.current >= next_budget_maintenance
+          Ai::ReleaseExpiredReservationsJob.perform_later
+          next_budget_maintenance = Time.current + 5.minutes
+        end
         count = Dispatcher.call
         sleep(POLL_INTERVAL) if count.zero?
       end

@@ -7,6 +7,8 @@ class User < ApplicationRecord
   has_many :personalities, dependent: :destroy
   has_many :model_calls, dependent: :restrict_with_exception
 
+  validates :monthly_ai_limit_microusd, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+
   before_validation :normalize_email
 
   validates :email,

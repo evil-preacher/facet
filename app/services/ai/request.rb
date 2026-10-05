@@ -35,7 +35,7 @@ module Ai
       @prompt_cache_key = prompt_cache_key
       @response_schema = response_schema
       @temperature = temperature
-      @max_output_tokens = max_output_tokens
+      @max_output_tokens = max_output_tokens || SpendingBudget::DEFAULT_MAX_OUTPUT_TOKENS
       @stream = stream
       @finalize_generation_run = finalize_generation_run
       @gateway = gateway
@@ -51,24 +51,27 @@ module Ai
       guard_code = claim_generation_run
       return Result.new(model_call: nil, response: nil, error_code: guard_code) if guard_code
 
-      @model_call = ModelCall.create!(
-        user: @user,
-        personality: @personality,
-        generation_run: @generation_run,
-        purpose: @purpose,
-        provider: @provider,
-        model: @model,
-        status: :pending
-      )
       @price = ModelPrice.current_for(provider: @provider, model: @model, at: @now)
       raise PriceNotFoundError unless @price
+
+      @model_call = SpendingBudget.reserve!(
+        user: @user, personality: @personality, generation_run: @generation_run,
+        purpose: @purpose, provider: @provider, model: @model, price: @price,
+        input: @input, response_schema: @response_schema,
+        max_output_tokens: @max_output_tokens, now: @now
+      )
 
       started = @clock.call
       response = provider_response(&on_delta)
       complete!(response, elapsed_ms(started))
       Result.new(model_call: @model_call, response: response, error_code: nil)
     rescue Error => error
-      fail!(error) if @model_call&.persisted?
+      if @model_call&.persisted?
+        fail!(error)
+      elsif finalize_generation_run?
+        @generation_run.update!(status: :failed, error_code: error_details(error).first,
+                                error_message: error_details(error).last, completed_at: @now)
+      end
       Result.new(model_call: @model_call, response: nil, error_code: error_details(error).first)
     end
 
@@ -132,6 +135,8 @@ module Ai
           cached_input_tokens: usage.cached_input_tokens,
           output_tokens: usage.output_tokens,
           cost_microusd: cost,
+          reserved_cost_microusd: 0,
+          reservation_expires_at: nil,
           pricing_version: @price.version,
           latency_ms: latency_ms,
           completed_at: @now
@@ -148,6 +153,8 @@ module Ai
         error_class: error.class.name,
         error_code: code,
         error_message: safe_message,
+        reserved_cost_microusd: 0,
+        reservation_expires_at: nil,
         completed_at: @now
       }
       add_partial_usage!(attributes, error.usage) if error.usage && @price
@@ -195,6 +202,7 @@ module Ai
       arguments[:response_schema] = @response_schema if @response_schema
       arguments[:temperature] = @temperature unless @temperature.nil?
       arguments[:max_output_tokens] = @max_output_tokens unless @max_output_tokens.nil?
+      arguments[:max_output_tokens] = @max_output_tokens
       return @gateway.response(**arguments) unless @stream
 
       @gateway.stream_response(**arguments, &on_delta)

@@ -10,7 +10,9 @@
   <% elsif generation_run&.failed? %>
     <div class="rounded-2xl bg-rose-50 px-5 py-4 text-sm text-rose-800 ring-1 ring-rose-200">
       <p class="font-bold"><%= t("app.conversation_threads.generation.failed") %></p>
-      <% if generation_run.error_message.present? %>
+      <% if generation_run.error_code == "budget_exceeded" %>
+        <p class="mt-1"><%= t("app.conversation_threads.generation.budget_exceeded") %> <%= link_to t("app.nav.usage"), usage_path, class: "underline" %></p>
+      <% elsif generation_run.error_message.present? %>
         <p class="mt-1"><%= generation_run.error_message %></p>
       <% end %>
       <%= button_to t("app.conversation_threads.generation.retry"),

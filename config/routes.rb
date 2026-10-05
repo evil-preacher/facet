@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   delete "session", to: "sessions#destroy", as: :session
 
   resource :profile, only: %i[show edit update]
+  resource :usage, only: %i[show update], controller: "usage"
   resources :personalities, only: %i[index new create show edit update] do
     patch :archive, on: :member
     resources :memories, only: %i[index update destroy] do

@@ -2,8 +2,9 @@ module Ai
   class OpenaiAdapter < MistralAdapter
     private
 
-    def stream_parameters(model, input, prompt_cache_key)
-      request_parameters(model, input, prompt_cache_key).merge(stream_options: { include_usage: true })
+    def stream_parameters(model, input, prompt_cache_key, max_output_tokens = nil)
+      request_parameters(model, input, prompt_cache_key, nil, nil, max_output_tokens)
+        .merge(stream_options: { include_usage: true })
     end
 
     def client

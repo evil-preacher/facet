@@ -44,8 +44,8 @@ module Ai
       value
     end
 
-    def stream_response(model:, input:, prompt_cache_key: nil)
-      record_request(model, input, prompt_cache_key)
+    def stream_response(model:, input:, prompt_cache_key: nil, max_output_tokens: nil)
+      record_request(model, input, prompt_cache_key, max_output_tokens: max_output_tokens)
       type, deltas, response, after_delta = @queued.shift
       raise deltas if type == :error
 

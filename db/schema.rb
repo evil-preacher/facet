@@ -10,9 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_25_000024) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "ai_budget_locks", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "ai_platform_prompts", force: :cascade do |t|
     t.string "checksum", null: false
@@ -235,6 +240,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_25_000024) do
     t.string "provider", null: false
     t.string "provider_request_id"
     t.string "purpose", null: false
+    t.datetime "reservation_expires_at"
+    t.bigint "reserved_cost_microusd", default: 0, null: false
     t.string "response_model"
     t.string "status", default: "pending", null: false
     t.datetime "updated_at", null: false
@@ -243,10 +250,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_25_000024) do
     t.index ["personality_id", "created_at"], name: "index_model_calls_on_personality_id_and_created_at"
     t.index ["personality_id"], name: "index_model_calls_on_personality_id"
     t.index ["provider_request_id"], name: "index_model_calls_on_provider_request_id", unique: true, where: "(provider_request_id IS NOT NULL)"
+    t.index ["reservation_expires_at"], name: "index_model_calls_on_reservation_expires_at", where: "(((status)::text = 'pending'::text) AND (reserved_cost_microusd > 0))"
     t.index ["user_id", "created_at"], name: "index_model_calls_on_user_id_and_created_at"
     t.index ["user_id"], name: "index_model_calls_on_user_id"
     t.check_constraint "(input_tokens IS NULL OR input_tokens >= 0) AND (cached_input_tokens IS NULL OR cached_input_tokens >= 0) AND (output_tokens IS NULL OR output_tokens >= 0) AND (cost_microusd IS NULL OR cost_microusd >= 0) AND (latency_ms IS NULL OR latency_ms >= 0) AND (cached_input_tokens IS NULL OR input_tokens IS NOT NULL) AND (cached_input_tokens IS NULL OR cached_input_tokens <= input_tokens)", name: "model_calls_nonnegative_usage"
     t.check_constraint "purpose::text = ANY (ARRAY['conversation'::character varying, 'memory_extraction'::character varying, 'memory_consolidation'::character varying, 'thread_summary'::character varying, 'initiative'::character varying, 'photo_planning'::character varying]::text[])", name: "model_calls_purpose"
+    t.check_constraint "reserved_cost_microusd >= 0", name: "model_calls_nonnegative_reservation"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'completed'::character varying, 'failed'::character varying]::text[])", name: "model_calls_status"
   end
 
@@ -410,8 +419,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_25_000024) do
     t.datetime "confirmed_at"
     t.datetime "created_at", null: false
     t.string "email", null: false
+    t.bigint "monthly_ai_limit_microusd", default: 20000000, null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.check_constraint "monthly_ai_limit_microusd >= 0", name: "users_nonnegative_ai_limit"
   end
 
   add_foreign_key "conversation_threads", "messages", column: "summary_through_message_id", on_delete: :nullify

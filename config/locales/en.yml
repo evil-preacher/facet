@@ -32,6 +32,8 @@ en:
       personality_created: "Personality created."
       personality_updated: "Personality updated."
       personality_archived: "Personality archived."
+      personality_deleted: "Personality and its data deleted."
+      account_deleted: "Account and its data deleted."
       personality_rolled_back: "Version %{number} was created from the selected version."
       conversation_thread_archived: "Conversation archived."
       generation_retry_queued: "Reply retry was queued."
@@ -149,6 +151,9 @@ en:
       save: "Save profile"
       email: "Email"
       edit: "Edit"
+      export_data: "Download my data"
+      delete_account: "Delete account and all data"
+      delete_account_confirm: "Permanently delete your account, personalities, and conversations?"
     personalities:
       errors: "Please review the form:"
       avatar_alt: "%{name} personality avatar"
@@ -204,6 +209,8 @@ en:
         memories: "Memory"
         back: "All personalities"
         archive: "Archive"
+        delete: "Delete personality and all its data"
+        delete_confirm: "Permanently delete this personality, its conversations, and memories?"
       edit:
         page_title: "Edit %{name} — Facet"
         eyebrow: "Personality settings"

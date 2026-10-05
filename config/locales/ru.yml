@@ -32,6 +32,8 @@ ru:
       personality_created: "Личность создана."
       personality_updated: "Личность обновлена."
       personality_archived: "Личность отправлена в архив."
+      personality_deleted: "Личность и её данные удалены."
+      account_deleted: "Аккаунт и его данные удалены."
       personality_rolled_back: "Создана версия %{number} из выбранной версии."
       conversation_thread_archived: "Тред отправлен в архив."
       generation_retry_queued: "Повтор ответа поставлен в очередь."
@@ -149,6 +151,9 @@ ru:
       save: "Сохранить профиль"
       email: "Email"
       edit: "Редактировать"
+      export_data: "Скачать мои данные"
+      delete_account: "Удалить аккаунт и все данные"
+      delete_account_confirm: "Безвозвратно удалить аккаунт, все личности и разговоры?"
     personalities:
       errors: "Проверьте заполнение формы:"
       avatar_alt: "Аватар личности %{name}"
@@ -204,6 +209,8 @@ ru:
         memories: "Память"
         back: "Все личности"
         archive: "Архивировать"
+        delete: "Удалить личность и все её данные"
+        delete_confirm: "Безвозвратно удалить эту личность, разговоры и память?"
       edit:
         page_title: "Редактирование %{name} — Facet"
         eyebrow: "Настройка личности"

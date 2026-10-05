@@ -1,7 +1,7 @@
 class PersonalitiesController < ApplicationController
   before_action :require_authentication
   before_action :require_completed_profile
-  before_action :set_personality, only: %i[show edit update archive initiative_settings]
+  before_action :set_personality, only: %i[show edit update archive initiative_settings destroy]
 
   def index
     @personalities = current_user.personalities.order(
@@ -57,6 +57,11 @@ class PersonalitiesController < ApplicationController
   def archive
     Personalities::Archive.call(personality: @personality)
     redirect_to personalities_path, notice: t("app.flash.personality_archived")
+  end
+
+  def destroy
+    Personalities::Destroy.call(user: current_user, personality: @personality)
+    redirect_to personalities_path, notice: t("app.flash.personality_deleted"), status: :see_other
   end
 
   def initiative_settings

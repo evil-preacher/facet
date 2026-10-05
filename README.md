@@ -257,6 +257,24 @@ requires HTTP Basic authentication. The Sidekiq dashboard is mounted at
 `/operations/sidekiq` behind the same credentials. Neither endpoint should be
 exposed publicly.
 
+## Privacy and deletion
+
+The profile page offers a JSON export of account details, personality versions,
+memories, relationship summaries, conversations, usage, and image bytes encoded
+as base64. The response uses `Cache-Control: private, no-store`. Export requires
+the current session and reads only that user's records.
+
+Deleting a personality removes its versions, conversations, messages, memories,
+relationship history, generation runs, and related metadata in one database
+transaction. Usage rows remain on the account without personality or generation
+references so the user's spending dashboard remains accurate. Stored avatars,
+uploads, and generated images are removed by retried outbox jobs. Deleting the
+account also removes all usage rows; no anonymized usage is retained.
+
+Provider and outbox error messages and prompt diagnostic manifests are cleared 30 days
+after record creation by daily maintenance. Structured error codes and aggregate
+usage remain until the owning account is deleted.
+
 ## Tests
 
 The suite uses RSpec, Factory Bot, FFaker, Shoulda Matchers, Database Cleaner,

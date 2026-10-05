@@ -29,6 +29,10 @@
     <%= link_to t("app.personalities.show.back"), personalities_path, class: "rounded-xl bg-white px-4 py-2 font-bold text-emerald-800 no-underline ring-1 ring-slate-300 hover:ring-emerald-700" %>
   </nav>
 
+  <%= button_to t("app.personalities.show.delete"), personality_path(@personality), method: :delete,
+                form: { data: { turbo_confirm: t("app.personalities.show.delete_confirm") } },
+                class: "mt-4 rounded-xl border border-red-300 px-4 py-2 font-bold text-red-800" %>
+
   <article id="character-bible" class="mt-6 scroll-mt-24 rounded-3xl bg-white p-7 shadow-sm ring-1 ring-slate-200 sm:p-10">
     <div class="flex items-center justify-between gap-4">
       <h2 class="text-xl font-bold"><%= t("app.personalities.show.character_bible") %></h2>

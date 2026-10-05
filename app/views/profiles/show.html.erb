@@ -10,4 +10,10 @@
     <% end %>
   </dl>
   <%= link_to t("app.profile.edit"), edit_profile_path, class: "mt-7 inline-flex rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white no-underline hover:bg-emerald-950" %>
+  <div class="mt-8 border-t border-slate-200 pt-6">
+    <%= link_to t("app.profile.export_data"), data_export_path, class: "font-bold text-emerald-800" %>
+    <%= button_to t("app.profile.delete_account"), account_path, method: :delete,
+                  form: { data: { turbo_confirm: t("app.profile.delete_account_confirm") } },
+                  class: "mt-5 rounded-xl border border-red-300 px-5 py-3 font-bold text-red-800" %>
+  </div>
 </section>

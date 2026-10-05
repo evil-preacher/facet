@@ -11,6 +11,7 @@ module Outbox
       Rails.logger.info("Outbox dispatcher started")
       next_budget_maintenance = Time.current
       next_initiative_sweep = Time.current
+      next_privacy_retention = Time.current
 
       until @stopping
         if Time.current >= next_budget_maintenance
@@ -18,6 +19,9 @@ module Outbox
         end
         if Time.current >= next_initiative_sweep
           next_initiative_sweep = enqueue_maintenance(Ai::InitiativeSweepJob, 30.minutes)
+        end
+        if Time.current >= next_privacy_retention
+          next_privacy_retention = enqueue_maintenance(Privacy::RetentionJob, 1.day)
         end
         count = Dispatcher.call
         sleep(POLL_INTERVAL) if count.zero?

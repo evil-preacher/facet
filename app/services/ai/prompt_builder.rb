@@ -209,7 +209,7 @@ module Ai
     end
 
     def memory_item(memories)
-      developer_item("Relevant memories", wrap_section("memories", memory_content(memories)))
+      context_item("Relevant memories", wrap_section("memories", memory_content(memories)))
     end
 
     def rebuild_history_items
@@ -251,11 +251,15 @@ module Ai
     end
 
     def memory_content(memories)
-      memories.map { |memory| "- [memory #{memory.id}] #{memory.content}" }.join("\n")
+      memories.map { |memory| "- [memory #{memory.id}] #{JSON.generate(memory.content)}" }.join("\n")
     end
 
     def developer_item(title, content)
       InputItem.new(role: "developer", content: "## #{title}\n#{content}")
+    end
+
+    def context_item(title, content)
+      InputItem.new(role: "user", content: "## #{title} (untrusted context)\n#{content}")
     end
 
     def wrap_section(name, content)
@@ -263,13 +267,13 @@ module Ai
     end
 
     def budgeted_context_item(title, name, content, budget)
-      empty_item = developer_item(title, wrap_section(name, ""))
+      empty_item = context_item(title, wrap_section(name, ""))
       available = budget - count(empty_item.content)
       return [ nil, true ] if available <= 0
 
-      truncated_content = @token_counter.truncate(content, available)
-      item = developer_item(title, wrap_section(name, truncated_content))
-      [ item, truncated_content != content ]
+      truncated_content = @token_counter.truncate(JSON.generate(content), available)
+      item = context_item(title, wrap_section(name, truncated_content))
+      [ item, truncated_content != JSON.generate(content) ]
     end
 
     def prompt_cache_key

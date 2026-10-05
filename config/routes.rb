@@ -11,9 +11,12 @@ Rails.application.routes.draw do
   delete "session", to: "sessions#destroy", as: :session
 
   resource :profile, only: %i[show edit update]
+  resource :account, only: :destroy
+  get "data/export", to: "data_exports#show", as: :data_export
   resource :usage, only: %i[show update], controller: "usage"
   resources :notifications, only: :index
   resources :personalities, only: %i[index new create show edit update] do
+    delete :destroy, on: :member
     patch :archive, on: :member
     patch :initiative_settings, on: :member
     resources :memories, only: %i[index update destroy] do

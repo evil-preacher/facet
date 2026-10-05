@@ -28,6 +28,7 @@
             <div>
               <h2 class="text-xl font-bold">
                 <%= link_to conversation_thread.title, personality_conversation_thread_path(@personality, conversation_thread), class: "text-slate-950 no-underline hover:text-emerald-800" %>
+                <% if @unread_counts.fetch(conversation_thread.id, 0).positive? %><span class="ml-2 rounded-full bg-emerald-100 px-2 py-1 text-xs text-emerald-900"><%= t("app.initiative.unread_count", count: @unread_counts[conversation_thread.id]) %></span><% end %>
               </h2>
               <p class="mt-2 text-sm text-slate-500">
                 <%= t("app.conversation_threads.index.messages", count: conversation_thread.messages.count) %>

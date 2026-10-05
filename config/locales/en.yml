@@ -40,6 +40,16 @@ en:
       memory_approved: "Memory approved."
       memory_settings_updated: "Memory settings updated."
       usage_limit_updated: "Monthly limit updated."
+      initiative_settings_updated: "Initiative settings updated."
+    initiative:
+      settings_heading: "Initiative messages"
+      settings_description: "The personality may occasionally write first after a pause. The message will appear unread in the latest active conversation."
+      enabled: "Allow the personality to write first"
+      idle_hours: "Hours since your last message"
+      cooldown_hours: "Minimum hours between attempts"
+      save: "Save settings"
+      unread_count: "Unread: %{count}"
+      sent_first: "Wrote first"
     usage:
       title: "Usage — Facet"
       eyebrow: "AI budget"

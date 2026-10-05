@@ -1,17 +1,22 @@
 class PersonalitiesController < ApplicationController
   before_action :require_authentication
   before_action :require_completed_profile
-  before_action :set_personality, only: %i[show edit update archive]
+  before_action :set_personality, only: %i[show edit update archive initiative_settings]
 
   def index
     @personalities = current_user.personalities.order(
       Arel.sql("CASE status WHEN 'active' THEN 0 WHEN 'draft' THEN 1 ELSE 2 END"),
       updated_at: :desc
     )
+    @unread_counts = Message.unread_initiatives.joins(:conversation_thread)
+      .where(conversation_threads: { personality_id: @personalities.select(:id) })
+      .group("conversation_threads.personality_id").count
   end
 
   def show
     @relationship_state = @personality.relationship_state
+    @unread_count = Message.unread_initiatives.joins(:conversation_thread)
+      .where(conversation_threads: { personality_id: @personality.id }).count
   end
 
   def new
@@ -54,6 +59,18 @@ class PersonalitiesController < ApplicationController
     redirect_to personalities_path, notice: t("app.flash.personality_archived")
   end
 
+  def initiative_settings
+    if @personality.update(initiative_settings_params)
+      redirect_to personality_path(@personality), notice: t("app.flash.initiative_settings_updated")
+    else
+      @relationship_state = @personality.relationship_state
+      @unread_count = Message.unread_initiatives.joins(:conversation_thread)
+        .where(conversation_threads: { personality_id: @personality.id }).count
+      @settings_errors = @personality.errors.full_messages
+      render :show, status: :unprocessable_content
+    end
+  end
+
   private
 
   def set_personality
@@ -66,5 +83,10 @@ class PersonalitiesController < ApplicationController
 
   def update_params
     params.require(:personality).permit(:name, :description, :character_bible, :change_note)
+  end
+
+  def initiative_settings_params
+    params.require(:personality).permit(:initiative_enabled, :initiative_idle_hours,
+                                        :initiative_cooldown_hours)
   end
 end

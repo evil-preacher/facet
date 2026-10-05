@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   resource :usage, only: %i[show update], controller: "usage"
   resources :personalities, only: %i[index new create show edit update] do
     patch :archive, on: :member
+    patch :initiative_settings, on: :member
     resources :memories, only: %i[index update destroy] do
       patch :approve, on: :member
       patch :settings, on: :collection

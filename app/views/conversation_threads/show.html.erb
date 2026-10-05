@@ -28,7 +28,7 @@
       <h2 class="text-sm font-extrabold uppercase tracking-wide text-slate-500"><%= t("app.conversation_threads.show.other_threads") %></h2>
       <nav class="mt-3 grid gap-2">
         <% @conversation_threads.each do |conversation_thread| %>
-          <%= link_to conversation_thread.title,
+          <%= link_to "#{conversation_thread.title}#{@unread_counts.fetch(conversation_thread.id, 0).positive? ? " · #{t('app.initiative.unread_count', count: @unread_counts[conversation_thread.id])}" : ""}",
                       personality_conversation_thread_path(@personality, conversation_thread),
                       class: "rounded-xl px-3 py-2 text-sm font-semibold no-underline #{conversation_thread == @conversation_thread ? "bg-emerald-800 text-white" : "bg-white text-slate-700 ring-1 ring-slate-200 hover:text-emerald-800"}" %>
         <% end %>

@@ -4,6 +4,7 @@ class ConversationThread < ApplicationRecord
   belongs_to :personality
   belongs_to :summary_through_message, class_name: "Message", optional: true
   has_many :generation_runs, dependent: :destroy
+  has_many :initiative_attempts, dependent: :destroy
   has_many :summary_versions, class_name: "ThreadSummaryVersion", dependent: :destroy,
                               inverse_of: :conversation_thread
   has_many :messages,
@@ -24,6 +25,10 @@ class ConversationThread < ApplicationRecord
       created_at: :desc
     )
   }
+
+  def unread_initiative_count
+    messages.where(initiated_by: "personality", read_at: nil).count
+  end
 
   private
 

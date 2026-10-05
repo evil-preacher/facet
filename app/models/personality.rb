@@ -10,6 +10,7 @@ class Personality < ApplicationRecord
   has_many :memory_extractions, dependent: :destroy
   has_one :relationship_state, dependent: :destroy
   has_many :model_calls, dependent: :nullify
+  has_many :initiative_attempts, dependent: :destroy
   has_many :versions,
            -> { order(number: :asc) },
            class_name: "PersonalityVersion",
@@ -24,6 +25,8 @@ class Personality < ApplicationRecord
   validates :conversation_model, :utility_model, presence: true, length: { maximum: 120 }
   validates :avatar_byte_size, :avatar_attempts_count,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
+  validates :initiative_idle_hours, numericality: { only_integer: true, in: 12..168 }
+  validates :initiative_cooldown_hours, numericality: { only_integer: true, in: 24..720 }
   validate :current_version_belongs_to_personality
   validate :current_version_present_when_active
   validate :avatar_source_version_belongs_to_personality

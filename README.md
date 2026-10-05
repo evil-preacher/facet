@@ -87,6 +87,14 @@ time, and idempotency tokens prevent repeated submissions from creating
 duplicates. The composer responds with Turbo Streams while retaining a plain
 HTML fallback.
 
+Initiative messages are disabled by default. On a personality's page, the owner
+can enable them and choose an idle period (12–168 hours) and cooldown (24–720
+hours). The outbox process schedules an initiative sweep every 30 minutes. A
+utility model first decides whether a natural follow-up is appropriate; if so,
+the conversation model writes one message in the latest active thread. A new
+initiative remains unread until that thread is opened. Unread messages, recent
+attempts, ongoing replies, and spending limits prevent repeated outreach.
+
 `GenerationRun` records and UI states for pending, running, failed, stopped,
 and retry are in place. Archived personalities and threads remain readable but
 cannot accept new messages or retries.

@@ -72,6 +72,16 @@ module Ai
     end
   end
 
+  class RetryableInitiativeError < StandardError
+    attr_reader :attempt_id, :error_code
+
+    def initialize(attempt_id:, error_code:)
+      @attempt_id = attempt_id
+      @error_code = error_code
+      super("Retryable initiative failure: #{error_code}")
+    end
+  end
+
   class RetryableMemoryExtractionError < StandardError
     attr_reader :memory_extraction_id, :error_code
 

@@ -6,6 +6,9 @@ class ConversationThreadsController < ApplicationController
 
   def index
     @conversation_threads = @personality.conversation_threads.recent_first
+    @unread_counts = Message.unread_initiatives
+      .where(conversation_thread_id: @conversation_threads.select(:id))
+      .group(:conversation_thread_id).count
   end
 
   def new
@@ -31,6 +34,7 @@ class ConversationThreadsController < ApplicationController
   end
 
   def show
+    @conversation_thread.messages.unread_initiatives.update_all(read_at: Time.current)
     prepare_show
   end
 
@@ -56,6 +60,9 @@ class ConversationThreadsController < ApplicationController
 
   def prepare_show
     @conversation_threads = @personality.conversation_threads.recent_first
+    @unread_counts = Message.unread_initiatives
+      .where(conversation_thread_id: @conversation_threads.select(:id))
+      .group(:conversation_thread_id).count
     @messages = @conversation_thread.messages.includes(
       :personality_version,
       :message_image,

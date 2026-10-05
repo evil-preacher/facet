@@ -37,6 +37,9 @@ class Message < ApplicationRecord
   validate :user_message_has_client_token
   validate :user_message_is_completed
   validate :personality_version_matches_thread
+  validate :initiative_metadata_matches_role
+
+  scope :unread_initiatives, -> { where(initiated_by: "personality", read_at: nil) }
 
   private
 
@@ -60,5 +63,12 @@ class Message < ApplicationRecord
     return if personality_version.personality_id == conversation_thread.personality_id
 
     errors.add(:personality_version, :invalid)
+  end
+
+  def initiative_metadata_matches_role
+    return if initiated_by.nil? && read_at.nil?
+    return if initiated_by == "personality" && assistant?
+
+    errors.add(:initiated_by, :invalid)
   end
 end

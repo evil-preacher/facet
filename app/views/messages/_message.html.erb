@@ -33,6 +33,7 @@
       </span>
       <span>·</span>
       <time datetime="<%= message.created_at.iso8601 %>"><%= l(message.created_at, format: :message) %></time>
+      <% if message.initiated_by == "personality" %><span><%= t("app.initiative.sent_first") %></span><% end %>
       <% if message.failed? %>
         <span data-message-status class="font-bold text-rose-300"><%= t("app.messages.statuses.failed") %></span>
       <% elsif message.streaming? %>

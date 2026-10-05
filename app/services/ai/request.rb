@@ -23,13 +23,14 @@ module Ai
 
     def initialize(user:, personality:, purpose:, model:, input:, prompt_cache_key: nil,
                    response_schema: nil, temperature: nil, max_output_tokens: nil, generation_run: nil,
-                   stream: false, finalize_generation_run: true,
+                   stream: false, finalize_generation_run: true, model_role: nil,
                    gateway: Gateway.default, provider: Rails.configuration.x.ai.provider, now: Time.current,
                    clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
       @user = user
       @personality = personality
       @generation_run = generation_run
       @purpose = purpose
+      @model_role = model_role
       @model = model
       @input = input
       @prompt_cache_key = prompt_cache_key
@@ -78,7 +79,7 @@ module Ai
     private
 
     def configured_model
-      role = @purpose.to_s == "conversation" ? "CONVERSATION" : "UTILITY"
+      role = @model_role.to_s == "conversation" || @purpose.to_s == "conversation" ? "CONVERSATION" : "UTILITY"
       case @provider.to_s
       when "mistral"
         ENV.fetch("MISTRAL_#{role}_MODEL", role == "CONVERSATION" ? "mistral-large-2512" : "mistral-small-latest")

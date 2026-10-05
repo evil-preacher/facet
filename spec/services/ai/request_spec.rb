@@ -174,6 +174,21 @@ RSpec.describe Ai::Request do
     expect(adapter.requests.first).to include(model: "gpt-4o-2024-11-20")
   end
 
+  it "uses the conversation model for initiative messages after a provider switch" do
+    create(:model_price, provider: "openai", model: "gpt-4o-2024-11-20", effective_from: now - 1.day)
+    adapter.enqueue_response(text: "Hello", request_id: "initiative-openai",
+                             usage: Ai::Usage.new(input_tokens: 10, output_tokens: 2))
+
+    switched = described_class.call(
+      user: user, personality: personality, purpose: :initiative, model_role: :conversation,
+      model: "mistral-large-2512", input: "Hi", provider: "openai",
+      gateway: gateway, now: now, clock: -> { 1.0 }
+    )
+
+    expect(switched).to be_success
+    expect(switched.model_call).to have_attributes(purpose: "initiative", model: "gpt-4o-2024-11-20")
+  end
+
   it "blocks a request before contacting the provider when the user limit is exhausted" do
     user.update!(monthly_ai_limit_microusd: 1)
 

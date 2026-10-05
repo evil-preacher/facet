@@ -12,6 +12,7 @@ ru:
       personalities: "Личности"
       profile: "Профиль"
       usage: "Расходы"
+      notifications: "Сообщения, непрочитанных тредов: %{count}"
       logout: "Выйти"
       language: "Язык"
       theme: "Тема"
@@ -50,6 +51,13 @@ ru:
       save: "Сохранить настройки"
       unread_count: "Непрочитанных: %{count}"
       sent_first: "Написала первой"
+    notifications:
+      page_title: "Сообщения — Facet"
+      eyebrow: "Непрочитанное"
+      heading: "Сообщения"
+      description: "Здесь собраны треды, в которые личности написали первыми. Откройте тред, чтобы прочитать сообщение."
+      unread_count: "Непрочитанных: %{count}"
+      empty: "Новых сообщений пока нет."
     usage:
       title: "Расходы — Facet"
       eyebrow: "Бюджет AI"

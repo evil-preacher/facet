@@ -94,6 +94,8 @@ utility model first decides whether a natural follow-up is appropriate; if so,
 the conversation model writes one message in the latest active thread. A new
 initiative remains unread until that thread is opened. Unread messages, recent
 attempts, ongoing replies, and spending limits prevent repeated outreach.
+The header bell opens a Messages page that lists unread threads and links
+directly to each conversation; opening a thread clears its unread count.
 
 `GenerationRun` records and UI states for pending, running, failed, stopped,
 and retry are in place. Archived personalities and threads remain readable but

@@ -12,6 +12,7 @@ Rails.application.routes.draw do
 
   resource :profile, only: %i[show edit update]
   resource :usage, only: %i[show update], controller: "usage"
+  resources :notifications, only: :index
   resources :personalities, only: %i[index new create show edit update] do
     patch :archive, on: :member
     patch :initiative_settings, on: :member

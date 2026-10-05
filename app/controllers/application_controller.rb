@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   before_action :set_current_user
   around_action :switch_locale
 
-  helper_method :current_user, :authenticated?
+  helper_method :current_user, :authenticated?, :unread_notification_threads_count
 
   def supported_locale?(locale)
     I18n.available_locales.map(&:to_s).include?(locale.to_s)
@@ -28,6 +28,10 @@ class ApplicationController < ActionController::Base
 
   def authenticated?
     current_user.present?
+  end
+
+  def unread_notification_threads_count
+    @unread_notification_threads_count ||= Notifications::UnreadThreads.count_for(current_user)
   end
 
   def after_authentication_path

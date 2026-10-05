@@ -23,33 +23,51 @@
   </head>
 
   <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-    <header class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-6">
+    <header class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-6">
       <%= link_to t("app.name"), root_path, class: "text-xl font-extrabold tracking-tight text-slate-950 no-underline" %>
-      <nav class="flex items-center gap-4 text-sm font-semibold">
+      <nav class="flex flex-wrap items-center justify-end gap-3 text-sm font-semibold">
         <% if authenticated? %>
           <%= link_to t("app.nav.personalities"), personalities_path, class: "text-emerald-800 hover:text-emerald-950" %>
           <%= link_to t("app.nav.profile"), profile_path, class: "text-emerald-800 hover:text-emerald-950" %>
           <%= link_to t("app.nav.usage"), usage_path, class: "text-emerald-800 hover:text-emerald-950" %>
+        <% end %>
+        <div class="flex items-center gap-2">
+          <div class="flex rounded-lg bg-white p-1 ring-1 ring-slate-200" aria-label="<%= t("app.nav.language") %>">
+            <% %w[ru en].each do |locale| %>
+              <% active = I18n.locale.to_s == locale %>
+              <%= button_to locale.upcase, locale_path(locale: locale), method: :post,
+                            class: "cursor-pointer rounded-md border-0 px-2 py-1 text-xs font-bold #{active ? 'bg-emerald-800 text-white' : 'bg-transparent text-slate-500 hover:text-slate-900'}",
+                            form_class: "inline" %>
+            <% end %>
+          </div>
+          <button type="button"
+                  class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-0 bg-white text-base text-slate-700 ring-1 ring-slate-200 hover:text-emerald-800"
+                  data-controller="theme"
+                  data-action="theme#toggle"
+                  data-theme-light-label-value="<%= t("app.nav.themes.light") %>"
+                  data-theme-dark-label-value="<%= t("app.nav.themes.dark") %>"
+                  data-theme-toggle-label-value="<%= t("app.nav.theme") %>"
+                  aria-label="<%= t("app.nav.theme") %>">☀</button>
+          <% if authenticated? %>
+            <% unread_threads = unread_notification_threads_count %>
+            <%= link_to notifications_path,
+                        class: "relative flex h-9 w-9 items-center justify-center rounded-lg bg-white text-emerald-800 no-underline ring-1 ring-slate-200 hover:ring-emerald-600",
+                        aria: { label: t("app.nav.notifications", count: unread_threads) } do %>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                <path d="M10 21h4" />
+              </svg>
+              <% if unread_threads.positive? %>
+                <span class="absolute -right-2 -top-2 flex min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[0.65rem] font-bold leading-5 text-white"><%= unread_threads > 99 ? "99+" : unread_threads %></span>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+        <% if authenticated? %>
           <%= button_to t("app.nav.logout"), session_path, method: :delete,
                         class: "cursor-pointer border-0 bg-transparent p-0 font-semibold text-emerald-800 underline hover:text-emerald-950",
                         form_class: "inline" %>
         <% end %>
-        <div class="flex rounded-lg bg-white p-1 ring-1 ring-slate-200" aria-label="<%= t("app.nav.language") %>">
-          <% %w[ru en].each do |locale| %>
-            <% active = I18n.locale.to_s == locale %>
-            <%= button_to locale.upcase, locale_path(locale: locale), method: :post,
-                          class: "cursor-pointer rounded-md border-0 px-2 py-1 text-xs font-bold #{active ? 'bg-emerald-800 text-white' : 'bg-transparent text-slate-500 hover:text-slate-900'}",
-                          form_class: "inline" %>
-          <% end %>
-        </div>
-        <button type="button"
-                class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border-0 bg-white text-base text-slate-700 ring-1 ring-slate-200 hover:text-emerald-800"
-                data-controller="theme"
-                data-action="theme#toggle"
-                data-theme-light-label-value="<%= t("app.nav.themes.light") %>"
-                data-theme-dark-label-value="<%= t("app.nav.themes.dark") %>"
-                data-theme-toggle-label-value="<%= t("app.nav.theme") %>"
-                aria-label="<%= t("app.nav.theme") %>">☀</button>
       </nav>
     </header>
 

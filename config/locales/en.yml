@@ -12,6 +12,7 @@ en:
       personalities: "Personalities"
       profile: "Profile"
       usage: "Usage"
+      notifications: "Messages, unread conversations: %{count}"
       logout: "Log out"
       language: "Language"
       theme: "Theme"
@@ -50,6 +51,13 @@ en:
       save: "Save settings"
       unread_count: "Unread: %{count}"
       sent_first: "Wrote first"
+    notifications:
+      page_title: "Messages — Facet"
+      eyebrow: "Unread"
+      heading: "Messages"
+      description: "Conversations where personalities wrote first appear here. Open a conversation to read its message."
+      unread_count: "Unread: %{count}"
+      empty: "No new messages yet."
     usage:
       title: "Usage — Facet"
       eyebrow: "AI budget"

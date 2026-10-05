@@ -123,7 +123,6 @@ module Memories
 
     def current_duplicate(candidate)
       personality.memories.current.find_by(
-        kind: candidate.fetch("kind"),
         normalized_content: Memory.normalize(candidate.fetch("content"))
       )
     end

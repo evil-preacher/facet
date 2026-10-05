@@ -1,0 +1,36 @@
+# syntax=docker/dockerfile:1
+
+FROM ruby:3.4.10-slim AS build
+
+ENV BUNDLE_PATH=/usr/local/bundle
+WORKDIR /app
+
+RUN apt-get update -qq \
+    && apt-get install -y --no-install-recommends build-essential libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY Gemfile* ./
+RUN bundle config set --local without 'development test' && bundle install
+
+COPY . .
+RUN RAILS_ENV=production SECRET_KEY_BASE_DUMMY=1 APP_HOST=example.invalid \
+    SMTP_ADDRESS=localhost bin/rails assets:precompile
+
+FROM ruby:3.4.10-slim
+
+ENV BUNDLE_PATH=/usr/local/bundle \
+    RAILS_ENV=production \
+    RAILS_SERVE_STATIC_FILES=true
+
+RUN apt-get update -qq \
+    && apt-get install -y --no-install-recommends libpq5 postgresql-client \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 1000 app
+
+WORKDIR /app
+COPY --from=build /usr/local/bundle /usr/local/bundle
+COPY --from=build --chown=app:app /app /app
+
+USER app
+EXPOSE 3000
+CMD ["bin/rails", "server", "-b", "0.0.0.0"]

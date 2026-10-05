@@ -28,7 +28,17 @@ class GenerationRun < ApplicationRecord
   validate :personality_version_matches_thread
   validate :platform_prompt_matches_provider
 
+  after_commit :emit_status_telemetry, if: :saved_change_to_status?
+
   private
+
+  def emit_status_telemetry
+    Operations::Telemetry.emit(
+      "generation_run", record_id: id, status: status, provider: ai_provider,
+      error_code: error_code, attempts_count: attempts_count,
+      first_token_latency_ms: prompt_manifest["first_token_latency_ms"]
+    )
+  end
 
   def messages_match_thread_and_roles
     validate_message(user_message, :user_message, "user")

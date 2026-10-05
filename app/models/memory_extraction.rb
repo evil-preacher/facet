@@ -12,7 +12,15 @@ class MemoryExtraction < ApplicationRecord
   validate :generation_run_belongs_to_personality
   validate :model_call_belongs_to_personality
 
+  after_commit :emit_status_telemetry, if: :saved_change_to_status?
+
   private
+
+  def emit_status_telemetry
+    Operations::Telemetry.emit("memory_extraction", record_id: id, status: status,
+                               error_code: error_code, attempts_count: attempts_count,
+                               generation_run_id: generation_run_id)
+  end
 
   def generation_run_belongs_to_personality
     return if generation_run.nil? || personality.nil?

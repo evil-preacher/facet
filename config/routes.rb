@@ -44,5 +44,9 @@ Rails.application.routes.draw do
 
   get "up" => "rails/health#show", as: :rails_health_check
   get "operations/health" => "operations/health#show", as: :operations_health
+  get "operations/metrics" => "operations/metrics#show", as: :operations_metrics
+  get "operations/diagnostics" => "operations/diagnostics#show", as: :operations_diagnostics
+  post "operations/diagnostics/runs/:id/retry" => "operations/diagnostics#retry_run",
+       as: :operations_retry_run
   mount Sidekiq::Web => "/operations/sidekiq", as: :operations_sidekiq
 end

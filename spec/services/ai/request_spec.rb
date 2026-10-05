@@ -71,6 +71,21 @@ RSpec.describe Ai::Request do
     expect(result.model_call.reload.cost_microusd).to eq(3_250)
   end
 
+  it "records time to first streamed token without storing prompt text in telemetry" do
+    adapter.enqueue_stream(deltas: [ "Hello" ], text: "Hello", request_id: "req_stream",
+                           usage: Ai::Usage.new(input_tokens: 10, cached_input_tokens: 0, output_tokens: 1))
+    times = [ 1.0, 1.25, 1.5 ]
+    streamed = described_class.call(
+      user: user, personality: personality, generation_run: generation_run,
+      purpose: :conversation, provider: "mistral", model: "mistral-large-2512",
+      input: "private prompt", gateway: gateway, now: now,
+      clock: -> { times.shift }, stream: true
+    )
+
+    expect(streamed).to be_success
+    expect(generation_run.reload.prompt_manifest["first_token_latency_ms"]).to eq(250)
+  end
+
   it "records normalized timeout failures without storing the prompt" do
     adapter.enqueue_error(Ai::TimeoutError.new("secret provider detail"))
 
@@ -80,6 +95,20 @@ RSpec.describe Ai::Request do
     expect(result.model_call.error_message).not_to include("secret provider detail")
     expect(ModelCall.column_names).not_to include("prompt")
     expect(result.model_call.reserved_cost_microusd).to eq(0)
+  end
+
+  it "emits a budget rejection without sending the prompt" do
+    user.update!(monthly_ai_limit_microusd: 0)
+    emitted = []
+    allow(Operations::Telemetry).to receive(:emit) do |event, **attributes|
+      emitted << [ event, attributes ]
+    end
+
+    expect(result.error_code).to eq("budget_exceeded")
+    expect(adapter.requests).to be_empty
+    expect(emitted).to include([ "budget_rejection",
+                                hash_including(error_code: "budget_exceeded", model: "mistral-large-2512") ])
+    expect(emitted.flatten.join).not_to include("private prompt")
   end
 
   it "records rate limits with a stable code" do

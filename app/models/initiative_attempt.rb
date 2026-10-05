@@ -13,7 +13,15 @@ class InitiativeAttempt < ApplicationRecord
   validate :thread_belongs_to_personality
   validate :context_matches_thread
 
+  after_commit :emit_status_telemetry, if: :saved_change_to_status?
+
   private
+
+  def emit_status_telemetry
+    Operations::Telemetry.emit("initiative", record_id: id, status: status,
+                               provider: ai_provider, error_code: error_code,
+                               personality_id: personality_id)
+  end
 
   def thread_belongs_to_personality
     return if conversation_thread.nil? || personality.nil?

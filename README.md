@@ -257,6 +257,16 @@ requires HTTP Basic authentication. The Sidekiq dashboard is mounted at
 `/operations/sidekiq` behind the same credentials. Neither endpoint should be
 exposed publicly.
 
+The authenticated `/operations/metrics` endpoint reports 24-hour model-call
+counts, errors, latency, time to first token, token usage, cache ratio, cost,
+and queue depth. `/operations/diagnostics` lists stale runs and jobs and
+allows an operator to re-enqueue only old pending generation runs. Structured
+events are written as JSON without conversation text.
+
+Production container configuration, required environment variables, release
+steps, and PostgreSQL backup/restore are documented in
+[`docs/production.md`](docs/production.md).
+
 ## Privacy and deletion
 
 The profile page offers a JSON export of account details, personality versions,

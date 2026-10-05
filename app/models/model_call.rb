@@ -34,7 +34,19 @@ class ModelCall < ApplicationRecord
   validate :references_share_owner
   validates :reserved_cost_microusd, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
+  after_commit :emit_status_telemetry, if: :saved_change_to_status?
+
   private
+
+  def emit_status_telemetry
+    Operations::Telemetry.emit(
+      "model_call", record_id: id, status: status, purpose: purpose, provider: provider,
+      model: response_model || model, error_code: error_code, latency_ms: latency_ms,
+      input_tokens: input_tokens, cached_input_tokens: cached_input_tokens,
+      output_tokens: output_tokens, cost_microusd: cost_microusd,
+      generation_run_id: generation_run_id
+    )
+  end
 
   def cached_input_is_part_of_input
     return if cached_input_tokens.nil? || input_tokens.nil?

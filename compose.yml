@@ -80,6 +80,8 @@ services:
 
   web:
     build: .
+    init: true
+    stop_grace_period: 35s
     user: "${UID:-1000}:${GID:-1000}"
     environment:
       HOME: /tmp
@@ -145,6 +147,7 @@ services:
 
   worker:
     build: .
+    init: true
     user: "${UID:-1000}:${GID:-1000}"
     command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
     environment:
@@ -201,6 +204,7 @@ services:
 
   outbox:
     build: .
+    init: true
     user: "${UID:-1000}:${GID:-1000}"
     command: ["bin/rails", "runner", "Outbox::Runner.call"]
     restart: unless-stopped

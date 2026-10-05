@@ -63,10 +63,18 @@ module Ai
       )
 
       started = @clock.call
-      response = provider_response(&on_delta)
+      response = provider_response do |delta|
+        @first_token_latency_ms ||= elapsed_ms(started) if delta.to_s.present?
+        on_delta&.call(delta)
+      end
       complete!(response, elapsed_ms(started))
       Result.new(model_call: @model_call, response: response, error_code: nil)
     rescue Error => error
+      if error.is_a?(BudgetExceededError)
+        Operations::Telemetry.emit("budget_rejection", purpose: @purpose, provider: @provider,
+                                   model: @model, generation_run_id: @generation_run&.id,
+                                   error_code: "budget_exceeded")
+      end
       if @model_call&.persisted?
         fail!(error)
       elsif finalize_generation_run?
@@ -143,6 +151,7 @@ module Ai
           completed_at: @now
         )
         @generation_run&.update!(status: :completed, completed_at: @now) if finalize_generation_run?
+        record_first_token_latency!
       end
     end
 
@@ -188,6 +197,15 @@ module Ai
 
     def elapsed_ms(started)
       ((@clock.call - started) * 1000).round.clamp(0, 2_147_483_647)
+    end
+
+    def record_first_token_latency!
+      return unless @generation_run && @first_token_latency_ms
+
+      @generation_run.update_column(
+        :prompt_manifest,
+        @generation_run.prompt_manifest.merge("first_token_latency_ms" => @first_token_latency_ms)
+      )
     end
 
     def error_details(error)

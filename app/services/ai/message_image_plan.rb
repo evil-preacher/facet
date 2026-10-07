@@ -4,10 +4,6 @@ module Ai
   class MessageImagePlan
     Result = Data.define(:send_photo, :scene_description)
 
-    SYSTEM_PROMPT = <<~PROMPT.strip.freeze
-      [Prompt text removed from public history]
-    PROMPT
-
     ERROR_CLASSES = {
       "timeout" => TimeoutError,
       "rate_limit" => RateLimitError,
@@ -51,7 +47,7 @@ module Ai
 
     def input
       [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: Ai::PromptCatalog.content("message_image_plan") },
         {
           role: "user",
           content: <<~CONTENT.strip

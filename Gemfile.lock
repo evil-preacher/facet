@@ -48,6 +48,11 @@ GEM
       uri (>= 0.13.1)
     addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
+    administrate (1.0.0)
+      actionpack (>= 6.0, < 9.0)
+      actionview (>= 6.0, < 9.0)
+      activerecord (>= 6.0, < 9.0)
+      kaminari (~> 1.2.2)
     ast (2.4.3)
     aws-eventstream (1.4.0)
     aws-partitions (1.1287.0)
@@ -129,6 +134,18 @@ GEM
       activesupport (>= 7.0.0)
     jmespath (1.6.2)
     json (2.21.2)
+    kaminari (1.2.2)
+      activesupport (>= 4.1.0)
+      kaminari-actionview (= 1.2.2)
+      kaminari-activerecord (= 1.2.2)
+      kaminari-core (= 1.2.2)
+    kaminari-actionview (1.2.2)
+      actionview
+      kaminari-core (= 1.2.2)
+    kaminari-activerecord (1.2.2)
+      activerecord
+      kaminari-core (= 1.2.2)
+    kaminari-core (1.2.2)
     language_server-protocol (3.17.0.6)
     lint_roller (1.1.0)
     logger (1.7.0)
@@ -346,6 +363,7 @@ DEPENDENCIES
   actionview (~> 8.1.3, >= 8.1.3.1)
   activejob (~> 8.1.3, >= 8.1.3.1)
   activerecord (~> 8.1.3, >= 8.1.3.1)
+  administrate (= 1.0.0)
   aws-sdk-s3 (= 1.228.2)
   bootsnap
   brakeman

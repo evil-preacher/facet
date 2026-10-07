@@ -30,6 +30,9 @@
           <%= link_to t("app.nav.personalities"), personalities_path, class: "text-emerald-800 hover:text-emerald-950" %>
           <%= link_to t("app.nav.profile"), profile_path, class: "text-emerald-800 hover:text-emerald-950" %>
           <%= link_to t("app.nav.usage"), usage_path, class: "text-emerald-800 hover:text-emerald-950" %>
+          <% if current_user.admin? %>
+            <%= link_to t("app.nav.admin"), admin_root_path, class: "text-emerald-800 hover:text-emerald-950" %>
+          <% end %>
         <% end %>
         <div class="flex items-center gap-2">
           <div class="flex rounded-lg bg-white p-1 ring-1 ring-slate-200" aria-label="<%= t("app.nav.language") %>">

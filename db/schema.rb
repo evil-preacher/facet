@@ -10,9 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_05_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_07_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "admin_audit_events", force: :cascade do |t|
+    t.string "action", null: false
+    t.bigint "actor_user_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "target_id"
+    t.string "target_type", null: false
+    t.index ["actor_user_id", "created_at"], name: "index_admin_audit_events_on_actor_user_id_and_created_at"
+    t.index ["target_type", "target_id", "created_at"], name: "idx_on_target_type_target_id_created_at_6d5232a721"
+    t.check_constraint "action::text = ANY (ARRAY['index'::character varying, 'show'::character varying, 'disable_initiative'::character varying, 'retry_pending'::character varying, 'publish_prompt'::character varying, 'publish_platform_prompt'::character varying]::text[])", name: "admin_audit_events_action"
+  end
 
   create_table "ai_budget_locks", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -36,6 +47,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_000001) do
     t.check_constraint "purpose::text = 'conversation'::text", name: "ai_platform_prompts_purpose"
     t.check_constraint "revision > 0", name: "ai_platform_prompts_positive_revision"
     t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'retired'::character varying]::text[])", name: "ai_platform_prompts_status"
+  end
+
+  create_table "ai_prompt_revisions", force: :cascade do |t|
+    t.string "checksum", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.string "key", null: false
+    t.bigint "published_by_id"
+    t.integer "revision", null: false
+    t.string "status", default: "active", null: false
+    t.datetime "updated_at", null: false
+    t.index ["key", "revision"], name: "index_ai_prompt_revisions_on_key_and_revision", unique: true
+    t.index ["key"], name: "index_ai_prompt_revisions_active_key", unique: true, where: "((status)::text = 'active'::text)"
+    t.index ["published_by_id"], name: "index_ai_prompt_revisions_on_published_by_id"
+    t.check_constraint "char_length(btrim(content)) >= 1 AND char_length(btrim(content)) <= 100000", name: "ai_prompt_revisions_content_length"
+    t.check_constraint "revision > 0", name: "ai_prompt_revisions_positive_revision"
+    t.check_constraint "status::text = ANY (ARRAY['active'::character varying, 'retired'::character varying]::text[])", name: "ai_prompt_revisions_status"
   end
 
   create_table "conversation_threads", force: :cascade do |t|
@@ -94,6 +122,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_000001) do
     t.bigint "conversation_thread_id", null: false
     t.datetime "created_at", null: false
     t.string "error_code"
+    t.boolean "manual_trigger", default: false, null: false
     t.bigint "message_id"
     t.bigint "personality_id", null: false
     t.bigint "personality_version_id", null: false
@@ -448,6 +477,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_000001) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.boolean "admin", default: false, null: false
     t.datetime "confirmation_sent_at"
     t.datetime "confirmed_at"
     t.datetime "created_at", null: false
@@ -458,6 +488,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_000001) do
     t.check_constraint "monthly_ai_limit_microusd >= 0", name: "users_nonnegative_ai_limit"
   end
 
+  add_foreign_key "ai_prompt_revisions", "users", column: "published_by_id", on_delete: :nullify
   add_foreign_key "conversation_threads", "messages", column: "summary_through_message_id", on_delete: :nullify
   add_foreign_key "conversation_threads", "personalities"
   add_foreign_key "generation_runs", "ai_platform_prompts", on_delete: :nullify

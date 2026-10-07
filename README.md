@@ -263,6 +263,24 @@ and queue depth. `/operations/diagnostics` lists stale runs and jobs and
 allows an operator to re-enqueue only old pending generation runs. Structured
 events are written as JSON without conversation text.
 
+The `/admin` panel uses Administrate and the existing one-time email-code
+login. An operator grants access to a confirmed user from a Rails console with
+`User.find_by!(email: "operator@example.com").update!(admin: true)`. Only
+explicit metadata views are available for users, personalities, generation
+runs, model calls, initiative attempts, budgets, Sidekiq queues, and outbox.
+The personality detail page additionally displays its current Character Bible
+as escaped, read-only text; conversation messages and memories are not shown.
+The panel also has a versioned AI prompt catalog and provider corrections.
+The defaults for 16 prompt templates live in `config/ai_prompts/`; publishing
+an edit in `/admin/prompt_templates` makes it active for later requests, and
+restoring an older revision creates a new revision. Template variables use
+`{{name}}` placeholders, with an allowlist shown on each edit page. Provider
+corrections can be published in `/admin/platform_prompts`. The other changes
+allowed there are disabling initiative and re-enqueuing an old pending run.
+Administrative views and actions record actor, action, target,
+and time without private content. The daily retention job removes these audit
+records after one year or account deletion.
+
 Production container configuration, required environment variables, release
 steps, and PostgreSQL backup/restore are documented in
 [`docs/production.md`](docs/production.md).

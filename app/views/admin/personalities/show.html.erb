@@ -1,0 +1,21 @@
+<% content_for(:stylesheet) { stylesheet_link_tag "admin_personalities" } %>
+<% content_for :after_main do %>
+  <% version = page.resource.current_version %>
+  <section class="main-content__body admin-character-bible" aria-labelledby="character-bible-heading">
+    <div class="admin-character-bible__heading">
+      <h2 id="character-bible-heading"><%= t("admin.character_bible.title") %></h2>
+      <% if version %><span>v<%= version.number %></span><% end %>
+    </div>
+    <% if version %>
+      <pre class="admin-character-bible__content"><%= version.content %></pre>
+    <% else %>
+      <p><%= t("admin.character_bible.empty") %></p>
+    <% end %>
+  </section>
+  <% if page.resource.initiative_enabled? %>
+    <div class="main-content__body">
+      <%= button_to t("admin.disable_initiative"), disable_initiative_admin_personality_path(page.resource), method: :post, class: "button button--danger" %>
+    </div>
+  <% end %>
+<% end %>
+<%= render template: "administrate/application/show", locals: { page: page } %>

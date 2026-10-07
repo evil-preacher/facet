@@ -1,14 +1,11 @@
 require "base64"
+require "digest"
 
 module Ai
   class PromptBuilder
     InputItem = Data.define(:role, :content)
     Result = Data.define(:input, :manifest, :prompt_cache_key, :estimated_tokens)
     IMAGE_TOKEN_ESTIMATE = 1_024
-
-    APPLICATION_RULES = <<~RULES.strip.freeze
-      [Prompt text removed from public history]
-    RULES
 
     DEFAULT_BUDGETS = {
       application_rules: 4_000,
@@ -89,7 +86,9 @@ module Ai
     end
 
     def prepare_sections
-      @rules_item = developer_item("Application rules", APPLICATION_RULES)
+      @application_prompt_revision = Ai::PromptCatalog.active("application_rules")
+      @application_rules = @application_prompt_revision&.content || Ai::PromptCatalog.content("application_rules")
+      @rules_item = developer_item("Application rules", @application_rules)
       @platform_prompt = @generation_run.ai_platform_prompt
       @platform_item = platform_prompt_item if Rails.configuration.x.ai.platform_prompt_enabled
       @bible_item = developer_item(
@@ -220,7 +219,7 @@ module Ai
 
     def current_message_item
       attachment = @current_message.attachment
-      text = @current_message.content.presence || "[Prompt text removed from public history]"
+      text = @current_message.content.presence || Ai::PromptCatalog.content("image_without_caption")
       return InputItem.new(role: "user", content: text) unless attachment
 
       bytes = @storage.download(key: attachment.object_key)
@@ -279,9 +278,10 @@ module Ai
     def prompt_cache_key
       prompt_revision = @platform_item ? @platform_prompt.checksum.first(12) : "none"
       summary_boundary = @thread.summary_through_message_id || "none"
+      rules_checksum = Digest::SHA256.hexdigest(@application_rules).first(12)
       "facet-conversation-thread-#{@thread.id}-#{@generation_run.ai_provider}-" \
-        "pv-#{@personality_version.id}-pp-#{prompt_revision}-" \
-        "summary-#{summary_boundary}-v7"
+        "pv-#{@personality_version.id}-pp-#{prompt_revision}-ar-#{rules_checksum}-" \
+        "summary-#{summary_boundary}-v8"
     end
 
     def total_tokens
@@ -309,8 +309,13 @@ module Ai
 
     def build_manifest
       {
-        "schema_version" => 4,
+        "schema_version" => 5,
         "ai_provider" => @generation_run.ai_provider,
+        "application_prompt" => {
+          "id" => @application_prompt_revision&.id,
+          "revision" => @application_prompt_revision&.revision,
+          "checksum" => Digest::SHA256.hexdigest(@application_rules)
+        },
         "platform_prompt" => platform_prompt_manifest,
         "personality_id" => @personality.id,
         "personality_version_id" => @personality_version.id,

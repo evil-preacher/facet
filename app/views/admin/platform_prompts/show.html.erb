@@ -1,0 +1,35 @@
+<% content_for(:stylesheet) { stylesheet_link_tag "admin_prompts" } %>
+<% content_for(:title) { "#{@provider} · conversation" } %>
+<header class="main-content__header prompt-admin__header">
+  <%= link_to "← #{t('admin.prompts.back')}", admin_platform_prompts_path, class: "prompt-admin__back" %>
+  <h1 class="main-content__page-title"><%= @provider %> · conversation</h1>
+  <p class="prompt-admin__meta"><%= @active ? "v#{@active.revision} · #{@active.checksum.first(12)}" : t("admin.platform_prompts.none") %></p>
+</header>
+<div class="main-content__body prompt-admin">
+  <section class="prompt-admin__section">
+    <h2><%= t("admin.prompts.content") %></h2>
+    <%= form_with url: publish_admin_platform_prompt_path(@provider), method: :post, class: "prompt-admin__editor" do |form| %>
+      <%= form.label :content, t("admin.prompts.content"), class: "prompt-admin__sr-only" %>
+      <%= form.text_area :content, value: @content, rows: 24, spellcheck: false, class: "prompt-admin__textarea" %>
+      <div class="prompt-admin__actions">
+        <%= form.submit t("admin.prompts.publish"), class: "prompt-admin__primary", data: { turbo_confirm: t("admin.prompts.confirm") } %>
+      </div>
+    <% end %>
+  </section>
+  <section class="prompt-admin__section">
+    <h2><%= t("admin.prompts.history") %></h2>
+    <div class="prompt-admin__history">
+      <% @revisions.each do |revision| %>
+        <div class="prompt-admin__revision">
+          <div class="prompt-admin__revision-info">
+            <strong>v<%= revision.revision %><%= " · #{t('admin.prompts.current')}" if revision == @active %></strong>
+            <span><%= revision.created_at.utc.strftime("%Y-%m-%d %H:%M UTC") %> · <%= revision.checksum.first(12) %></span>
+          </div>
+          <% unless revision == @active %>
+            <%= button_to t("admin.prompts.restore"), restore_admin_platform_prompt_path(@provider), params: { revision_id: revision.id }, class: "prompt-admin__restore", data: { turbo_confirm: t("admin.prompts.confirm") } %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>

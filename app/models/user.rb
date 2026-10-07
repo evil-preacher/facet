@@ -8,6 +8,7 @@ class User < ApplicationRecord
   has_many :model_calls, dependent: :restrict_with_exception
 
   validates :monthly_ai_limit_microusd, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :admin, inclusion: { in: [ true, false ] }
 
   before_validation :normalize_email
 

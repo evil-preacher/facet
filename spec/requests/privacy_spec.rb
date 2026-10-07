@@ -105,6 +105,7 @@ RSpec.describe "Privacy", type: :request do
   it "deletes the account and all identifiable usage" do
     personality = create(:personality, :active, user: user)
     usage = create(:model_call, user: user, personality: personality)
+    audit = AdminAuditEvent.create!(actor_user_id: user.id, action: "show", target_type: "User", target_id: user.id)
     sign_in
 
     delete account_path
@@ -112,6 +113,7 @@ RSpec.describe "Privacy", type: :request do
     expect(response).to redirect_to(root_path)
     expect(User.exists?(user.id)).to be(false)
     expect(ModelCall.exists?(usage.id)).to be(false)
+    expect(AdminAuditEvent.exists?(audit.id)).to be(false)
   end
 
   it "requires authentication for the export" do

@@ -10,6 +10,8 @@ RSpec.describe Privacy::RetentionJob do
                                 available_at: Time.current, last_error: "private error")
     old_run.update_columns(created_at: 31.days.ago)
     event.update_columns(created_at: 31.days.ago)
+    audit = AdminAuditEvent.create!(actor_user_id: 1, action: "index", target_type: "User")
+    audit.update_columns(created_at: 366.days.ago)
 
     described_class.perform_now
 
@@ -17,5 +19,6 @@ RSpec.describe Privacy::RetentionJob do
     expect(old_run.error_message).to be_nil
     expect(recent_run.reload.prompt_manifest).to eq({ "memory_ids" => [ 2 ] })
     expect(event.reload.last_error).to be_nil
+    expect(AdminAuditEvent.exists?(audit.id)).to be(false)
   end
 end

@@ -1,0 +1,8 @@
+<% content_for :after_main do %>
+  <% if page.resource.pending? && page.resource.created_at <= Operations::Diagnostics::PENDING_RUN_AGE.ago %>
+    <div class="main-content__body">
+      <%= button_to t("admin.retry_pending"), retry_pending_admin_generation_run_path(page.resource), method: :post, class: "button" %>
+    </div>
+  <% end %>
+<% end %>
+<%= render template: "administrate/application/show", locals: { page: page } %>

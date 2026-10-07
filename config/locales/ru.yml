@@ -1,9 +1,55 @@
 ru:
+  admin:
+    title: "Администрирование"
+    character_bible:
+      title: "Character Bible"
+      empty: "У этой личности пока нет текущего Character Bible."
+    platform_prompts:
+      title: "Коррекции провайдеров"
+      none: "Нет активной коррекции"
+    prompts:
+      title: "Промпты ИИ"
+      description: "Опубликованный промпт используется в следующих запросах к ИИ. Предыдущие версии доступны в истории."
+      default: "Версия из репозитория"
+      back: "Все промпты"
+      variables: "Допустимые переменные: %{names}"
+      content: "Текст промпта"
+      publish: "Опубликовать версию"
+      confirm: "Опубликовать эту версию промпта?"
+      history: "История версий"
+      current: "Текущая"
+      restore: "Восстановить как новую версию"
+      restore_default: "Восстановить исходный вариант как новую версию"
+      published: "Версия промпта опубликована."
+    metadata_only: "Здесь показаны рабочие метаданные и агрегаты. Текущий Character Bible доступен на странице личности; тексты диалогов скрыты."
+    sidekiq: "Очереди Sidekiq"
+    sidekiq_unavailable: "Данные очередей недоступны."
+    budget_limit: "Сумма месячных лимитов пользователей (микро USD)"
+    model_cost: "Стоимость моделей за текущий месяц (микро USD)"
+    model_reserved: "Резерв за текущий месяц (микро USD)"
+    global_limit: "Глобальный месячный лимит (микро USD)"
+    user_budget: "Месячный бюджет сейчас"
+    spent: "Потрачено"
+    reserved: "Зарезервировано"
+    remaining: "Остаток"
+    disable_initiative: "Отключить инициативу"
+    retry_pending: "Повторно поставить ожидающий запуск"
+    flash:
+      initiative_disabled: "Инициатива отключена."
+      run_queued: "Ожидающий запуск повторно поставлен в очередь."
+    counts:
+      users: "Пользователи"
+      personalities: "Личности"
+      generation_runs: "Запуски генерации"
+      model_calls: "Вызовы моделей"
+      initiative_attempts: "Попытки инициативы"
+      pending_outbox: "Ожидающие события outbox"
   date:
     formats:
       default: "%d.%m.%Y"
   time:
     formats:
+      default: "%d.%m.%Y, %H:%M"
       version: "%d.%m.%Y, %H:%M"
       message: "%d.%m, %H:%M"
   app:
@@ -12,6 +58,7 @@ ru:
       personalities: "Личности"
       profile: "Профиль"
       usage: "Расходы"
+      admin: "Админка"
       notifications: "Сообщения, непрочитанных тредов: %{count}"
       logout: "Выйти"
       language: "Язык"
@@ -361,9 +408,86 @@ ru:
         description: "Ваш одноразовый код:"
         expiry: "Код действует 10 минут. Никому его не сообщайте."
   activerecord:
+    models:
+      user:
+        one: "Пользователь"
+        other: "Пользователи"
+      personality:
+        one: "Личность"
+        other: "Личности"
+      generation_run:
+        one: "Запуск генерации"
+        other: "Запуски генерации"
+      model_call:
+        one: "Вызов модели"
+        other: "Вызовы моделей"
+      initiative_attempt:
+        one: "Попытка инициативы"
+        other: "Попытки инициативы"
+      outbox_event:
+        one: "Событие outbox"
+        other: "События outbox"
     attributes:
       user:
         email: "Email"
+        id: "ID"
+        confirmed_at: "Подтверждён"
+        monthly_ai_limit_microusd: "Месячный лимит, микро USD"
+        admin: "Администратор"
+        created_at: "Создан"
+      personality:
+        id: "ID"
+        user_id: "Пользователь ID"
+        name: "Имя"
+        status: "Статус"
+        initiative_enabled: "Инициатива включена"
+        initiative_idle_hours: "Пауза до инициативы, ч"
+        initiative_cooldown_hours: "Пауза между попытками, ч"
+        created_at: "Создана"
+      generation_run:
+        id: "ID"
+        conversation_thread_id: "Тред ID"
+        status: "Статус"
+        ai_provider: "Провайдер"
+        attempts_count: "Попытки"
+        error_code: "Код ошибки"
+        created_at: "Создан"
+        started_at: "Начат"
+        completed_at: "Завершён"
+      model_call:
+        id: "ID"
+        user_id: "Пользователь ID"
+        personality_id: "Личность ID"
+        generation_run_id: "Запуск ID"
+        provider: "Провайдер"
+        model: "Модель"
+        purpose: "Назначение"
+        status: "Статус"
+        input_tokens: "Входные токены"
+        cached_input_tokens: "Кэшированные токены"
+        output_tokens: "Выходные токены"
+        cost_microusd: "Стоимость, микро USD"
+        error_code: "Код ошибки"
+        created_at: "Создан"
+      initiative_attempt:
+        id: "ID"
+        personality_id: "Личность ID"
+        conversation_thread_id: "Тред ID"
+        status: "Статус"
+        ai_provider: "Провайдер"
+        error_code: "Код ошибки"
+        created_at: "Создана"
+        started_at: "Начата"
+        completed_at: "Завершена"
+      outbox_event:
+        id: "ID"
+        job_class: "Класс задачи"
+        queue_name: "Очередь"
+        status: "Статус"
+        attempts_count: "Попытки"
+        available_at: "Доступен с"
+        created_at: "Создано"
+        dispatched_at: "Отправлено"
       profile:
         first_name: "Имя"
         last_name: "Фамилия"

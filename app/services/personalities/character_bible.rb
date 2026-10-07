@@ -3,9 +3,7 @@ module Personalities
     def self.compile(attributes)
       values = attributes.to_h.symbolize_keys
 
-      <<~MARKDOWN.strip
-      [Prompt text removed from public history]
-      MARKDOWN
+      Ai::PromptCatalog.render("character_bible", values.transform_values { |value| value.to_s.strip })
     end
   end
 end

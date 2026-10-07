@@ -3,10 +3,6 @@ require "json"
 module Memories
   module Extraction
     class Prompt
-      INSTRUCTIONS = <<~PROMPT.freeze
-      [Prompt text removed from public history]
-      PROMPT
-
       def self.call(extraction:, active_memories:, now: Time.current)
         new(extraction: extraction, active_memories: active_memories, now: now).call
       end
@@ -30,7 +26,7 @@ module Memories
 
       def call
         [
-          { role: "developer", content: INSTRUCTIONS },
+          { role: "developer", content: Ai::PromptCatalog.content("memory_extraction") },
           { role: "user", content: JSON.pretty_generate(payload) }
         ]
       end

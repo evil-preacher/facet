@@ -1,0 +1,10 @@
+<nav class="navigation">
+  <%= link_to t("admin.title"), admin_root_path, class: "navigation__link" %>
+  <%= link_to t("admin.prompts.title"), admin_prompt_templates_path, class: "navigation__link" %>
+  <%= link_to t("admin.platform_prompts.title"), admin_platform_prompts_path, class: "navigation__link" %>
+  <% Administrate::Namespace.new(namespace).resources_with_index_route.excluding("overview", "prompt_templates", "platform_prompts").each do |resource| %>
+    <%= link_to display_resource_name(resource), resource_index_route(resource),
+                class: "navigation__link navigation__link--#{nav_link_state(resource)}" %>
+  <% end %>
+  <%= link_to t("administrate.navigation.back_to_app"), root_path, class: "navigation__link" %>
+</nav>

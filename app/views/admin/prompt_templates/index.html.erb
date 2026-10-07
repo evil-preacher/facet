@@ -1,0 +1,16 @@
+<% content_for(:stylesheet) { stylesheet_link_tag "admin_prompts" } %>
+<% content_for(:title) { t("admin.prompts.title") } %>
+<header class="main-content__header"><h1 class="main-content__page-title"><%= t("admin.prompts.title") %></h1></header>
+<div class="main-content__body prompt-admin">
+  <section class="prompt-admin__section">
+    <p class="prompt-admin__hint"><%= t("admin.prompts.description") %></p>
+    <div class="prompt-admin__history">
+      <% @keys.each do |key| %>
+        <div class="prompt-admin__revision">
+          <div class="prompt-admin__revision-info"><strong><%= link_to key.humanize, admin_prompt_template_path(key) %></strong></div>
+          <span class="prompt-admin__meta"><%= @active[key] ? "v#{@active[key].revision}" : t("admin.prompts.default") %></span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>

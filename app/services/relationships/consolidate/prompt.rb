@@ -1,13 +1,9 @@
 require "json"
 
 class Relationships::Consolidate::Prompt
-  INSTRUCTIONS = <<~TEXT.freeze
-      [Prompt text removed from public history]
-  TEXT
-
   def self.call(previous_summary:, messages:, complete_evidence:, language:)
     language_name = Relationships::Update::Prompt::LANGUAGE_NAMES.fetch(language)
-    instructions = INSTRUCTIONS
+    instructions = "#{Ai::PromptCatalog.content('relationship_consolidate')}\n#{Ai::PromptCatalog.render('relationship_consolidate_language', language_name: language_name)}"
     [
       { role: "developer", content: instructions },
       { role: "user", content: JSON.pretty_generate(

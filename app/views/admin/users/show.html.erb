@@ -1,0 +1,11 @@
+<% content_for :after_main do %>
+  <section class="main-content__body">
+    <h2><%= t("admin.user_budget") %></h2>
+    <dl>
+      <dt><%= t("admin.spent") %></dt><dd><%= @budget.spent %></dd>
+      <dt><%= t("admin.reserved") %></dt><dd><%= @budget.reserved %></dd>
+      <dt><%= t("admin.remaining") %></dt><dd><%= @budget.remaining %></dd>
+    </dl>
+  </section>
+<% end %>
+<%= render template: "administrate/application/show", locals: { page: page } %>

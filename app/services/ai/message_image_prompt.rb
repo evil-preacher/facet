@@ -10,9 +10,7 @@ module Ai
     end
 
     def call
-      <<~PROMPT.strip
-      [Prompt text removed from public history]
-      PROMPT
+      Ai::PromptCatalog.render("message_image", character_name: personality.name, photo_specification: message_image.scene_description)
     end
 
     private

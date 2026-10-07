@@ -1,4 +1,25 @@
 Rails.application.routes.draw do
+  namespace :admin do
+    root to: "overview#index"
+    resources :prompt_templates, only: %i[index show], param: :key do
+      post :publish, on: :member
+      post :restore, on: :member
+    end
+    resources :platform_prompts, only: %i[index show], param: :provider do
+      post :publish, on: :member
+      post :restore, on: :member
+    end
+    resources :users, only: %i[index show]
+    resources :personalities, only: %i[index show] do
+      post :disable_initiative, on: :member
+    end
+    resources :generation_runs, only: %i[index show] do
+      post :retry_pending, on: :member
+    end
+    resources :model_calls, only: %i[index show]
+    resources :initiative_attempts, only: %i[index show]
+    resources :outbox_events, only: %i[index show]
+  end
   root "home#index"
 
   get "registration", to: "registrations#new", as: :new_registration

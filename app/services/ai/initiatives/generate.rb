@@ -14,12 +14,6 @@ module Ai
           }
         }
       }.freeze
-      DECISION_RULES = <<~TEXT.freeze
-      [Prompt text removed from public history]
-      TEXT
-      MESSAGE_RULES = <<~TEXT.freeze
-      [Prompt text removed from public history]
-      TEXT
       TRANSIENT_ERRORS = %w[timeout rate_limit provider_error].freeze
 
       Result = Data.define(:status, :error_code, :message)
@@ -99,7 +93,7 @@ module Ai
 
       def decision_input
         [
-          { role: "developer", content: DECISION_RULES },
+          { role: "developer", content: Ai::PromptCatalog.content("initiative_decision") },
           { role: "user", content: JSON.generate(
             relationship_state: personality.relationship_state&.summary.to_s.first(4_000),
             approved_memories: @memories.map(&:content),
@@ -111,15 +105,16 @@ module Ai
       end
 
       def message_input(topic)
-        items = [ { role: "developer", content: PromptBuilder::APPLICATION_RULES } ]
+        items = [ { role: "developer", content: Ai::PromptCatalog.content("application_rules") } ]
         platform = AiPlatformPrompt.active_for(provider: attempt.ai_provider)
         if Rails.configuration.x.ai.platform_prompt_required && platform.nil?
           raise ValidationError, "No active conversation platform prompt"
         end
         items << { role: "developer", content: platform.content } if platform &&
           Rails.configuration.x.ai.platform_prompt_enabled
-        items << { role: "developer", content: "Character Bible:\n#{attempt.personality_version.content}" }
-        items << { role: "developer", content: MESSAGE_RULES }
+        items << { role: "developer", content: Ai::PromptCatalog.render("initiative_character_bible",
+          character_bible: attempt.personality_version.content) }
+        items << { role: "developer", content: Ai::PromptCatalog.content("initiative_message") }
         items << { role: "user", content: JSON.generate(
           topic: topic, relationship_state: personality.relationship_state&.summary.to_s.first(4_000),
           approved_memories: @memories.map(&:content), thread_summary: thread.summary.to_s.first(4_000),

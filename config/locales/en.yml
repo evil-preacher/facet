@@ -1,9 +1,55 @@
 en:
+  admin:
+    title: "Administration"
+    character_bible:
+      title: "Character Bible"
+      empty: "This personality has no current Character Bible."
+    platform_prompts:
+      title: "Provider corrections"
+      none: "No active correction"
+    prompts:
+      title: "AI prompts"
+      description: "Publishing a prompt makes it active for subsequent AI requests. Earlier revisions remain available."
+      default: "Repository default"
+      back: "All prompts"
+      variables: "Allowed variables: %{names}"
+      content: "Prompt text"
+      publish: "Publish revision"
+      confirm: "Publish this prompt revision?"
+      history: "Revision history"
+      current: "Current"
+      restore: "Restore as new revision"
+      restore_default: "Restore repository default as new revision"
+      published: "Prompt revision published."
+    metadata_only: "Operational metadata and aggregates. The current Character Bible is available on each personality's detail page; private conversations remain hidden."
+    sidekiq: "Sidekiq queues"
+    sidekiq_unavailable: "Queue data is unavailable."
+    budget_limit: "Sum of monthly user limits (micro USD)"
+    model_cost: "This month's model cost (micro USD)"
+    model_reserved: "This month's reserved cost (micro USD)"
+    global_limit: "Global monthly limit (micro USD)"
+    user_budget: "Current monthly budget"
+    spent: "Spent"
+    reserved: "Reserved"
+    remaining: "Remaining"
+    disable_initiative: "Disable initiative"
+    retry_pending: "Re-enqueue pending run"
+    flash:
+      initiative_disabled: "Initiative disabled."
+      run_queued: "Pending run re-enqueued."
+    counts:
+      users: "Users"
+      personalities: "Personalities"
+      generation_runs: "Generation runs"
+      model_calls: "Model calls"
+      initiative_attempts: "Initiative attempts"
+      pending_outbox: "Pending outbox events"
   date:
     formats:
       default: "%B %-d, %Y"
   time:
     formats:
+      default: "%b %-d, %Y at %H:%M"
       version: "%b %-d, %Y at %H:%M"
       message: "%b %-d, %H:%M"
   app:
@@ -12,6 +58,7 @@ en:
       personalities: "Personalities"
       profile: "Profile"
       usage: "Usage"
+      admin: "Administration"
       notifications: "Messages, unread conversations: %{count}"
       logout: "Log out"
       language: "Language"

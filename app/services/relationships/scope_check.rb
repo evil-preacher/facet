@@ -15,10 +15,6 @@ module Relationships
       }
     }.freeze
 
-    INSTRUCTIONS = <<~TEXT.freeze
-      [Prompt text removed from public history]
-    TEXT
-
     Result = Data.define(:valid, :error_code) do
       def success? = error_code.nil?
     end
@@ -30,7 +26,7 @@ module Relationships
         user: personality.user, personality: personality, purpose: :memory_consolidation,
         model: personality.utility_model,
         input: [
-          { role: "developer", content: INSTRUCTIONS },
+          { role: "developer", content: Ai::PromptCatalog.content("relationship_scope_check") },
           { role: "user", content: JSON.pretty_generate(
             previous_relationship_state: previous_summary,
             proposed_summary: summary,

@@ -29,6 +29,7 @@ gem "redcarpet", "~> 3.6"
 gem "openai", "~> 0.91.0"
 gem "aws-sdk-s3", "1.228.2"
 gem "sidekiq", "~> 8.1.7"
+gem "administrate", "1.0.0"
 # Rack Session 2.1 passes options positionally; JSON 3 removed that compatibility.
 gem "json", "< 3"
 

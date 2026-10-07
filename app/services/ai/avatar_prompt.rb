@@ -6,9 +6,7 @@ module Ai
       context = avatar_context(personality: personality, personality_version: personality_version)
       raise MissingAvatarContextError, "Character bible has no avatar sections" if context.blank?
 
-      <<~PROMPT.strip
-      [Prompt text removed from public history]
-      PROMPT
+      Ai::PromptCatalog.render("avatar_image", character_name: personality.name, character_context: context)
     end
 
     def self.avatar_context(personality:, personality_version:)

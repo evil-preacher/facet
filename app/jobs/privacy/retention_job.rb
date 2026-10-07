@@ -3,8 +3,10 @@ module Privacy
     queue_as :maintenance
 
     DIAGNOSTIC_TTL = 30.days
+    ADMIN_AUDIT_TTL = 1.year
 
     def perform(now = Time.current)
+      AdminAuditEvent.where("created_at < ?", now - ADMIN_AUDIT_TTL).delete_all
       cutoff = now - DIAGNOSTIC_TTL
       GenerationRun.where("created_at < ?", cutoff)
         .where.not(prompt_manifest: {}).update_all(prompt_manifest: {})

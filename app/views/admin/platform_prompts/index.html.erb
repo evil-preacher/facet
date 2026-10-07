@@ -1,0 +1,15 @@
+<% content_for(:stylesheet) { stylesheet_link_tag "admin_prompts" } %>
+<% content_for(:title) { t("admin.platform_prompts.title") } %>
+<header class="main-content__header"><h1 class="main-content__page-title"><%= t("admin.platform_prompts.title") %></h1></header>
+<div class="main-content__body prompt-admin">
+  <section class="prompt-admin__section">
+    <div class="prompt-admin__history">
+      <% AiPlatformPrompt::PROVIDERS.each do |provider| %>
+        <div class="prompt-admin__revision">
+          <div class="prompt-admin__revision-info"><strong><%= link_to provider, admin_platform_prompt_path(provider) %></strong></div>
+          <span class="prompt-admin__meta"><%= @active[provider] ? "v#{@active[provider].revision}" : t("admin.platform_prompts.none") %></span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+</div>

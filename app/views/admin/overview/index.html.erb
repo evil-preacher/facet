@@ -1,0 +1,24 @@
+<% content_for(:title) { t("admin.title") } %>
+<header class="main-content__header"><h1 class="main-content__page-title"><%= t("admin.title") %></h1></header>
+<section class="main-content__body">
+  <p><%= t("admin.metadata_only") %></p>
+  <dl>
+    <% @counts.each do |name, count| %>
+      <dt><%= t("admin.counts.#{name}") %></dt><dd><%= count %></dd>
+    <% end %>
+    <dt><%= t("admin.budget_limit") %></dt><dd><%= @budget_limit_microusd %></dd>
+    <dt><%= t("admin.model_cost") %></dt><dd><%= @model_cost_microusd %></dd>
+    <dt><%= t("admin.model_reserved") %></dt><dd><%= @model_reserved_microusd %></dd>
+    <dt><%= t("admin.global_limit") %></dt><dd><%= @global_limit_microusd %></dd>
+  </dl>
+  <h2><%= t("admin.sidekiq") %></h2>
+  <% if @queues %>
+    <ul>
+      <% @queues.each do |name, size, latency| %>
+        <li><%= name %>: <%= size %> / <%= latency %>s</li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p><%= t("admin.sidekiq_unavailable") %></p>
+  <% end %>
+</section>

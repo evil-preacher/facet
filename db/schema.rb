@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_08_000004) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_000007) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -115,7 +115,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000004) do
     t.index ["relationship_state_id", "revision"], name: "index_dynamic_state_revisions_on_state_and_revision", unique: true
     t.index ["relationship_state_id"], name: "index_dynamic_state_revisions_on_relationship_state_id"
     t.index ["source_revision_id"], name: "index_dynamic_state_revisions_on_source_revision_id"
-    t.check_constraint "event_kind::text = ANY (ARRAY['trust'::character varying, 'conflict'::character varying, 'repair'::character varying, 'closeness'::character varying, 'time_decay'::character varying, 'reset'::character varying, 'rollback'::character varying]::text[])", name: "dynamic_state_revisions_event_kind"
+    t.check_constraint "event_kind::text = ANY (ARRAY['trust'::character varying, 'conflict'::character varying, 'repair'::character varying, 'closeness'::character varying, 'jealousy'::character varying, 'attraction'::character varying, 'boundary'::character varying, 'space_request'::character varying, 'time_decay'::character varying, 'reset'::character varying, 'rollback'::character varying]::text[])", name: "dynamic_state_revisions_event_kind"
     t.check_constraint "jsonb_typeof(slow_state) = 'object'::text AND jsonb_typeof(fast_state) = 'object'::text AND jsonb_typeof(source_message_ids) = 'array'::text", name: "dynamic_state_revisions_json_shapes"
     t.check_constraint "revision > 0 AND rules_version > 0", name: "dynamic_state_revisions_positive_versions"
   end
@@ -330,6 +330,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000004) do
     t.bigint "conversation_thread_id", null: false
     t.datetime "created_at", null: false
     t.string "initiated_by"
+    t.string "initiative_feedback"
+    t.datetime "initiative_feedback_at"
     t.string "language", default: "und", null: false
     t.bigint "personality_version_id", null: false
     t.integer "position", null: false
@@ -342,9 +344,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_08_000004) do
     t.index ["conversation_thread_id", "read_at"], name: "index_unread_initiative_messages", where: "(((initiated_by)::text = 'personality'::text) AND (read_at IS NULL))"
     t.index ["conversation_thread_id"], name: "index_messages_on_conversation_thread_id"
     t.index ["personality_version_id"], name: "index_messages_on_personality_version_id"
+    t.check_constraint "(initiative_feedback IS NULL) = (initiative_feedback_at IS NULL)", name: "messages_initiative_feedback_timestamp"
     t.check_constraint "\"position\" > 0", name: "messages_positive_position"
     t.check_constraint "char_length(content) <= 100000 AND (status::text <> 'completed'::text OR role::text = 'user'::text OR char_length(btrim(content)) > 0)", name: "messages_content"
     t.check_constraint "initiated_by IS NULL AND read_at IS NULL OR initiated_by::text = 'personality'::text AND role::text = 'assistant'::text", name: "messages_initiative_metadata"
+    t.check_constraint "initiative_feedback IS NULL OR initiated_by::text = 'personality'::text AND (initiative_feedback::text = ANY (ARRAY['helpful'::character varying, 'irrelevant'::character varying, 'repetitive'::character varying, 'unwelcome'::character varying]::text[]))", name: "messages_initiative_feedback_valid"
     t.check_constraint "language::text = ANY (ARRAY['ru'::character varying, 'en'::character varying, 'und'::character varying]::text[])", name: "messages_language"
     t.check_constraint "role::text = ANY (ARRAY['user'::character varying, 'assistant'::character varying]::text[])", name: "messages_role"
     t.check_constraint "status::text = ANY (ARRAY['streaming'::character varying, 'completed'::character varying, 'failed'::character varying, 'stopped'::character varying]::text[])", name: "messages_status"

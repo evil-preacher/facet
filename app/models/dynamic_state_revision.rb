@@ -7,7 +7,7 @@ class DynamicStateRevision < ApplicationRecord
                        uniqueness: { scope: :relationship_state_id }
   validates :rules_version, numericality: { only_integer: true, greater_than: 0 }
   validates :event_kind, presence: true
-  validates :event_kind, inclusion: { in: %w[trust conflict repair closeness time_decay reset rollback] }
+  validates :event_kind, inclusion: { in: %w[trust conflict repair closeness jealousy attraction boundary space_request time_decay reset rollback] }
   validate :owned_sources
 
   private

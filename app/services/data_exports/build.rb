@@ -65,7 +65,8 @@ module DataExports
           {
             details: thread.slice(:id, :title, :status, :summary, :created_at),
             messages: thread.messages.order(:position).map do |message|
-              message.slice(:id, :position, :role, :status, :content, :created_at, :read_at, :initiated_by).merge(
+              message.slice(:id, :position, :role, :status, :content, :created_at, :read_at, :initiated_by,
+                            :initiative_feedback, :initiative_feedback_at).merge(
                 attachment: export_asset(message.attachment&.object_key, message.attachment&.content_type),
                 generated_image: export_asset(message.message_image&.object_key, message.message_image&.content_type)
               )

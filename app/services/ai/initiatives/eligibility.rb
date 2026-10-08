@@ -22,6 +22,7 @@ module Ai
           .where(role: "user", conversation_threads: { personality_id: personality.id, status: "active" })
           .order(created_at: :desc, id: :desc).first
         return ineligible unless message
+        return ineligible if Dynamics::Extract.call(message: message).fetch("kind") == "space_request"
         return ineligible if message.created_at > now - personality.initiative_idle_hours.hours
         latest_activity = Message.joins(:conversation_thread)
           .where(conversation_threads: { personality_id: personality.id }).maximum(:created_at)

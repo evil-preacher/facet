@@ -95,7 +95,7 @@ en:
       dynamic_state_reset: "Dynamic state reset."
     dynamic_state:
       heading: "Dynamic state"
-      description: "Confirmed conversation events can gradually change this personality's internal state. For now, only explicit statements of trust, conflict, repair and closeness are supported. Technical scores stay out of the conversation."
+      description: "Confirmed conversation events can gradually change this personality's internal state. Some explicit statements of trust, conflict, repair, closeness, jealousy, attraction and personal boundaries are supported. Technical scores stay out of the conversation."
       enabled: "Allow dynamic state"
       save: "Save"
       reset: "Reset state"
@@ -119,6 +119,13 @@ en:
       save: "Save settings"
       unread_count: "Unread: %{count}"
       sent_first: "Wrote first"
+      feedback_label: "How was this message?"
+      feedback_save: "Send feedback"
+      feedback:
+        helpful: "Helpful"
+        irrelevant: "Irrelevant"
+        repetitive: "Repetitive"
+        unwelcome: "Intrusive — turn off initiative"
     notifications:
       page_title: "Messages — Facet"
       eyebrow: "Unread"

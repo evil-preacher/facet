@@ -33,6 +33,7 @@ class Message < ApplicationRecord
             format: { with: CLIENT_TOKEN_FORMAT },
             uniqueness: true,
             allow_nil: true
+  validates :initiative_feedback, inclusion: { in: %w[helpful irrelevant repetitive unwelcome] }, allow_nil: true
   validate :completed_message_has_content
   validate :user_message_has_client_token
   validate :user_message_is_completed
@@ -66,6 +67,9 @@ class Message < ApplicationRecord
   end
 
   def initiative_metadata_matches_role
+    if initiative_feedback.present? && (initiated_by != "personality" || initiative_feedback_at.nil?)
+      errors.add(:initiative_feedback, :invalid)
+    end
     return if initiated_by.nil? && read_at.nil?
     return if initiated_by == "personality" && assistant?
 

@@ -42,6 +42,15 @@
         <span data-message-status><%= t("app.messages.statuses.stopped") %></span>
       <% end %>
     </div>
+    <% if message.initiated_by == "personality" %>
+      <div class="mt-3 text-xs text-slate-500">
+        <%= form_with url: initiative_feedback_personality_conversation_thread_message_path(message.conversation_thread.personality, message.conversation_thread, message), method: :patch, class: "flex flex-wrap items-center gap-2" do |form| %>
+          <%= form.label :initiative_feedback, t("app.initiative.feedback_label") %>
+          <%= form.select :initiative_feedback, %w[helpful irrelevant repetitive unwelcome].map { |kind| [ t("app.initiative.feedback.#{kind}"), kind ] }, { selected: message.initiative_feedback }, class: "rounded-lg border border-slate-300 bg-white px-2 py-1" %>
+          <%= form.submit t("app.initiative.feedback_save"), class: "cursor-pointer rounded-lg bg-slate-100 px-2 py-1 font-semibold text-slate-700" %>
+        <% end %>
+      </div>
+    <% end %>
     <% if ai_debug_ui? && message.assistant? %>
       <% model_call = completed_model_call_for(message) %>
       <div data-message-debug

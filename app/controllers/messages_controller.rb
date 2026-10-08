@@ -37,6 +37,20 @@ class MessagesController < ApplicationController
     end
   end
 
+  def initiative_feedback
+    message = @conversation_thread.messages.find(params[:id])
+    raise ActiveRecord::RecordNotFound unless message.initiated_by == "personality"
+
+    feedback = params.require(:initiative_feedback)
+    raise ActionController::BadRequest unless %w[helpful irrelevant repetitive unwelcome].include?(feedback)
+
+    Message.transaction do
+      message.update!(initiative_feedback: feedback, initiative_feedback_at: Time.current)
+      @personality.update!(initiative_enabled: false, initiative_email_enabled: false) if feedback == "unwelcome"
+    end
+    redirect_to personality_conversation_thread_path(@personality, @conversation_thread), status: :see_other
+  end
+
   private
 
   def set_personality

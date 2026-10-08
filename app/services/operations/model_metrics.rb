@@ -4,6 +4,11 @@ module Operations
 
     def self.call(now: Time.current)
       since = now - WINDOW
+      initiative_decisions = InitiativeAttempt.where(decided_at: since..)
+        .where.not(decision: nil).group(:decision).count
+      decision_count = initiative_decisions.values.sum
+      feedback = Message.where(initiative_feedback_at: since..)
+        .where.not(initiative_feedback: nil).group(:initiative_feedback).count
       groups = ModelCall.where(created_at: since..).group(:provider, :model, :purpose)
         .pluck(
           :provider, :model, :purpose,
@@ -35,8 +40,12 @@ module Operations
             cost_microusd: cost.to_i
           }
         end,
-        initiative_decisions: InitiativeAttempt.where(decided_at: since..).group(:decision).count,
+        initiative_decisions: initiative_decisions,
+        initiative_no_action_share: decision_count.positive? ?
+          (initiative_decisions.fetch("NO_ACTION", 0).to_f / decision_count).round(4) : nil,
         initiative_completed: InitiativeAttempt.completed.where(completed_at: since..).count,
+        initiative_feedback: feedback,
+        initiative_negative_feedback: feedback.values_at("irrelevant", "repetitive", "unwelcome").sum(&:to_i),
         initiative_email_deliveries: InitiativeEmailDelivery.where(created_at: since..).group(:status).count,
         queues: Sidekiq::Queue.all.to_h do |queue|
           [ queue.name, { depth: queue.size, latency_seconds: queue.latency.round(3) } ]

@@ -21,7 +21,7 @@ module Dynamics
         observation = personality.dynamic_state_observations.create!(
           generation_run: generation_run, extraction: extraction, rules_version: Rules::VERSION
         )
-        if next_slow != slow || next_fast != fast
+        if next_slow != slow || next_fast != fast || extraction.fetch("kind") != "none"
           revision = state.dynamic_revisions.create!(
             generation_run: generation_run, revision: state.dynamic_revisions.maximum(:revision).to_i + 1,
             event_kind: extraction.fetch("kind"), extraction: extraction,

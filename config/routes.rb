@@ -53,7 +53,9 @@ Rails.application.routes.draw do
     end
     resources :conversation_threads, path: "threads", only: %i[index new create show] do
       patch :archive, on: :member
-      resources :messages, only: :create
+      resources :messages, only: :create do
+        patch :initiative_feedback, on: :member
+      end
       resources :generation_runs, only: [] do
         get :stream, on: :member
         post :stop, on: :member

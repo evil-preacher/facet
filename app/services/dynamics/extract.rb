@@ -2,12 +2,16 @@ module Dynamics
   # Only direct, first-person statements count as confirmed interaction events.
   # A wider model-based extractor can replace this contract without changing replay.
   class Extract
-    RULES_VERSION = 1
+    RULES_VERSION = 2
     PATTERNS = {
       "trust" => /\A(?:я тебе доверяю|i trust you)(?:[.!\s]|\z)/i,
       "conflict" => /\A(?:я злюсь на тебя|i am angry with you|i'm angry with you)(?:[.!\s]|\z)/i,
       "repair" => /\A(?:прости меня|извини меня|i am sorry|i'm sorry)(?:[.!\s]|\z)/i,
-      "closeness" => /\A(?:мне нравится быть с тобой|i like being with you)(?:[.!\s]|\z)/i
+      "closeness" => /\A(?:мне нравится быть с тобой|i like being with you)(?:[.!\s]|\z)/i,
+      "jealousy" => /\A(?:я ревную тебя|i feel jealous)(?:[.!\s]|\z)/i,
+      "attraction" => /\A(?:меня к тебе тянет|i feel attracted to you)(?:[.!\s]|\z)/i,
+      "boundary" => /\A(?:меня больше к тебе не тянет|я больше тебя не ревную|i don't feel attracted to you anymore|i am not jealous anymore)(?:[.!\s]|\z)/i,
+      "space_request" => /\A(?:мне нужно пространство|пожалуйста, не пиши мне пока|please don't contact me for a while)(?:[.!\s]|\z)/i
     }.freeze
 
     def self.call(message:)
@@ -17,7 +21,7 @@ module Dynamics
       else
         PATTERNS.find { |_name, pattern| pattern.match?(content) }&.first || "none"
       end
-      { "kind" => kind, "extractor" => "explicit-v1", "source_message_ids" => kind == "none" ? [] : [ message.id ] }
+      { "kind" => kind, "extractor" => "explicit-v2", "source_message_ids" => kind == "none" ? [] : [ message.id ] }
     end
   end
 end

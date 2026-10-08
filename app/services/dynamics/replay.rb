@@ -20,12 +20,13 @@ module Dynamics
           slow, fast = source.map(&:dup)
         when "time_decay"
           slow, fast, = Rules.transition(
-            slow: slow, fast: fast, observed_at: observed_at, kind: "none", now: revision.effective_at
+            slow: slow, fast: fast, observed_at: observed_at, kind: "none", now: revision.effective_at,
+            version: revision.rules_version
           )
         else
           slow, fast, = Rules.transition(
             slow: slow, fast: fast, observed_at: observed_at,
-            kind: revision.event_kind, now: revision.effective_at
+            kind: revision.event_kind, now: revision.effective_at, version: revision.rules_version
           )
         end
         mismatches << revision.revision unless revision.slow_state == slow && revision.fast_state == fast

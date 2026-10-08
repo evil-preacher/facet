@@ -30,6 +30,15 @@ RSpec.describe Ai::Initiatives::Eligibility do
     expect(eligible?).to be(false)
   end
 
+  it "respects an explicit request for space until the user speaks again" do
+    source.update!(content: "Please don't contact me for a while.")
+    expect(eligible?).to be(false)
+
+    create(:message, conversation_thread: thread, position: source.position + 1,
+           content: "I'm ready to talk again.", created_at: now - 1.day)
+    expect(eligible?).to be(true)
+  end
+
   it "waits after a recent ordinary assistant reply" do
     create(:message, :assistant, conversation_thread: thread, created_at: now - 1.hour)
     expect(eligible?).to be(false)

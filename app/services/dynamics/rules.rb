@@ -1,18 +1,24 @@
 module Dynamics
   class Rules
-    VERSION = 1
+    VERSION = 2
     BASE_SLOW = { "trust" => 50, "closeness" => 0, "tension" => 0 }.freeze
     BASE_FAST = { "warmth" => 0, "irritation" => 0 }.freeze
-    CHANGES = {
+    V1_CHANGES = {
       "trust" => { "trust" => 5, "warmth" => 20 },
       "conflict" => { "trust" => -4, "tension" => 8, "irritation" => 30 },
       "repair" => { "tension" => -6, "warmth" => 10, "irritation" => -12 },
       "closeness" => { "closeness" => 5, "warmth" => 15 }
     }.freeze
+    CHANGES = V1_CHANGES.merge("jealousy" => {}, "attraction" => {}, "boundary" => {}, "space_request" => {}).freeze
     HALF_LIFE_HOURS = { "warmth" => 24.0, "irritation" => 8.0 }.freeze
 
-    def self.transition(slow:, fast:, observed_at:, kind:, now:)
-      raise ArgumentError, "unknown event" unless CHANGES.key?(kind) || kind == "none"
+    def self.transition(slow:, fast:, observed_at:, kind:, now:, version: VERSION)
+      changes = case version
+      when 1 then V1_CHANGES
+      when 2 then CHANGES
+      else raise ArgumentError, "unknown rules version"
+      end
+      raise ArgumentError, "unknown event" unless changes.key?(kind) || kind == "none"
 
       slow = BASE_SLOW.merge(slow.stringify_keys)
       fast = BASE_FAST.merge(fast.stringify_keys)
@@ -22,7 +28,7 @@ module Dynamics
         (value * (0.5**(hours / HALF_LIFE_HOURS.fetch(key)))).round
       end
       reasons = {}
-      CHANGES.fetch(kind, {}).each do |key, amount|
+      changes.fetch(kind, {}).each do |key, amount|
         target = slow.key?(key) ? slow : fast
         before = target.fetch(key)
         target[key] = (before + amount).clamp(0, 100)

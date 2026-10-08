@@ -91,12 +91,31 @@ en:
       memory_settings_updated: "Memory settings updated."
       usage_limit_updated: "Monthly limit updated."
       initiative_settings_updated: "Initiative settings updated."
+      dynamic_state_settings_updated: "Dynamic state setting updated."
+      dynamic_state_reset: "Dynamic state reset."
+    dynamic_state:
+      heading: "Dynamic state"
+      description: "Confirmed conversation events can gradually change this personality's internal state. For now, only explicit statements of trust, conflict, repair and closeness are supported. Technical scores stay out of the conversation."
+      enabled: "Allow dynamic state"
+      save: "Save"
+      reset: "Reset state"
+      reset_confirm: "Reset this personality's accumulated state?"
     initiative:
       settings_heading: "Initiative messages"
       settings_description: "The personality may occasionally write first after a pause. The message will appear unread in the latest active conversation."
       enabled: "Allow the personality to write first"
+      email_enabled: "Allow initiative messages to be emailed to me"
+      email_description: "The email may contain the personality's message and a link to the conversation. Delivery stops after you turn this setting off."
       idle_hours: "Hours since your last message"
       cooldown_hours: "Minimum hours between attempts"
+      intensity: "Intensity"
+      intensities:
+        quiet: "Rarely"
+        normal: "Normal"
+        expressive: "Expressive"
+      timezone: "Time zone for quiet hours"
+      quiet_start: "Quiet hours from"
+      quiet_end: "Quiet hours until"
       save: "Save settings"
       unread_count: "Unread: %{count}"
       sent_first: "Wrote first"
@@ -396,6 +415,11 @@ en:
       non_binary: "Non-binary"
       prefer_not_to_say: "Prefer not to say"
     mailer:
+      initiative:
+        subject: "A message from %{name} — Facet"
+        heading: "New message from %{name}"
+        open: "Open conversation"
+        control: "You can turn these emails off in the personality settings."
       confirmation:
         subject: "Confirm your email for Facet"
         heading: "Confirm your email"

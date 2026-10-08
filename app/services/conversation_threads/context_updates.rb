@@ -13,6 +13,13 @@ module ConversationThreads
           arguments: [ generation_run.id ]
         )
       ]
+      if generation_run.conversation_thread.personality.dynamic_state_enabled?
+        events << Outbox::Publish.call(
+          event_key: "dynamic-state-update:#{generation_run.id}",
+          job_class: Ai::DynamicStateUpdateJob,
+          arguments: [ generation_run.id ]
+        )
+      end
       if summary_due?(generation_run)
         events << Outbox::Publish.call(
           event_key: "thread-summary:#{generation_run.id}",

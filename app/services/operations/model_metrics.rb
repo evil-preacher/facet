@@ -35,6 +35,9 @@ module Operations
             cost_microusd: cost.to_i
           }
         end,
+        initiative_decisions: InitiativeAttempt.where(decided_at: since..).group(:decision).count,
+        initiative_completed: InitiativeAttempt.completed.where(completed_at: since..).count,
+        initiative_email_deliveries: InitiativeEmailDelivery.where(created_at: since..).group(:status).count,
         queues: Sidekiq::Queue.all.to_h do |queue|
           [ queue.name, { depth: queue.size, latency_seconds: queue.latency.round(3) } ]
         end,

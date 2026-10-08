@@ -62,7 +62,9 @@ Rails.application.configure do
     user_name: ENV["SMTP_USERNAME"].presence,
     password: ENV["SMTP_PASSWORD"].presence,
     authentication: (:plain if ENV["SMTP_USERNAME"].present?),
-    enable_starttls_auto: true
+    enable_starttls_auto: true,
+    open_timeout: Integer(ENV.fetch("SMTP_OPEN_TIMEOUT", "5")),
+    read_timeout: Integer(ENV.fetch("SMTP_READ_TIMEOUT", "10"))
   }.compact
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to

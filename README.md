@@ -88,12 +88,25 @@ duplicates. The composer responds with Turbo Streams while retaining a plain
 HTML fallback.
 
 Initiative messages are disabled by default. On a personality's page, the owner
-can enable them and choose an idle period (12–168 hours) and cooldown (24–720
-hours). The outbox process schedules an initiative sweep every 30 minutes. A
-utility model first decides whether a natural follow-up is appropriate; if so,
-the conversation model writes one message in the latest active thread. A new
+can enable them and choose an idle period (12–168 hours), cooldown (24–720
+hours), intensity, quiet hours, and time zone. The outbox process schedules an
+initiative sweep every 30 minutes. A policy checks quiet hours, daily and weekly
+send limits, unanswered messages, and repeated motivations. A utility model
+then records `NO_ACTION` or an in-app decision with a motivation, intensity,
+and current dynamic-state revision. Only a positive, allowed decision reaches
+the separate conversation-model writing step; the policy is checked again before
+the message is saved. The default intensity allows at most one completed send
+per day and two per week. A new
 initiative remains unread until that thread is opened. Unread messages, recent
 attempts, ongoing replies, and spending limits prevent repeated outreach.
+Email is the first external initiative channel. It has a separate opt-in checkbox,
+off by default. An email decision creates the same unread in-app message and an
+outbox delivery record. The worker rechecks consent and quiet hours before SMTP,
+then sends the message text and a conversation link. A claimed delivery is never
+automatically resent; if the worker loses the SMTP result, its audit status becomes
+`unknown` after one hour. Repeated jobs cannot send a second copy. Disabling email
+suppresses pending deliveries. Delivery status is included in account export and
+removed with the personality.
 The header bell opens a Messages page that lists unread threads and links
 directly to each conversation; opening a thread clears its unread count.
 
@@ -214,6 +227,18 @@ summarization through the outbox. Thread summaries advance an explicit
 Relationship state is shared by every thread of a personality, has immutable
 revisions, and supports rollback by creating a new revision. Both utility-model
 flows require structured source-message provenance and reject unknown sources.
+
+The personality page also offers an independent **Dynamic state** toggle, off by
+default. The initial extractor recognizes only direct RU/EN statements of trust,
+anger, apology, and closeness from completed user turns. It records the source
+message and fixed extractor result, then adjusts slow trust/closeness/tension and
+fast warmth/irritation. Fast values decay over time; silence alone does not create
+a relationship event. The owner can reset this state without changing the
+character bible or the separate initiative setting. Revisions and observations
+are included in data export and removed with the personality. When enabled,
+conversation prompts receive a short, lower-priority interpretation without
+numeric scores. The scenario boundaries and local initiative baseline are in
+[`docs/dynamic-state-baseline.md`](docs/dynamic-state-baseline.md).
 
 ## Background streaming
 

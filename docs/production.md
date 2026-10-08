@@ -13,7 +13,9 @@ storage, SMTP, and an HTTPS reverse proxy. The Compose file binds Puma only to
 - Set `APP_HOST` to the public hostname without scheme or port. Forward HTTPS
   requests to Puma and preserve the original host and scheme.
 - Set `SMTP_ADDRESS`, `SMTP_PORT`, `MAILER_FROM`, and SMTP credentials when the
-  server requires authentication. Test both confirmation and login emails.
+  server requires authentication. Test confirmation, login, and opt-in initiative
+  emails. Optional `SMTP_OPEN_TIMEOUT` and `SMTP_READ_TIMEOUT` default to 5 and
+  10 seconds so disabling email is not held behind an unbounded SMTP call.
 - Set `S3_ENDPOINT`, `S3_PUBLIC_ENDPOINT`, `S3_REGION`, `S3_BUCKET`,
   `S3_ACCESS_KEY_ID`, and `S3_SECRET_ACCESS_KEY`. The public endpoint must be
   reachable by users because it appears in short-lived image URLs.

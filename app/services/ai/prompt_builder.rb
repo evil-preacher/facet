@@ -36,7 +36,7 @@ module Ai
 
     def initialize(generation_run:, relationship_state: nil, memories: [], retrieval_diagnostics: [],
                    token_counter: TokenCounter.new, budgets: {},
-                   storage: ObjectStorage::S3Store.default)
+                   storage: ObjectStorage::S3Store.default, now: Time.current)
       @generation_run = generation_run
       @thread = generation_run.conversation_thread
       @personality = @thread.personality
@@ -47,6 +47,7 @@ module Ai
       @retrieval_diagnostics = Array(retrieval_diagnostics)
       @token_counter = token_counter
       @storage = storage
+      @now = now
       @budgets = DEFAULT_BUDGETS.merge(budgets.to_h.symbolize_keys)
       validate_context!
     end
@@ -118,12 +119,22 @@ module Ai
 
     def prepare_relationship
       @relationship_truncated = false
-      return @relationship_item = nil if @relationship_state&.summary.blank?
+      parts = []
+      parts << @relationship_state.summary if @relationship_state&.summary.present?
+      if @personality.dynamic_state_enabled? && @relationship_state.is_a?(RelationshipState)
+        @dynamic_revision = @relationship_state.dynamic_revisions.last
+        interpretation = Dynamics::Interpret.call(
+          relationship_state: @relationship_state,
+          emotional_state: @personality.emotional_state, now: @now
+        )
+        parts << interpretation if interpretation.present?
+      end
+      return @relationship_item = nil if parts.empty?
 
       @relationship_item, @relationship_truncated = budgeted_context_item(
         "Relationship state",
         "relationship_state",
-        @relationship_state.summary,
+        parts.join("\n"),
         section_budget(:relationship_state)
       )
     end
@@ -323,6 +334,8 @@ module Ai
         "current_message_id" => @current_message.id,
         "relationship_state_id" => @relationship_state&.id,
         "relationship_revision" => @relationship_state&.revision,
+        "dynamic_state_revision_id" => @dynamic_revision&.id,
+        "dynamic_state_as_of" => @dynamic_revision ? @now.iso8601 : nil,
         "memory_ids" => @selected_memories.map(&:id),
         "memory_retrieval" => selected_retrieval_diagnostics,
         "summary_through_message_id" => @thread.summary_through_message_id,

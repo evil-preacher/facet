@@ -33,7 +33,9 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
     address: ENV.fetch("SMTP_ADDRESS", "mailpit"),
-    port: ENV.fetch("SMTP_PORT", 1025).to_i
+    port: ENV.fetch("SMTP_PORT", 1025).to_i,
+    open_timeout: Integer(ENV.fetch("SMTP_OPEN_TIMEOUT", "5")),
+    read_timeout: Integer(ENV.fetch("SMTP_READ_TIMEOUT", "10"))
   }
 
   # Make template changes take effect immediately.

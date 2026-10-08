@@ -28,6 +28,9 @@ module Ai
         return ineligible if latest_activity && latest_activity > now - personality.initiative_idle_hours.hours
         attempts = personality.initiative_attempts.where("created_at > ?", now - personality.initiative_cooldown_hours.hours)
         attempts = attempts.where.not(id: @except_attempt.id) if @except_attempt
+        return ineligible if attempts.where(decision_reason: "quiet_hours")
+          .where("created_at > ?", now - 1.hour).exists?
+        attempts = attempts.where("decision_reason IS NULL OR decision_reason <> ?", "quiet_hours")
         return ineligible if attempts.exists?
         return ineligible if Message.unread_initiatives.joins(:conversation_thread)
           .where(conversation_threads: { personality_id: personality.id }).exists?

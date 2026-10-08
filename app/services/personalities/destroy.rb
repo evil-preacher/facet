@@ -64,10 +64,11 @@ module Personalities
       image_ids = MessageImage.joins(message: :conversation_thread)
         .where(conversation_threads: { personality_id: @personality.id }).pluck(:id)
       event_keys = run_ids.flat_map do |id|
-        %w[generate-reply relationship-update thread-summary relationship-consolidation].map { |kind| "#{kind}:#{id}" }
+        %w[generate-reply relationship-update thread-summary relationship-consolidation dynamic-state-update].map { |kind| "#{kind}:#{id}" }
       end
       event_keys.concat(extraction_ids.map { |id| "memory-extraction:#{id}" })
       event_keys.concat(attempt_ids.map { |id| "generate-initiative:#{id}" })
+      event_keys.concat(attempt_ids.map { |id| "deliver-initiative-email:#{id}" })
       event_keys.concat(image_ids.map { |id| "generate-message-image:#{id}" })
       OutboxEvent.where(event_key: event_keys).delete_all if event_keys.any?
       OutboxEvent.where("event_key LIKE ?", "generate-avatar:#{@personality.id}:%").delete_all

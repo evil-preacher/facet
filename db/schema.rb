@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_07_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_08_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -83,6 +83,55 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_000003) do
     t.check_constraint "title IS NULL OR char_length(btrim(title::text)) >= 1 AND char_length(btrim(title::text)) <= 120", name: "conversation_threads_title_length"
   end
 
+  create_table "dynamic_state_observations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "extraction", default: {}, null: false
+    t.bigint "generation_run_id", null: false
+    t.bigint "personality_id", null: false
+    t.integer "rules_version", null: false
+    t.datetime "updated_at", null: false
+    t.index ["generation_run_id"], name: "index_dynamic_state_observations_on_generation_run_id", unique: true
+    t.index ["personality_id"], name: "index_dynamic_state_observations_on_personality_id"
+    t.check_constraint "jsonb_typeof(extraction) = 'object'::text", name: "dynamic_state_observations_extraction_object"
+    t.check_constraint "rules_version > 0", name: "dynamic_state_observations_rules_version"
+  end
+
+  create_table "dynamic_state_revisions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "effective_at", null: false
+    t.string "event_kind", null: false
+    t.jsonb "extraction", default: {}, null: false
+    t.jsonb "fast_state", null: false
+    t.bigint "generation_run_id"
+    t.jsonb "parameter_reasons", default: {}, null: false
+    t.bigint "relationship_state_id", null: false
+    t.integer "revision", null: false
+    t.integer "rules_version", null: false
+    t.jsonb "slow_state", null: false
+    t.jsonb "source_message_ids", default: [], null: false
+    t.bigint "source_revision_id"
+    t.datetime "updated_at", null: false
+    t.index ["generation_run_id"], name: "index_dynamic_state_revisions_on_generation_run_id", unique: true
+    t.index ["relationship_state_id", "revision"], name: "index_dynamic_state_revisions_on_state_and_revision", unique: true
+    t.index ["relationship_state_id"], name: "index_dynamic_state_revisions_on_relationship_state_id"
+    t.index ["source_revision_id"], name: "index_dynamic_state_revisions_on_source_revision_id"
+    t.check_constraint "event_kind::text = ANY (ARRAY['trust'::character varying, 'conflict'::character varying, 'repair'::character varying, 'closeness'::character varying, 'time_decay'::character varying, 'reset'::character varying, 'rollback'::character varying]::text[])", name: "dynamic_state_revisions_event_kind"
+    t.check_constraint "jsonb_typeof(slow_state) = 'object'::text AND jsonb_typeof(fast_state) = 'object'::text AND jsonb_typeof(source_message_ids) = 'array'::text", name: "dynamic_state_revisions_json_shapes"
+    t.check_constraint "revision > 0 AND rules_version > 0", name: "dynamic_state_revisions_positive_versions"
+  end
+
+  create_table "emotional_states", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "irritation", default: 0, null: false
+    t.datetime "observed_at"
+    t.bigint "personality_id", null: false
+    t.datetime "updated_at", null: false
+    t.integer "warmth", default: 0, null: false
+    t.index ["personality_id"], name: "index_emotional_states_on_personality_id", unique: true
+    t.check_constraint "irritation >= 0 AND irritation <= 100", name: "emotional_states_irritation_range"
+    t.check_constraint "warmth >= 0 AND warmth <= 100", name: "emotional_states_warmth_range"
+  end
+
   create_table "generation_runs", force: :cascade do |t|
     t.bigint "ai_platform_prompt_id"
     t.string "ai_provider", default: "mistral", null: false
@@ -121,9 +170,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_000003) do
     t.datetime "completed_at"
     t.bigint "conversation_thread_id", null: false
     t.datetime "created_at", null: false
+    t.datetime "decided_at"
+    t.string "decision"
+    t.string "decision_reason"
+    t.bigint "dynamic_state_revision_id"
     t.string "error_code"
+    t.string "intensity"
     t.boolean "manual_trigger", default: false, null: false
     t.bigint "message_id"
+    t.string "motivation"
     t.bigint "personality_id", null: false
     t.bigint "personality_version_id", null: false
     t.bigint "source_message_id", null: false
@@ -132,12 +187,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_000003) do
     t.string "topic"
     t.datetime "updated_at", null: false
     t.index ["conversation_thread_id"], name: "index_initiative_attempts_on_conversation_thread_id"
+    t.index ["dynamic_state_revision_id"], name: "index_initiative_attempts_on_dynamic_state_revision_id"
     t.index ["message_id"], name: "index_initiative_attempts_on_message_id"
     t.index ["personality_id"], name: "index_active_initiative_attempts", unique: true, where: "((status)::text = ANY ((ARRAY['pending'::character varying, 'running'::character varying])::text[]))"
     t.index ["personality_id"], name: "index_initiative_attempts_on_personality_id"
     t.index ["personality_version_id"], name: "index_initiative_attempts_on_personality_version_id"
     t.index ["source_message_id"], name: "index_initiative_attempts_on_source_message_id"
+    t.check_constraint "decision IS NULL OR (decision::text = ANY (ARRAY['NO_ACTION'::character varying, 'IN_APP'::character varying, 'EMAIL'::character varying]::text[]))", name: "initiative_attempts_decision"
+    t.check_constraint "intensity IS NULL OR (intensity::text = ANY (ARRAY['low'::character varying, 'medium'::character varying, 'high'::character varying]::text[]))", name: "initiative_attempts_intensity"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'running'::character varying, 'completed'::character varying, 'skipped'::character varying, 'failed'::character varying]::text[])", name: "initiative_attempts_status"
+  end
+
+  create_table "initiative_email_deliveries", force: :cascade do |t|
+    t.datetime "claimed_at"
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.string "email_message_id"
+    t.string "error_code"
+    t.bigint "initiative_attempt_id", null: false
+    t.string "status", default: "pending", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email_message_id"], name: "index_initiative_email_deliveries_on_email_message_id", unique: true, where: "(email_message_id IS NOT NULL)"
+    t.index ["initiative_attempt_id"], name: "index_initiative_email_deliveries_on_initiative_attempt_id", unique: true
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'sending'::character varying, 'delivered'::character varying, 'failed'::character varying, 'suppressed'::character varying, 'unknown'::character varying]::text[])", name: "initiative_email_deliveries_status"
   end
 
   create_table "login_challenges", force: :cascade do |t|
@@ -368,9 +440,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_000003) do
     t.datetime "created_at", null: false
     t.bigint "current_version_id"
     t.text "description", default: "", null: false
+    t.boolean "dynamic_state_enabled", default: false, null: false
     t.integer "initiative_cooldown_hours", default: 72, null: false
+    t.boolean "initiative_email_enabled", default: false, null: false
     t.boolean "initiative_enabled", default: false, null: false
     t.integer "initiative_idle_hours", default: 24, null: false
+    t.string "initiative_intensity", default: "quiet", null: false
+    t.integer "initiative_quiet_end_hour", default: 8, null: false
+    t.integer "initiative_quiet_start_hour", default: 22, null: false
+    t.string "initiative_timezone", default: "UTC", null: false
     t.string "name", null: false
     t.string "status", default: "draft", null: false
     t.datetime "updated_at", null: false
@@ -390,6 +468,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_000003) do
     t.check_constraint "char_length(description) <= 500", name: "personalities_description_length"
     t.check_constraint "initiative_cooldown_hours >= 24 AND initiative_cooldown_hours <= 720", name: "personalities_initiative_cooldown_hours"
     t.check_constraint "initiative_idle_hours >= 12 AND initiative_idle_hours <= 168", name: "personalities_initiative_idle_hours"
+    t.check_constraint "initiative_intensity::text = ANY (ARRAY['quiet'::character varying, 'normal'::character varying, 'expressive'::character varying]::text[])", name: "personalities_initiative_intensity"
+    t.check_constraint "initiative_quiet_start_hour >= 0 AND initiative_quiet_start_hour <= 23 AND initiative_quiet_end_hour >= 0 AND initiative_quiet_end_hour <= 23 AND initiative_quiet_start_hour <> initiative_quiet_end_hour", name: "personalities_initiative_quiet_hours"
     t.check_constraint "status::text = ANY (ARRAY['draft'::character varying, 'active'::character varying, 'archived'::character varying]::text[])", name: "personalities_status"
   end
 
@@ -444,15 +524,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_000003) do
   end
 
   create_table "relationship_states", force: :cascade do |t|
+    t.integer "closeness", default: 0, null: false
     t.datetime "created_at", null: false
     t.bigint "last_consolidated_message_id"
     t.bigint "personality_id", null: false
     t.integer "revision", default: 0, null: false
     t.text "summary", default: "", null: false
+    t.integer "tension", default: 0, null: false
+    t.integer "trust", default: 50, null: false
     t.datetime "updated_at", null: false
     t.index ["personality_id"], name: "index_relationship_states_on_personality_id", unique: true
     t.check_constraint "char_length(summary) <= 100000", name: "relationship_states_summary_length"
+    t.check_constraint "closeness >= 0 AND closeness <= 100", name: "relationship_states_closeness_range"
     t.check_constraint "revision >= 0", name: "relationship_states_revision"
+    t.check_constraint "tension >= 0 AND tension <= 100", name: "relationship_states_tension_range"
+    t.check_constraint "trust >= 0 AND trust <= 100", name: "relationship_states_trust_range"
   end
 
   create_table "thread_summary_versions", force: :cascade do |t|
@@ -491,6 +577,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_000003) do
   add_foreign_key "ai_prompt_revisions", "users", column: "published_by_id", on_delete: :nullify
   add_foreign_key "conversation_threads", "messages", column: "summary_through_message_id", on_delete: :nullify
   add_foreign_key "conversation_threads", "personalities"
+  add_foreign_key "dynamic_state_observations", "generation_runs", on_delete: :cascade
+  add_foreign_key "dynamic_state_observations", "personalities", on_delete: :cascade
+  add_foreign_key "dynamic_state_revisions", "dynamic_state_revisions", column: "source_revision_id", on_delete: :nullify
+  add_foreign_key "dynamic_state_revisions", "generation_runs", on_delete: :nullify
+  add_foreign_key "dynamic_state_revisions", "relationship_states", on_delete: :cascade
+  add_foreign_key "emotional_states", "personalities", on_delete: :cascade
   add_foreign_key "generation_runs", "ai_platform_prompts", on_delete: :nullify
   add_foreign_key "generation_runs", "conversation_threads"
   add_foreign_key "generation_runs", "generation_runs", column: "retry_of_id", on_delete: :restrict
@@ -498,10 +590,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_07_000003) do
   add_foreign_key "generation_runs", "messages", column: "user_message_id", on_delete: :restrict
   add_foreign_key "generation_runs", "personality_versions"
   add_foreign_key "initiative_attempts", "conversation_threads", on_delete: :cascade
+  add_foreign_key "initiative_attempts", "dynamic_state_revisions", on_delete: :nullify
   add_foreign_key "initiative_attempts", "messages", column: "source_message_id", on_delete: :cascade
   add_foreign_key "initiative_attempts", "messages", on_delete: :nullify
   add_foreign_key "initiative_attempts", "personalities", on_delete: :cascade
   add_foreign_key "initiative_attempts", "personality_versions", on_delete: :restrict
+  add_foreign_key "initiative_email_deliveries", "initiative_attempts", on_delete: :cascade
   add_foreign_key "login_challenges", "users"
   add_foreign_key "memories", "memories", column: "supersedes_id", on_delete: :nullify
   add_foreign_key "memories", "personalities", on_delete: :cascade

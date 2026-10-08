@@ -1,7 +1,7 @@
 class PersonalitiesController < ApplicationController
   before_action :require_authentication
   before_action :require_completed_profile
-  before_action :set_personality, only: %i[show edit update archive initiative_settings destroy]
+  before_action :set_personality, only: %i[show edit update archive initiative_settings dynamic_state_settings reset_dynamic_state destroy]
 
   def index
     @personalities = current_user.personalities.order(
@@ -76,6 +76,18 @@ class PersonalitiesController < ApplicationController
     end
   end
 
+  def dynamic_state_settings
+    @personality.update!(dynamic_state_enabled: ActiveModel::Type::Boolean.new.cast(
+      params.require(:personality).fetch(:dynamic_state_enabled, false)
+    ))
+    redirect_to personality_path(@personality), notice: t("app.flash.dynamic_state_settings_updated")
+  end
+
+  def reset_dynamic_state
+    Dynamics::Reset.call(user: current_user, personality: @personality)
+    redirect_to personality_path(@personality), notice: t("app.flash.dynamic_state_reset")
+  end
+
   private
 
   def set_personality
@@ -91,7 +103,9 @@ class PersonalitiesController < ApplicationController
   end
 
   def initiative_settings_params
-    params.require(:personality).permit(:initiative_enabled, :initiative_idle_hours,
-                                        :initiative_cooldown_hours)
+    params.require(:personality).permit(:initiative_enabled, :initiative_email_enabled, :initiative_idle_hours,
+                                        :initiative_cooldown_hours, :initiative_intensity,
+                                        :initiative_timezone, :initiative_quiet_start_hour,
+                                        :initiative_quiet_end_hour)
   end
 end

@@ -30,7 +30,11 @@ module DataExports
     def export_personality(personality)
       {
         details: personality.slice(:id, :name, :description, :status, :created_at,
-                                   :initiative_enabled, :initiative_idle_hours, :initiative_cooldown_hours),
+                                   :initiative_enabled, :initiative_email_enabled,
+                                   :initiative_idle_hours, :initiative_cooldown_hours,
+                                   :initiative_intensity, :initiative_timezone,
+                                   :initiative_quiet_start_hour, :initiative_quiet_end_hour,
+                                   :dynamic_state_enabled),
         avatar: export_asset(personality.avatar_object_key, personality.avatar_content_type),
         versions: personality.versions.map do |version|
           version.slice(:id, :number, :content, :change_note, :created_at)
@@ -38,7 +42,25 @@ module DataExports
         memories: personality.memories.order(:id).map do |memory|
           memory.slice(:id, :kind, :content, :status, :origin, :sensitivity, :created_at, :deleted_at)
         end,
-        relationship: personality.relationship_state&.slice(:summary, :revision),
+        relationship: personality.relationship_state&.slice(:summary, :revision, :trust, :closeness, :tension),
+        emotional_state: personality.emotional_state&.slice(:warmth, :irritation, :observed_at),
+        dynamic_observations: personality.dynamic_state_observations.order(:id).map do |observation|
+          observation.slice(:generation_run_id, :extraction, :rules_version, :created_at)
+        end,
+        dynamic_revisions: personality.relationship_state&.dynamic_revisions&.map do |revision|
+          revision.slice(:revision, :generation_run_id, :source_revision_id, :event_kind,
+                         :extraction, :slow_state, :fast_state, :parameter_reasons,
+                         :source_message_ids, :rules_version, :effective_at)
+        end || [],
+        initiative_attempts: personality.initiative_attempts.order(:id).map do |attempt|
+          attempt.slice(:id, :conversation_thread_id, :source_message_id, :message_id,
+                        :status, :decision, :decision_reason, :topic, :motivation, :intensity,
+                        :dynamic_state_revision_id, :decided_at, :created_at, :completed_at).merge(
+                          email_delivery: attempt.initiative_email_delivery&.slice(
+                            :status, :email_message_id, :error_code, :claimed_at, :delivered_at
+                          )
+                        )
+        end,
         threads: personality.conversation_threads.order(:id).map do |thread|
           {
             details: thread.slice(:id, :title, :status, :summary, :created_at),

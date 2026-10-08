@@ -1,19 +1,6 @@
-require "json"
-
 module Ai
   module Initiatives
     class Generate
-      DECISION_SCHEMA = {
-        name: "initiative_decision",
-        schema: {
-          type: "object", additionalProperties: false,
-          required: %w[send_message topic],
-          properties: {
-            send_message: { type: "boolean" },
-            topic: { type: "string" }
-          }
-        }
-      }.freeze
       TRANSIENT_ERRORS = %w[timeout rate_limit provider_error].freeze
 
       Result = Data.define(:status, :error_code, :message)
@@ -30,19 +17,31 @@ module Ai
 
       def call
         return Result.new(status: :skipped, error_code: nil, message: nil) unless claim!
-        return skip! unless eligible_now?
+        return no_action!("ineligible") unless eligible_now?
+        reason = Policy.call(personality: personality, now: now)
+        return no_action!(reason) if reason
 
         @memories = Memories::Retrieve.call(personality: personality, query: attempt.source_message.content).memories
-        topic = attempt.topic.presence || choose_topic
-        return topic if topic.is_a?(Result)
-        return skip! if topic.blank?
-        return skip! unless eligible_now?
+        unless %w[IN_APP EMAIL].include?(attempt.decision) && attempt.topic.present?
+          decision = Decide.call(attempt: attempt, memories: @memories,
+                                 recent_messages: recent_messages, gateway: gateway, now: now)
+          return request_failure!(decision.error_code) if decision.error_code
 
-        attempt.update!(topic: topic)
+          record_decision!(decision)
+          return skip! if decision.decision == "NO_ACTION"
+        end
+        personality.reload
+        recheck_at = Time.current
+        return no_action!("ineligible") unless eligible_now?(at: recheck_at)
+        reason = Policy.call(personality: personality, now: recheck_at,
+                             motivation: attempt.motivation, intensity: attempt.intensity,
+                             channel: attempt.decision)
+        return no_action!(reason) if reason
+
         response = Ai::Request.call(
           user: personality.user, personality: personality, purpose: :initiative,
           model_role: :conversation, model: personality.conversation_model,
-          input: message_input(topic), max_output_tokens: 600,
+          input: message_input(attempt.topic), max_output_tokens: 600,
           gateway: gateway, provider: attempt.ai_provider, now: now
         )
         return request_failure!(response.error_code) unless response.success?
@@ -64,44 +63,28 @@ module Ai
         true
       end
 
-      def eligible_now?(check_budget: true)
-        result = Eligibility.call(personality: personality, now: now, except_attempt: attempt,
+      def eligible_now?(check_budget: true, at: now)
+        result = Eligibility.call(personality: personality, now: at, except_attempt: attempt,
                                   check_budget: check_budget)
         result.eligible && result.thread.id == thread.id &&
           result.last_user_message.id == attempt.source_message_id
       end
 
-      def choose_topic
-        response = Ai::Request.call(
-          user: personality.user, personality: personality, purpose: :initiative,
-          model: personality.utility_model, input: decision_input,
-          response_schema: DECISION_SCHEMA, temperature: 0.1, max_output_tokens: 300,
-          gateway: gateway, provider: attempt.ai_provider, now: now
-        )
-        return request_failure!(response.error_code) unless response.success?
-
-        parsed = JSON.parse(response.response.text)
-        valid = parsed.is_a?(Hash) && parsed.keys.sort == %w[send_message topic] &&
-          [ true, false ].include?(parsed["send_message"]) && parsed["topic"].is_a?(String) &&
-          parsed["topic"].length <= 240
-        return fail_with!("invalid_decision") unless valid
-
-        parsed["send_message"] ? parsed["topic"].strip.presence : nil
-      rescue JSON::ParserError
-        fail_with!("invalid_decision")
+      def record_decision!(decision)
+        attempt.update!(decision: decision.decision, topic: decision.topic,
+                        motivation: decision.motivation, intensity: decision.intensity,
+                        decided_at: now, decision_reason: decision.decision == "NO_ACTION" ? "model_declined" : nil,
+                        dynamic_state_revision: current_dynamic_revision)
       end
 
-      def decision_input
-        [
-          { role: "developer", content: Ai::PromptCatalog.content("initiative_decision") },
-          { role: "user", content: JSON.generate(
-            relationship_state: personality.relationship_state&.summary.to_s.first(4_000),
-            approved_memories: @memories.map(&:content),
-            thread_summary: thread.summary.to_s.first(4_000),
-            recent_messages: recent_messages,
-            last_user_message_at: attempt.source_message.created_at.iso8601
-          ) }
-        ]
+      def no_action!(reason)
+        attempt.update!(decision: "NO_ACTION", decision_reason: reason, decided_at: now,
+                        dynamic_state_revision: current_dynamic_revision)
+        skip!
+      end
+
+      def current_dynamic_revision
+        personality.relationship_state&.dynamic_revisions&.last if personality.dynamic_state_enabled?
       end
 
       def message_input(topic)
@@ -115,8 +98,14 @@ module Ai
         items << { role: "developer", content: Ai::PromptCatalog.render("initiative_character_bible",
           character_bible: attempt.personality_version.content) }
         items << { role: "developer", content: Ai::PromptCatalog.content("initiative_message") }
+        dynamic_context = if personality.dynamic_state_enabled?
+          Dynamics::Interpret.call(relationship_state: personality.relationship_state,
+                                   emotional_state: personality.emotional_state, now: now)
+        end
         items << { role: "user", content: JSON.generate(
           topic: topic, relationship_state: personality.relationship_state&.summary.to_s.first(4_000),
+          delivery_channel: attempt.decision == "EMAIL" ? "email_and_in_app" : "in_app",
+          dynamic_state: dynamic_context,
           approved_memories: @memories.map(&:content), thread_summary: thread.summary.to_s.first(4_000),
           recent_messages: recent_messages
         ) }
@@ -130,19 +119,34 @@ module Ai
       end
 
       def persist_message!(content)
-        thread.with_lock do
-          return skip! unless eligible_now?(check_budget: false)
-          return skip! if Message.unread_initiatives.where(conversation_thread: thread).exists?
+        personality.with_lock do
+          thread.with_lock do
+            recheck_at = Time.current
+            return no_action!("ineligible") unless eligible_now?(check_budget: false, at: recheck_at)
+            reason = Policy.call(personality: personality, now: recheck_at,
+                                 motivation: attempt.motivation, intensity: attempt.intensity,
+                                 channel: attempt.decision)
+            return no_action!(reason) if reason
+            return no_action!("unread") if Message.unread_initiatives.where(conversation_thread: thread).exists?
 
-          message = thread.messages.create!(
-            personality_version: attempt.personality_version,
-            position: thread.messages.maximum(:position).to_i + 1,
-            role: :assistant, status: :completed, content: content,
-            language: LanguageDetector.call(content), initiated_by: "personality", read_at: nil
-          )
-          thread.update!(last_message_at: message.created_at)
-          attempt.update!(status: :completed, message: message, completed_at: now, started_at: nil)
-          Result.new(status: :completed, error_code: nil, message: message)
+            message = thread.messages.create!(
+              personality_version: attempt.personality_version,
+              position: thread.messages.maximum(:position).to_i + 1,
+              role: :assistant, status: :completed, content: content,
+              language: LanguageDetector.call(content), initiated_by: "personality", read_at: nil
+            )
+            thread.update!(last_message_at: message.created_at)
+            attempt.update!(status: :completed, message: message, completed_at: recheck_at, started_at: nil)
+            if attempt.decision == "EMAIL"
+              delivery = attempt.create_initiative_email_delivery!
+              Outbox::Publish.call(
+                event_key: "deliver-initiative-email:#{attempt.id}",
+                job_class: Ai::DeliverInitiativeEmailJob,
+                arguments: [ delivery.id ]
+              )
+            end
+            Result.new(status: :completed, error_code: nil, message: message)
+          end
         end
       end
 

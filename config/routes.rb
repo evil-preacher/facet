@@ -40,6 +40,8 @@ Rails.application.routes.draw do
     delete :destroy, on: :member
     patch :archive, on: :member
     patch :initiative_settings, on: :member
+    patch :dynamic_state_settings, on: :member
+    post :reset_dynamic_state, on: :member
     resources :memories, only: %i[index update destroy] do
       patch :approve, on: :member
       patch :settings, on: :collection

@@ -12,6 +12,8 @@ module Outbox
       next_budget_maintenance = Time.current
       next_initiative_sweep = Time.current
       next_privacy_retention = Time.current
+      next_dynamic_decay = Time.current
+      next_email_delivery_audit = Time.current
 
       until @stopping
         if Time.current >= next_budget_maintenance
@@ -22,6 +24,12 @@ module Outbox
         end
         if Time.current >= next_privacy_retention
           next_privacy_retention = enqueue_maintenance(Privacy::RetentionJob, 1.day)
+        end
+        if Time.current >= next_dynamic_decay
+          next_dynamic_decay = enqueue_maintenance(Ai::DynamicStateDecayJob, 1.hour)
+        end
+        if Time.current >= next_email_delivery_audit
+          next_email_delivery_audit = enqueue_maintenance(Ai::ExpireInitiativeEmailDeliveriesJob, 1.hour)
         end
         count = Dispatcher.call
         sleep(POLL_INTERVAL) if count.zero?

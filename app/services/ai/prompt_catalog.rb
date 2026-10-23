@@ -1,5 +1,6 @@
 module Ai
   class PromptCatalog
+    MissingPromptError = Class.new(StandardError)
     VARIABLES = {
       "application_rules" => [],
       "memory_extraction" => [],
@@ -26,7 +27,7 @@ module Ai
     end
 
     def self.content(key)
-      active(key)&.content || File.read(Rails.root.join("config/ai_prompts/#{key}.txt")).strip
+      active(key)&.content || raise(MissingPromptError, "No active prompt revision for #{key}; import or publish one")
     end
 
     def self.render(key, variables = {})

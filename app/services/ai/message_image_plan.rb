@@ -51,7 +51,13 @@ module Ai
         {
           role: "user",
           content: <<~CONTENT.strip
-      [Prompt text removed from public history]
+            <user_request>
+            #{user_message&.content}
+            </user_request>
+
+            <character_reply>
+            #{message.content}
+            </character_reply>
           CONTENT
         }
       ]

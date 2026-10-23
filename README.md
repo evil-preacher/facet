@@ -170,6 +170,21 @@ also identifies the provider, personality version, platform-prompt revision, and
 checkpoint. This keeps each thread’s growing prefix isolated while invalidating the cache when a
 stable prompt component changes.
 
+All 16 application prompt templates are stored as versioned database records.
+There are no bundled prompt defaults. Before creating personalities or using AI
+features in a new installation, import a private prompt directory containing one `<key>.txt` file
+for each key listed in `Ai::PromptCatalog::KEYS`:
+
+```sh
+docker compose run --rm -v /absolute/private/prompts:/prompt-import:ro web \
+  bin/rails ai:prompts:import DIRECTORY=/prompt-import
+```
+
+The import creates only missing active revisions and preserves edits already
+published in the administration panel. Keep the source directory and database
+backups private. Without a revision, an AI operation fails with a missing-prompt
+error; administrators can publish a missing template in `/admin/prompt_templates`.
+
 Platform corrections are administrative, versioned records and never become
 part of a personality version or user-authored conversation history. Publish a
 new active revision from a UTF-8 text file with:
@@ -296,7 +311,7 @@ runs, model calls, initiative attempts, budgets, Sidekiq queues, and outbox.
 The personality detail page additionally displays its current Character Bible
 as escaped, read-only text; conversation messages and memories are not shown.
 The panel also has a versioned AI prompt catalog and provider corrections.
-The defaults for 16 prompt templates live in `config/ai_prompts/`; publishing
+The 16 prompt templates live in the database; publishing
 an edit in `/admin/prompt_templates` makes it active for later requests, and
 restoring an older revision creates a new revision. Template variables use
 `{{name}}` placeholders, with an allowlist shown on each edit page. Provider

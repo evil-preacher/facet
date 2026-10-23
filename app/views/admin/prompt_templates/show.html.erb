@@ -3,7 +3,7 @@
 <header class="main-content__header prompt-admin__header">
   <%= link_to "← #{t('admin.prompts.back')}", admin_prompt_templates_path, class: "prompt-admin__back" %>
   <h1 class="main-content__page-title"><%= @key.humanize %></h1>
-  <p class="prompt-admin__meta"><%= @active ? "v#{@active.revision} · #{@active.checksum.first(12)}" : t("admin.prompts.default") %></p>
+  <p class="prompt-admin__meta"><%= @active ? "v#{@active.revision} · #{@active.checksum.first(12)}" : t("admin.prompts.none") %></p>
 </header>
 <div class="main-content__body prompt-admin">
   <section class="prompt-admin__section">
@@ -20,12 +20,6 @@
   <section class="prompt-admin__section">
     <h2><%= t("admin.prompts.history") %></h2>
     <div class="prompt-admin__history">
-      <% if @active %>
-        <div class="prompt-admin__revision">
-          <div class="prompt-admin__revision-info"><strong><%= t("admin.prompts.default") %></strong></div>
-          <%= button_to t("admin.prompts.restore_default"), restore_admin_prompt_template_path(@key), params: { revision_id: "default" }, class: "prompt-admin__restore", data: { turbo_confirm: t("admin.prompts.confirm") } %>
-        </div>
-      <% end %>
       <% @revisions.each do |revision| %>
         <div class="prompt-admin__revision">
           <div class="prompt-admin__revision-info">

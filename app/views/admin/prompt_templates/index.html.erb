@@ -8,7 +8,7 @@
       <% @keys.each do |key| %>
         <div class="prompt-admin__revision">
           <div class="prompt-admin__revision-info"><strong><%= link_to key.humanize, admin_prompt_template_path(key) %></strong></div>
-          <span class="prompt-admin__meta"><%= @active[key] ? "v#{@active[key].revision}" : t("admin.prompts.default") %></span>
+          <span class="prompt-admin__meta"><%= @active[key] ? "v#{@active[key].revision}" : t("admin.prompts.none") %></span>
         </div>
       <% end %>
     </div>

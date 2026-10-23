@@ -8,6 +8,7 @@
 !/log/.keep
 !/tmp/.keep
 /public/assets
+/private/
 
 /app/assets/builds/*
 !/app/assets/builds/.keep

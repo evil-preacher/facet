@@ -8,7 +8,7 @@ module Admin
     def show
       @key = prompt_key
       @active = Ai::PromptCatalog.active(@key)
-      @content = @active&.content || Ai::PromptCatalog.content(@key)
+      @content = @active&.content.to_s
       @revisions = AiPromptRevision.where(key: @key).order(revision: :desc)
     end
 
@@ -30,11 +30,7 @@ module Admin
 
     def restore
       key = prompt_key
-      source_content = if params.require(:revision_id) == "default"
-        File.read(Rails.root.join("config/ai_prompts/#{key}.txt")).strip
-      else
-        AiPromptRevision.find_by!(id: params[:revision_id], key: key).content
-      end
+      source_content = AiPromptRevision.find_by!(id: params.require(:revision_id), key: key).content
       AiPromptRevision.transaction do
         revision = Ai::PromptCatalog.publish(key: key, content: source_content, actor: current_admin)
         audit_publish(revision)

@@ -38,8 +38,16 @@ image contains no production credentials.
 ```sh
 docker compose -f compose.production.yml build web
 docker compose -f compose.production.yml run --rm --no-deps web bin/rails db:migrate
+docker compose -f compose.production.yml run --rm --no-deps \
+  -v /absolute/private/prompts:/prompt-import:ro web \
+  bin/rails ai:prompts:import DIRECTORY=/prompt-import
 docker compose -f compose.production.yml up -d web worker outbox
 ```
+
+The prompt import needs one private `<key>.txt` file per key in
+`Ai::PromptCatalog::KEYS`. It creates missing active revisions and leaves existing
+revisions untouched. Keep the source directory out of the repository and back up
+the database before deployment; a fresh database has no bundled prompt text.
 
 Build uses `Dockerfile.production`, which installs production gems and compiles
 assets. The Sidekiq timeout is 25 seconds by default and Compose gives the

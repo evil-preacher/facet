@@ -10,7 +10,7 @@ en:
     prompts:
       title: "AI prompts"
       description: "Publishing a prompt makes it active for subsequent AI requests. Earlier revisions remain available."
-      default: "Repository default"
+      none: "No active revision"
       back: "All prompts"
       variables: "Allowed variables: %{names}"
       content: "Prompt text"
@@ -19,7 +19,6 @@ en:
       history: "Revision history"
       current: "Current"
       restore: "Restore as new revision"
-      restore_default: "Restore repository default as new revision"
       published: "Prompt revision published."
     metadata_only: "Operational metadata and aggregates. The current Character Bible is available on each personality's detail page; private conversations remain hidden."
     sidekiq: "Sidekiq queues"

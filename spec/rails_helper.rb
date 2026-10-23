@@ -10,6 +10,8 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require 'rspec/rails'
 require 'database_cleaner/active_record'
 require 'capybara/rspec'
+require_relative 'support/test_prompt_revisions'
+I18n.default_locale = :en
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
@@ -41,9 +43,12 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
+    TestPromptRevisions.seed!
   end
 
   config.before do |example|
+    I18n.locale = :en
+    TestPromptRevisions.seed!
     DatabaseCleaner.strategy = if example.metadata[:js] || example.metadata[:truncation]
                                  :truncation
     else
